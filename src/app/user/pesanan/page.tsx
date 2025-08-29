@@ -9,10 +9,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { z } from "zod";
 import { toast } from "sonner";
 import { Id } from "../../../../convex/_generated/dataModel";
 import { formatStatus } from "@/lib/status";
+import { Wallet, CreditCard, Smartphone } from "lucide-react";
 
 export default function UserPesananPage() {
   const { user } = useAuth();
@@ -28,14 +30,100 @@ export default function UserPesananPage() {
   const [isJoinOrderOpen, setIsJoinOrderOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [selectedMenuItems, setSelectedMenuItems] = useState<Array<{menuId: string, qty: number}>>([]);
-  const [amount, setAmount] = useState("");
+  const [errors, setErrors] = useState<{ items?: string; selectedOrder?: string; payment?: string }>({});
+  
+  // Payment form state
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "cardless" | "dana">("cash");
+  const [amount, setAmount] = useState("");
+  
+  // Menu filter state
+  const [menuFilter, setMenuFilter] = useState("");
+
+  // Fetch existing payment for this user and selected order (to prefill form)
+  const existingPayment = useQuery(
+    api.boedor.payment.getPaymentByOrderUser,
+    selectedOrder && user ? {
+      orderId: selectedOrder._id,
+      userId: user._id,
+      currentUserId: user._id,
+    } : "skip"
+  );
+
+  // Prefill payment form when existing payment is found
+  useEffect(() => {
+    if (existingPayment) {
+      setPaymentMethod(existingPayment.paymentMethod as "cash" | "cardless" | "dana");
+      setAmount(existingPayment.amount.toString());
+    } else {
+      setPaymentMethod("cash");
+      setAmount("");
+    }
+  }, [existingPayment]);
 
   
+
+  // Zod Schemas & validator
+  const menuItemSchema = z.object({
+    menuId: z.string().min(1, "Menu tidak valid"),
+    qty: z.number().int().min(0, "Jumlah tidak boleh negatif"),
+  });
+
+  const buildSchema = () => {
+    const baseSchema = {
+      selectedOrder: z.any().refine((v) => !!v && !!v._id, "Pilih pesanan yang valid"),
+      items: z.array(menuItemSchema).refine((arr) => arr.some((i) => i.qty > 0), "Pilih minimal 1 item"),
+    };
+    
+    // If no existing payment, require payment fields
+    if (!existingPayment) {
+      return z.object({
+        ...baseSchema,
+        paymentMethod: z.enum(["cash", "cardless", "dana"]),
+        amount: z.string().min(1, "Masukkan jumlah pembayaran").refine((val) => {
+          const num = parseFloat(val);
+          return !isNaN(num) && num > 0;
+        }, "Jumlah harus lebih dari 0"),
+      });
+    }
+    
+    return z.object(baseSchema);
+  };
+
+  const validateForm = (): { ok: true } | { ok: false } => {
+    setErrors({});
+    const data = {
+      selectedOrder,
+      items: selectedMenuItems,
+      paymentMethod,
+      amount,
+    };
+    try {
+      const schema = buildSchema();
+      const parsed = schema.parse(data);
+      parsed; // no-op
+      return { ok: true };
+    } catch (e: any) {
+      if (e?.issues) {
+        const nextErrors: typeof errors = {};
+        for (const issue of e.issues as Array<{ path: (string | number)[]; message: string }>) {
+          const key = issue.path[0];
+          if (key === "items") nextErrors.items = issue.message;
+          if (key === "selectedOrder") nextErrors.selectedOrder = issue.message;
+          if (key === "paymentMethod" || key === "amount") nextErrors.payment = issue.message;
+        }
+        setErrors(nextErrors);
+      }
+      toast.error("Input tidak valid. Mohon periksa kembali.");
+      return { ok: false };
+    }
+  };
 
   const handleJoinOrder = async () => {
     if (selectedOrder && selectedMenuItems.length > 0) {
       try {
+        const validation = validateForm();
+        if (!('ok' in validation) || !validation.ok) return;
+
         // Add all selected items to the order
         for (const item of selectedMenuItems) {
           if (item.qty > 0) {
@@ -48,12 +136,20 @@ export default function UserPesananPage() {
           }
         }
 
-        // Save payment info separately (only if amount is provided or updating existing)
-        if (parseFloat(amount) > 0) {
+        // Save payment if no existing payment
+        if (!existingPayment && amount && paymentMethod) {
+          const subtotal = calcSubtotal();
+          const paymentAmount = parseFloat(amount);
+          
+          if (paymentAmount < subtotal) {
+            toast.error("Jumlah pembayaran kurang dari total pesanan");
+            return;
+          }
+          
           await upsertPayment({
             orderId: selectedOrder._id,
-            paymentMethod: paymentMethod as "cash" | "cardless" | "dana",
-            amount: parseFloat(amount),
+            paymentMethod,
+            amount: paymentAmount,
             currentUserId: user!._id,
           });
         }
@@ -62,8 +158,8 @@ export default function UserPesananPage() {
         setIsJoinOrderOpen(false);
         setSelectedOrder(null);
         setSelectedMenuItems([]);
-        setAmount("");
         setPaymentMethod("cash");
+        setAmount("");
       } catch (error) {
         toast.error("Gagal bergabung dengan pesanan");
       }
@@ -85,6 +181,33 @@ export default function UserPesananPage() {
 
   const getMenuItemQuantity = (menuId: string) => {
     return selectedMenuItems.find(item => item.menuId === menuId)?.qty || 0;
+  };
+
+  const formatCurrency = (amount: number) =>
+    new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0,
+    }).format(amount);
+
+  const calcSubtotal = () => {
+    if (!menuItems) return 0;
+    return selectedMenuItems.reduce((sum, sel) => {
+      const item = menuItems.find((m) => m._id === sel.menuId);
+      if (!item) return sum;
+      return sum + (item.price * sel.qty);
+    }, 0);
+  };
+
+  // Filter and sort menu items
+  const getFilteredMenuItems = () => {
+    if (!menuItems) return [];
+    
+    return menuItems
+      .filter(item => 
+        item.name.toLowerCase().includes(menuFilter.toLowerCase())
+      )
+      .sort((a, b) => a.name.localeCompare(b.name, 'id-ID'));
   };
 
   if (!user) {
@@ -135,6 +258,7 @@ export default function UserPesananPage() {
                       setSelectedOrder(order);
                       // Reset form when opening dialog
                       setSelectedMenuItems([]);
+                      setMenuFilter("");
                       setIsJoinOrderOpen(true);
                     }}
                   >
@@ -156,8 +280,25 @@ export default function UserPesananPage() {
               <DialogTitle>Gabung Pesanan #{selectedOrder?._id.slice(-6)}</DialogTitle>
               <DialogDescription>Pilih item menu dan jumlahnya</DialogDescription>
             </DialogHeader>
+            
+            {/* Items error */}
+            {errors.items && (
+              <p className="text-sm text-red-600">{errors.items}</p>
+            )}
+            
+            {/* Menu Filter */}
+            <div className="mb-4">
+              <Input
+                type="text"
+                placeholder="Cari menu..."
+                value={menuFilter}
+                onChange={(e) => setMenuFilter(e.target.value)}
+                className="w-full"
+              />
+            </div>
+            
             <div className="space-y-4 max-h-96 overflow-y-auto">
-              {menuItems?.map((item) => (
+              {getFilteredMenuItems().map((item) => (
                 <div key={item._id} className="flex items-center justify-between p-3 border rounded">
                   <div>
                     <p className="font-medium">{item.name}</p>
@@ -190,44 +331,77 @@ export default function UserPesananPage() {
               ))}
             </div>
             
-            {/* Payment Information */}
-            <div className="space-y-4 border-t pt-4">
-              <h3 className="font-medium text-gray-900">Informasi Pembayaran</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Subtotal */}
+            <div className="flex items-center justify-between pt-4">
+              <span className="font-semibold">Subtotal</span>
+              <span className={`font-semibold ${(() => { const subtotal = calcSubtotal(); const eff = existingPayment?.amount; return (typeof eff === 'number' && subtotal > eff) ? "text-red-600" : ""; })()}`}>
+                {formatCurrency(calcSubtotal())}
+              </span>
+            </div>
+
+            {/* Payment Form - Show only if no existing payment */}
+            {!existingPayment && (
+              <div className="border-t pt-4 space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Metode Pembayaran
-                  </label>
-                  <Select value={paymentMethod} onValueChange={(value: "cash" | "cardless" | "dana") => setPaymentMethod(value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Pilih metode pembayaran" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="cash">Tunai</SelectItem>
-                      <SelectItem value="cardless">Tanpa Kartu</SelectItem>
-                      <SelectItem value="dana">DANA</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <h4 className="font-medium text-gray-900 mb-3">Pembayaran</h4>
+                  {errors.payment && (
+                    <p className="text-sm text-red-600 mb-2">{errors.payment}</p>
+                  )}
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Jumlah
-                  </label>
-                  <Input
-                    type="number"
-                    placeholder="Masukkan jumlah"
-                    min="0"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                  />
+                
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Metode Pembayaran</label>
+                    <div className="flex gap-2">
+                      <button 
+                        type="button" 
+                        onClick={() => setPaymentMethod("cash")} 
+                        className={`flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition ${paymentMethod==='cash' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white hover:bg-gray-50'}`}
+                      >
+                        <Wallet className="h-4 w-4" /> Tunai
+                      </button>
+                      <button 
+                        type="button" 
+                        onClick={() => setPaymentMethod("cardless")} 
+                        className={`flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition ${paymentMethod==='cardless' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white hover:bg-gray-50'}`}
+                      >
+                        <CreditCard className="h-4 w-4" /> Tanpa Kartu
+                      </button>
+                      <button 
+                        type="button" 
+                        onClick={() => setPaymentMethod("dana")} 
+                        className={`flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition ${paymentMethod==='dana' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white hover:bg-gray-50'}`}
+                      >
+                        <Smartphone className="h-4 w-4" /> DANA
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Jumlah Pembayaran</label>
+                    <div className="flex items-center rounded-lg border border-gray-200 bg-white shadow-sm focus-within:ring-2 focus-within:ring-gray-300">
+                      <span className="px-3 text-sm text-gray-500">Rp</span>
+                      <Input
+                        type="number"
+                        placeholder="0"
+                        min="0"
+                        value={amount}
+                        onChange={(e) => setAmount(e.target.value)}
+                        className="border-0 focus-visible:ring-0 text-right"
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Minimal: {formatCurrency(calcSubtotal())}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsJoinOrderOpen(false)}>Batal</Button>
               <Button 
                 onClick={handleJoinOrder}
-                disabled={selectedMenuItems.filter(item => item.qty > 0).length === 0 || parseFloat(amount) <= 0}
+                disabled={selectedMenuItems.filter(item => item.qty > 0).length === 0}
               >
                 Gabung Pesanan ({selectedMenuItems.filter(item => item.qty > 0).length} item)
               </Button>

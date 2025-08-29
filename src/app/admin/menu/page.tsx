@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useState, useEffect } from "react";
+import { z } from "zod";
 import { useRouter } from "next/navigation";
 import { Plus, Trash2, Edit, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
@@ -23,6 +24,8 @@ export default function AdminMenuPage() {
   const [isEditMenuOpen, setIsEditMenuOpen] = useState(false);
   const [selectedMenuItem, setSelectedMenuItem] = useState<any>(null);
   const [newMenuItem, setNewMenuItem] = useState({ name: "", price: 0 });
+  const [addErrors, setAddErrors] = useState<{ name?: string; price?: string }>({});
+  const [editErrors, setEditErrors] = useState<{ name?: string; price?: string }>({});
 
   // Queries
   const menuItems = useQuery(api.boedor.menu.getAllMenuItems, user ? { currentUserId: user._id } : "skip");
@@ -54,8 +57,25 @@ export default function AdminMenuPage() {
   }
 
   // Menu handlers
+  const menuSchema = z.object({
+    name: z.string().trim().min(1, "Nama item wajib diisi"),
+    price: z.number().positive("Harga harus lebih dari 0"),
+  });
+
   const handleAddMenuItem = async () => {
+    setAddErrors({});
     try {
+      const parsed = menuSchema.safeParse(newMenuItem);
+      if (!parsed.success) {
+        const next: typeof addErrors = {};
+        for (const issue of parsed.error.issues) {
+          const key = issue.path[0] as keyof typeof next;
+          next[key] = issue.message;
+        }
+        setAddErrors(next);
+        toast.error("Periksa input Anda");
+        return;
+      }
       await createMenuItem({
         name: newMenuItem.name,
         price: newMenuItem.price,
@@ -73,6 +93,18 @@ export default function AdminMenuPage() {
   const handleUpdateMenuItem = async () => {
     if (selectedMenuItem) {
       try {
+        setEditErrors({});
+        const parsed = menuSchema.safeParse({ name: selectedMenuItem.name, price: selectedMenuItem.price });
+        if (!parsed.success) {
+          const next: typeof editErrors = {};
+          for (const issue of parsed.error.issues) {
+            const key = issue.path[0] as keyof typeof next;
+            next[key] = issue.message;
+          }
+          setEditErrors(next);
+          toast.error("Periksa input Anda");
+          return;
+        }
         await updateMenuItem({
           menuId: selectedMenuItem._id,
           name: selectedMenuItem.name,
@@ -138,12 +170,14 @@ export default function AdminMenuPage() {
                       value={newMenuItem.name}
                       onChange={(e) => setNewMenuItem({ ...newMenuItem, name: e.target.value })}
                     />
+                    {addErrors.name && <div className="text-xs text-red-600">{addErrors.name}</div>}
                     <Input
                       type="number"
                       placeholder="Harga"
                       value={newMenuItem.price}
                       onChange={(e) => setNewMenuItem({ ...newMenuItem, price: parseFloat(e.target.value) || 0 })}
                     />
+                    {addErrors.price && <div className="text-xs text-red-600">{addErrors.price}</div>}
                   </div>
                   <DialogFooter>
                     <Button variant="outline" onClick={() => setIsAddMenuOpen(false)}>Batal</Button>
@@ -205,12 +239,14 @@ export default function AdminMenuPage() {
                   value={selectedMenuItem.name}
                   onChange={(e) => setSelectedMenuItem({ ...selectedMenuItem, name: e.target.value })}
                 />
+                {editErrors.name && <div className="text-xs text-red-600">{editErrors.name}</div>}
                 <Input
                   type="number"
                   placeholder="Harga"
                   value={selectedMenuItem.price}
                   onChange={(e) => setSelectedMenuItem({ ...selectedMenuItem, price: parseFloat(e.target.value) || 0 })}
                 />
+                {editErrors.price && <div className="text-xs text-red-600">{editErrors.price}</div>}
               </div>
             )}
             <DialogFooter>

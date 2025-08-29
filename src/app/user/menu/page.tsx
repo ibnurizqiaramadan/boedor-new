@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useState } from "react";
+import { z } from "zod";
 import { toast } from "sonner";
 
 export default function UserMenuPage() {
@@ -18,6 +19,7 @@ export default function UserMenuPage() {
 
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
   const [newMenuItem, setNewMenuItem] = useState({ name: "", price: 0 });
+  const [errors, setErrors] = useState<{ name?: string; price?: string }>({});
 
   // Format currency
   const formatCurrency = (amount: number) => {
@@ -28,18 +30,33 @@ export default function UserMenuPage() {
     }).format(amount);
   };
 
+  const schema = z.object({
+    name: z.string().trim().min(1, "Nama item wajib diisi"),
+    price: z.number().positive("Harga harus lebih dari 0"),
+  });
+
   const handleAddMenuItem = async () => {
     try {
-      if (newMenuItem.name && newMenuItem.price > 0) {
-        await addMenuItem({
-          name: newMenuItem.name,
-          price: newMenuItem.price,
-          currentUserId: user!._id,
-        });
-        toast.success("Item menu berhasil diusulkan!");
-        setIsAddMenuOpen(false);
-        setNewMenuItem({ name: "", price: 0 });
+      setErrors({});
+      const parsed = schema.safeParse(newMenuItem);
+      if (!parsed.success) {
+        const next: typeof errors = {};
+        for (const issue of parsed.error.issues) {
+          const key = issue.path[0] as keyof typeof next;
+          next[key] = issue.message;
+        }
+        setErrors(next);
+        toast.error("Periksa input Anda");
+        return;
       }
+      await addMenuItem({
+        name: newMenuItem.name,
+        price: newMenuItem.price,
+        currentUserId: user!._id,
+      });
+      toast.success("Item menu berhasil diusulkan!");
+      setIsAddMenuOpen(false);
+      setNewMenuItem({ name: "", price: 0 });
     } catch (error) {
       console.error("Failed to suggest menu item:", error);
       toast.error("Gagal mengusulkan item menu: " + (error as Error).message);
@@ -94,12 +111,14 @@ export default function UserMenuPage() {
                       value={newMenuItem.name}
                       onChange={(e) => setNewMenuItem({ ...newMenuItem, name: e.target.value })}
                     />
+                    {errors.name && <div className="text-xs text-red-600">{errors.name}</div>}
                     <Input
                       type="number"
                       placeholder="Harga yang disarankan"
                       value={newMenuItem.price}
                       onChange={(e) => setNewMenuItem({ ...newMenuItem, price: parseFloat(e.target.value) })}
                     />
+                    {errors.price && <div className="text-xs text-red-600">{errors.price}</div>}
                   </div>
                   <DialogFooter>
                     <Button variant="outline" onClick={() => setIsAddMenuOpen(false)}>Batal</Button>

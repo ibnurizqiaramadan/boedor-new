@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { ArrowLeft, User, ShoppingCart, Edit, Trash2, Plus } from "lucide-react";
+import { ArrowLeft, User, ShoppingCart, Edit, Trash2, Plus, Wallet, CreditCard, Smartphone } from "lucide-react";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils";
 import { getStatusIcon, getStatusColor, formatStatus } from "@/lib/status";
@@ -28,6 +28,8 @@ export default function UserOrderDetailPage() {
   const [selectedMenuItems, setSelectedMenuItems] = useState<{ menuId: string; qty: number }[]>([]);
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "cardless" | "dana">("cash");
   const [amount, setAmount] = useState<string>("");
+  const [payErrors, setPayErrors] = useState<{ amount?: string }>([] as any as { amount?: string });
+  const [errors, setErrors] = useState<{ amount?: string }>({});
 
   // Redirect to home page if user is not logged in
   useEffect(() => {
@@ -131,6 +133,35 @@ export default function UserOrderDetailPage() {
     }, 0);
   };
 
+  const handleSavePayment = async () => {
+    try {
+      setPayErrors({});
+      const amt = parseFloat(amount);
+      const myTotal = getMyTotal();
+      if (isNaN(amt) || amt <= 0) {
+        setPayErrors({ amount: "Jumlah harus lebih dari 0" });
+        toast.error("Jumlah tidak valid");
+        return;
+      }
+      if (amt < myTotal) {
+        setPayErrors({ amount: `Jumlah harus minimal ${formatCurrency(myTotal)}` });
+        toast.error("Jumlah kurang dari total item Anda");
+        return;
+      }
+
+      await upsertPayment({
+        orderId: orderId as Id<"boedor_orders">,
+        paymentMethod,
+        amount: amt,
+        currentUserId: user._id,
+      });
+      toast.success("Pembayaran disimpan");
+    } catch (err) {
+      console.error(err);
+      toast.error("Gagal menyimpan pembayaran");
+    }
+  };
+
   const getUserTotal = (userId: string) => {
     const userItems = itemsByUser[userId] || [];
     return userItems.reduce((total, item) => {
@@ -187,7 +218,18 @@ export default function UserOrderDetailPage() {
 
   const handleAddMoreItems = async () => {
     try {
-      if (selectedMenuItems.length > 0 && (parseFloat(amount) > 0 || existingPayment)) {
+      // Validate against existing payment (if any)
+      const subtotal = selectedMenuItems.reduce((sum, sel) => {
+        const m = menuItems?.find(mi => mi._id === sel.menuId);
+        return sum + (m ? m.price * sel.qty : 0);
+      }, 0);
+      // If user already has a payment recorded, ensure it covers the new subtotal
+      if (existingPayment && existingPayment.amount < subtotal) {
+        toast.error("Subtotal melebihi jumlah bayar yang tersimpan");
+        return;
+      }
+
+      if (selectedMenuItems.length > 0) {
         // Add all selected items to the order
         for (const item of selectedMenuItems) {
           if (item.qty > 0) {
@@ -200,21 +242,10 @@ export default function UserOrderDetailPage() {
           }
         }
 
-        // Save payment info separately (only if amount is provided or updating existing)
-        if (parseFloat(amount) > 0) {
-          await upsertPayment({
-            orderId: orderId as Id<"boedor_orders">,
-            paymentMethod: paymentMethod as "cash" | "cardless" | "dana",
-            amount: parseFloat(amount),
-            currentUserId: user._id,
-          });
-        }
-
         toast.success("Item berhasil ditambahkan ke pesanan!");
         setIsAddItemOpen(false);
         setSelectedMenuItems([]);
-        setAmount("");
-        setPaymentMethod("cash");
+        setErrors({}); // keep payment state for Payment section
       }
     } catch (error) {
       console.error("Failed to add items:", error);
@@ -308,6 +339,83 @@ export default function UserOrderDetailPage() {
                 )}
               </div>
             </div>
+            
+          </CardContent>
+        </Card>
+
+        {/* Pembayaran Saya */}
+        <Card className="border rounded-xl shadow-sm">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Wallet className="h-5 w-5 text-gray-500" />
+              Pembayaran Saya
+            </CardTitle>
+            <CardDescription>Atur metode dan jumlah pembayaran Anda untuk pesanan ini</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Metode Pembayaran</label>
+                <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
+                  <div className="flex gap-2 w-full sm:w-auto">
+                    <button type="button" onClick={() => setPaymentMethod("cash")} className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition ${paymentMethod==='cash' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white hover:bg-gray-50'}`}>
+                      <Wallet className="h-4 w-4" /> Tunai
+                    </button>
+                    <button type="button" onClick={() => setPaymentMethod("cardless")} className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition ${paymentMethod==='cardless' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white hover:bg-gray-50'}`}>
+                      <CreditCard className="h-4 w-4" /> Tanpa Kartu
+                    </button>
+                    <button type="button" onClick={() => setPaymentMethod("dana")} className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition ${paymentMethod==='dana' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white hover:bg-gray-50'}`}>
+                      <Smartphone className="h-4 w-4" /> DANA
+                    </button>
+                  </div>
+                  <div className="flex gap-2 w-full sm:w-auto sm:ml-auto">
+                    <div className="flex-1 sm:w-32">
+                      <label className="block text-xs text-gray-500 mb-1">Rp</label>
+                      <div className={`flex items-center rounded-lg border ${payErrors.amount ? 'border-red-500 ring-1 ring-red-500' : 'border-gray-200'} bg-white shadow-sm focus-within:ring-2 focus-within:ring-gray-300`}> 
+                        <Input
+                          type="number"
+                          placeholder="50000"
+                          min="0"
+                          value={amount}
+                          onChange={(e) => { setAmount(e.target.value); if (payErrors.amount) setPayErrors({}); }}
+                          className="border-0 focus-visible:ring-0 text-center py-2"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex-none">
+                      <label className="block text-xs text-transparent mb-1">.</label>
+                      <Button
+                        onClick={handleSavePayment}
+                        disabled={(() => { const amt = parseFloat(amount); const myTotal = getMyTotal(); return isNaN(amt) || amt <= 0 || amt < myTotal; })()}
+                        className="py-2"
+                      >
+                        Simpan Pembayaran
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-col sm:flex-row sm:justify-between gap-2 text-sm">
+                <div>
+                  <p className="text-gray-600">Total item Anda saat ini: <span className="font-semibold">{formatCurrency(getMyTotal())}</span></p>
+                </div>
+                <div className="flex gap-4">
+                  {existingPayment && (
+                    <p className="text-gray-500">Tersimpan: {formatCurrency(existingPayment.amount)}</p>
+                  )}
+                  <div>
+                    {existingPayment ? (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-green-50 text-green-700 border border-green-200 text-xs">Status: Tersimpan</span>
+                    ) : (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-xs">Status: Belum disimpan</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+              {payErrors.amount && (
+                <p className="text-sm text-red-600">{payErrors.amount}</p>
+              )}
+            </div>
           </CardContent>
         </Card>
 
@@ -322,12 +430,8 @@ export default function UserOrderDetailPage() {
                 </CardDescription>
               </div>
               {order.status === "open" && (
-                <Button
-                  onClick={() => setIsAddItemOpen(true)}
-                  className="flex items-center space-x-2"
-                >
-                  <Plus className="h-4 w-4" />
-                  <span>Tambah Item Lagi</span>
+                <Button onClick={() => setIsAddItemOpen(true)}>
+                  <Plus className="h-4 w-4 mr-2" /> Tambah Item Lagi
                 </Button>
               )}
             </div>
@@ -338,7 +442,6 @@ export default function UserOrderDetailPage() {
                 myItems.sort((a, b) => b._creationTime - a._creationTime).map((item) => {
                   const menuItem = menuItems?.find(m => m._id === item.menuId);
                   const itemTotal = menuItem ? menuItem.price * item.qty : 0;
-                  
                   return (
                     <div key={item._id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                       <div className="flex items-center space-x-3">
@@ -350,11 +453,7 @@ export default function UserOrderDetailPage() {
                           </p>
                           <p className="text-xs text-gray-400">
                             {new Date(item._creationTime).toLocaleString('id-ID', {
-                              year: 'numeric',
-                              month: '2-digit',
-                              day: '2-digit',
-                              hour: '2-digit',
-                              minute: '2-digit'
+                              year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
                             })}
                           </p>
                         </div>
@@ -564,55 +663,25 @@ export default function UserOrderDetailPage() {
                 </div>
               )}
             </div>
-            
-            {/* Payment Information */}
-            <div className="space-y-4 border-t pt-4">
-              <h3 className="font-medium text-gray-900">
-                Informasi Pembayaran {existingPayment && <span className="text-sm text-green-600">(Sudah diatur - Anda dapat memperbarui)</span>}
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Metode Pembayaran
-                  </label>
-                  <Select value={paymentMethod} onValueChange={(value: "cash" | "cardless" | "dana") => setPaymentMethod(value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Pilih metode pembayaran" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="cash">Tunai</SelectItem>
-                      <SelectItem value="cardless">Tanpa Kartu</SelectItem>
-                      <SelectItem value="dana">DANA</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Jumlah
-                  </label>
-                  <Input
-                    type="number"
-                    placeholder="Masukkan jumlah"
-                    min="0"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                  />
-                </div>
-              </div>
+            {/* Subtotal */}
+            <div className="flex items-center justify-between pt-4">
+              <span className="font-semibold">Subtotal</span>
+              <span className={`font-semibold ${(() => { const subtotal = selectedMenuItems.reduce((sum, sel) => { const m = menuItems?.find(mi => mi._id === sel.menuId); return sum + (m ? m.price * sel.qty : 0); }, 0); const effective = existingPayment?.amount ?? Number.POSITIVE_INFINITY; return subtotal > effective ? "text-red-600" : ""; })()}`}>
+                {formatCurrency(selectedMenuItems.reduce((sum, sel) => { const m = menuItems?.find(mi => mi._id === sel.menuId); return sum + (m ? m.price * sel.qty : 0); }, 0))}
+              </span>
             </div>
             
             <DialogFooter>
               <Button variant="outline" onClick={() => {
                 setIsAddItemOpen(false);
                 setSelectedMenuItems([]);
-                setAmount("");
-                setPaymentMethod("cash");
+                setErrors({});
               }}>
                 Batal
               </Button>
               <Button 
                 onClick={handleAddMoreItems}
-                disabled={selectedMenuItems.filter(item => item.qty > 0).length === 0 || (!existingPayment && parseFloat(amount) <= 0)}
+                disabled={selectedMenuItems.filter(item => item.qty > 0).length === 0 || (existingPayment ? (selectedMenuItems.reduce((sum, sel) => { const m = menuItems?.find(mi => mi._id === sel.menuId); return sum + (m ? m.price * sel.qty : 0); }, 0) > existingPayment.amount) : false)}
               >
                 Tambah Item ({selectedMenuItems.filter(item => item.qty > 0).length})
               </Button>
