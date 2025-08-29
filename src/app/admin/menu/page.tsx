@@ -47,7 +47,7 @@ export default function AdminMenuPage() {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <p className="text-red-500">Access denied. Admin only.</p>
+          <p className="text-red-500">Akses ditolak. Khusus admin.</p>
         </div>
       </Layout>
     );
@@ -61,12 +61,12 @@ export default function AdminMenuPage() {
         price: newMenuItem.price,
         currentUserId: user!._id,
       });
-      toast.success("Menu item added successfully!");
+      toast.success("Item menu berhasil ditambahkan!");
       setIsAddMenuOpen(false);
       setNewMenuItem({ name: "", price: 0 });
     } catch (error) {
       console.error("Failed to add menu item:", error);
-      toast.error("Failed to add menu item: " + (error as Error).message);
+      toast.error("Gagal menambah item menu: " + (error as Error).message);
     }
   };
 
@@ -79,24 +79,24 @@ export default function AdminMenuPage() {
           price: selectedMenuItem.price,
           currentUserId: user!._id,
         });
-        toast.success("Menu item updated successfully!");
+        toast.success("Item menu berhasil diperbarui!");
         setIsEditMenuOpen(false);
         setSelectedMenuItem(null);
       } catch (error) {
         console.error("Failed to update menu item:", error);
-        toast.error("Failed to update menu item: " + (error as Error).message);
+        toast.error("Gagal memperbarui item menu: " + (error as Error).message);
       }
     }
   };
 
   const handleDeleteMenuItem = async (menuId: string) => {
-    if (confirm("Are you sure you want to delete this menu item?")) {
+    if (confirm("Apakah Anda yakin ingin menghapus item menu ini?")) {
       try {
         await deleteMenuItem({ menuId: menuId as any, currentUserId: user!._id });
-        toast.success("Menu item deleted successfully!");
+        toast.success("Item menu berhasil dihapus!");
       } catch (error) {
         console.error("Failed to delete menu item:", error);
-        toast.error("Failed to delete menu item: " + (error as Error).message);
+        toast.error("Gagal menghapus item menu: " + (error as Error).message);
       }
     }
   };
@@ -105,8 +105,8 @@ export default function AdminMenuPage() {
     <Layout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Menu Management</h1>
-          <p className="mt-2 text-gray-600">Manage restaurant menu items</p>
+          <h1 className="text-3xl font-bold text-gray-900">Kelola Menu</h1>
+          <p className="mt-2 text-gray-600">Kelola item menu restoran</p>
         </div>
 
         {/* Menu Management */}
@@ -116,38 +116,38 @@ export default function AdminMenuPage() {
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <ShoppingBag className="h-5 w-5" />
-                  Menu Items
+                  Item Menu
                 </CardTitle>
-                <CardDescription>Add, edit, and manage menu items</CardDescription>
+                <CardDescription>Tambah, edit, dan kelola item menu</CardDescription>
               </div>
               <Dialog open={isAddMenuOpen} onOpenChange={setIsAddMenuOpen}>
                 <DialogTrigger asChild>
                   <Button>
                     <Plus className="h-4 w-4 mr-2" />
-                    Add Menu Item
+                    Tambah Item Menu
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Add Menu Item</DialogTitle>
-                    <DialogDescription>Create a new menu item</DialogDescription>
+                    <DialogTitle>Tambah Item Menu</DialogTitle>
+                    <DialogDescription>Buat item menu baru</DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4">
                     <Input
-                      placeholder="Item Name"
+                      placeholder="Nama Item"
                       value={newMenuItem.name}
                       onChange={(e) => setNewMenuItem({ ...newMenuItem, name: e.target.value })}
                     />
                     <Input
                       type="number"
-                      placeholder="Price"
+                      placeholder="Harga"
                       value={newMenuItem.price}
                       onChange={(e) => setNewMenuItem({ ...newMenuItem, price: parseFloat(e.target.value) || 0 })}
                     />
                   </div>
                   <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsAddMenuOpen(false)}>Cancel</Button>
-                    <Button onClick={handleAddMenuItem}>Add Menu Item</Button>
+                    <Button variant="outline" onClick={() => setIsAddMenuOpen(false)}>Batal</Button>
+                    <Button onClick={handleAddMenuItem}>Tambah Item Menu</Button>
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
@@ -184,7 +184,7 @@ export default function AdminMenuPage() {
               ))}
               {menuItems?.length === 0 && (
                 <div className="text-center py-8 text-gray-500">
-                  No menu items found. Add your first menu item!
+                  Tidak ada item menu ditemukan. Tambahkan item menu pertama Anda!
                 </div>
               )}
             </div>
@@ -195,27 +195,27 @@ export default function AdminMenuPage() {
         <Dialog open={isEditMenuOpen} onOpenChange={setIsEditMenuOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Edit Menu Item</DialogTitle>
-              <DialogDescription>Update menu item information</DialogDescription>
+              <DialogTitle>Edit Item Menu</DialogTitle>
+              <DialogDescription>Perbarui informasi item menu</DialogDescription>
             </DialogHeader>
             {selectedMenuItem && (
               <div className="space-y-4">
                 <Input
-                  placeholder="Item Name"
+                  placeholder="Nama Item"
                   value={selectedMenuItem.name}
                   onChange={(e) => setSelectedMenuItem({ ...selectedMenuItem, name: e.target.value })}
                 />
                 <Input
                   type="number"
-                  placeholder="Price"
+                  placeholder="Harga"
                   value={selectedMenuItem.price}
                   onChange={(e) => setSelectedMenuItem({ ...selectedMenuItem, price: parseFloat(e.target.value) || 0 })}
                 />
               </div>
             )}
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsEditMenuOpen(false)}>Cancel</Button>
-              <Button onClick={handleUpdateMenuItem}>Update Menu Item</Button>
+              <Button variant="outline" onClick={() => setIsEditMenuOpen(false)}>Batal</Button>
+              <Button onClick={handleUpdateMenuItem}>Perbarui Item Menu</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

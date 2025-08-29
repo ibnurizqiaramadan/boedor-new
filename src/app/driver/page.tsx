@@ -51,7 +51,7 @@ export default function DriverPage() {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <p className="text-red-500">Access denied. Driver only.</p>
+          <p className="text-red-500">Akses ditolak. Khusus pengemudi.</p>
         </div>
       </Layout>
     );
@@ -65,13 +65,13 @@ export default function DriverPage() {
           price: newMenuItem.price,
           currentUserId: user._id,
         });
-        toast.success("Menu item added successfully!");
+        toast.success("Item menu berhasil ditambahkan!");
         setIsAddMenuOpen(false);
         setNewMenuItem({ name: "", price: 0 });
       }
     } catch (error) {
       console.error("Failed to add menu item:", error);
-      toast.error("Failed to add menu item: " + (error as Error).message);
+      toast.error("Gagal menambah item menu: " + (error as Error).message);
     }
   };
 
@@ -84,28 +84,28 @@ export default function DriverPage() {
           price: selectedMenuItem.price,
           currentUserId: user._id,
         });
-        toast.success("Menu item updated successfully!");
+        toast.success("Item menu berhasil diperbarui!");
         setIsEditMenuOpen(false);
         setSelectedMenuItem(null);
       }
     } catch (error) {
       console.error("Failed to update menu item:", error);
-      toast.error("Failed to update menu item: " + (error as Error).message);
+      toast.error("Gagal memperbarui item menu: " + (error as Error).message);
     }
   };
 
   const handleDeleteMenuItem = async (menuId: string) => {
     try {
-      if (confirm("Are you sure you want to delete this menu item?")) {
+      if (confirm("Apakah Anda yakin ingin menghapus item menu ini?")) {
         await deleteMenuItem({ 
           menuId: menuId as any, 
           currentUserId: user._id 
         });
-        toast.success("Menu item deleted successfully!");
+        toast.success("Item menu berhasil dihapus!");
       }
     } catch (error) {
       console.error("Failed to delete menu item:", error);
-      toast.error("Failed to delete menu item: " + (error as Error).message);
+      toast.error("Gagal menghapus item menu: " + (error as Error).message);
     }
   };
 
@@ -142,15 +142,15 @@ export default function DriverPage() {
     <Layout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Driver Dashboard</h1>
-          <p className="mt-2 text-gray-600">Manage your orders and location</p>
+          <h1 className="text-3xl font-bold text-gray-900">Dasbor Pengemudi</h1>
+          <p className="mt-2 text-gray-600">Kelola pesanan dan lokasi Anda</p>
         </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">My Orders</CardTitle>
+              <CardTitle className="text-sm font-medium">Pesanan Saya</CardTitle>
               <Truck className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -160,7 +160,7 @@ export default function DriverPage() {
           
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pending Orders</CardTitle>
+              <CardTitle className="text-sm font-medium">Pesanan Tertunda</CardTitle>
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -172,7 +172,7 @@ export default function DriverPage() {
           
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Completed</CardTitle>
+              <CardTitle className="text-sm font-medium">Selesai</CardTitle>
               <CheckCircle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -188,20 +188,20 @@ export default function DriverPage() {
           <CardHeader>
             <div className="flex justify-between items-center">
               <div>
-                <CardTitle>Location Status</CardTitle>
-                <CardDescription>Update your current location for customers</CardDescription>
+                <CardTitle>Status Lokasi</CardTitle>
+                <CardDescription>Perbarui lokasi Anda saat ini untuk pelanggan</CardDescription>
               </div>
               <Dialog open={isUpdateLocationOpen} onOpenChange={setIsUpdateLocationOpen}>
                 <DialogTrigger asChild>
                   <Button>
                     <MapPin className="h-4 w-4 mr-2" />
-                    Update Location
+                    Perbarui Lokasi
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Update Location</DialogTitle>
-                    <DialogDescription>Update your current position</DialogDescription>
+                    <DialogTitle>Perbarui Lokasi</DialogTitle>
+                    <DialogDescription>Perbarui posisi Anda saat ini</DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4">
                     <Button onClick={() => {
@@ -214,26 +214,26 @@ export default function DriverPage() {
                         });
                       }
                     }}>
-                      Use Current Location
+                      Gunakan Lokasi Saat Ini
                     </Button>
                     <div className="grid grid-cols-2 gap-4">
                       <Input
                         type="number"
-                        placeholder="Latitude"
+                        placeholder="Lintang"
                         value={location.lat}
                         onChange={(e) => setLocation({ ...location, lat: parseFloat(e.target.value) })}
                       />
                       <Input
                         type="number"
-                        placeholder="Longitude"
+                        placeholder="Bujur"
                         value={location.lng}
                         onChange={(e) => setLocation({ ...location, lng: parseFloat(e.target.value) })}
                       />
                     </div>
                   </div>
                   <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsUpdateLocationOpen(false)}>Cancel</Button>
-                    <Button onClick={handleUpdateLocation}>Update Location</Button>
+                    <Button variant="outline" onClick={() => setIsUpdateLocationOpen(false)}>Batal</Button>
+                    <Button onClick={handleUpdateLocation}>Perbarui Lokasi</Button>
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
@@ -242,12 +242,12 @@ export default function DriverPage() {
           <CardContent>
             {myPosition ? (
               <p className="text-sm text-gray-600">
-                Current position: {myPosition.lat.toFixed(6)}, {myPosition.lng.toFixed(6)}
+                Posisi saat ini: {myPosition.lat.toFixed(6)}, {myPosition.lng.toFixed(6)}
                 <br />
-                Last updated: {new Date(myPosition.updatedAt).toLocaleString()}
+                Terakhir diperbarui: {new Date(myPosition.updatedAt).toLocaleString()}
               </p>
             ) : (
-              <p className="text-sm text-gray-500">No location data available</p>
+              <p className="text-sm text-gray-500">Tidak ada data lokasi tersedia</p>
             )}
           </CardContent>
         </Card>
@@ -255,8 +255,8 @@ export default function DriverPage() {
         {/* Order Management */}
         <Card>
           <CardHeader>
-            <CardTitle>My Orders</CardTitle>
-            <CardDescription>Manage your assigned delivery orders</CardDescription>
+            <CardTitle>Pesanan Saya</CardTitle>
+            <CardDescription>Kelola pesanan pengiriman yang ditugaskan kepada Anda</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -266,7 +266,7 @@ export default function DriverPage() {
                     <p className="font-medium">Order #{order._id.slice(-6)}</p>
                     <p className="text-sm text-gray-500 capitalize">Status: {order.status}</p>
                     <p className="text-sm text-gray-500">
-                      Created: {new Date(order.createdAt).toLocaleString()}
+                      Dibuat: {new Date(order.createdAt).toLocaleString()}
                     </p>
                   </div>
                   <div className="flex space-x-2">
@@ -275,7 +275,7 @@ export default function DriverPage() {
                         size="sm"
                         onClick={() => handleUpdateOrderStatus(order._id, "closed")}
                       >
-                        Start Delivery
+                        Mulai Pengiriman
                       </Button>
                     )}
                     {order.status === "closed" && (
@@ -283,14 +283,14 @@ export default function DriverPage() {
                         size="sm"
                         onClick={() => handleUpdateOrderStatus(order._id, "completed")}
                       >
-                        Mark Complete
+                        Tandai Selesai
                       </Button>
                     )}
                   </div>
                 </div>
               ))}
               {(!myOrders || myOrders.length === 0) && (
-                <p className="text-gray-500 text-center py-8">No orders assigned yet</p>
+                <p className="text-gray-500 text-center py-8">Belum ada pesanan yang ditugaskan</p>
               )}
             </div>
           </CardContent>
@@ -301,37 +301,37 @@ export default function DriverPage() {
           <CardHeader>
             <div className="flex justify-between items-center">
               <div>
-                <CardTitle>Menu Items</CardTitle>
-                <CardDescription>Add new menu items to the system</CardDescription>
+                <CardTitle>Item Menu</CardTitle>
+                <CardDescription>Tambahkan item menu baru ke sistem</CardDescription>
               </div>
               <Dialog open={isAddMenuOpen} onOpenChange={setIsAddMenuOpen}>
                 <DialogTrigger asChild>
                   <Button>
                     <Plus className="h-4 w-4 mr-2" />
-                    Add Menu Item
+                    Tambah Item Menu
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Add Menu Item</DialogTitle>
-                    <DialogDescription>Create a new menu item</DialogDescription>
+                    <DialogTitle>Tambah Item Menu</DialogTitle>
+                    <DialogDescription>Buat item menu baru</DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4">
                     <Input
-                      placeholder="Item name"
+                      placeholder="Nama item"
                       value={newMenuItem.name}
                       onChange={(e) => setNewMenuItem({ ...newMenuItem, name: e.target.value })}
                     />
                     <Input
                       type="number"
-                      placeholder="Price"
+                      placeholder="Harga"
                       value={newMenuItem.price}
                       onChange={(e) => setNewMenuItem({ ...newMenuItem, price: parseFloat(e.target.value) })}
                     />
                   </div>
                   <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsAddMenuOpen(false)}>Cancel</Button>
-                    <Button onClick={handleAddMenuItem}>Add Item</Button>
+                    <Button variant="outline" onClick={() => setIsAddMenuOpen(false)}>Batal</Button>
+                    <Button onClick={handleAddMenuItem}>Tambah Item</Button>
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
@@ -368,7 +368,7 @@ export default function DriverPage() {
               ))}
               {(!menuItems || menuItems.length === 0) && (
                 <p className="text-sm text-gray-500 text-center py-4">
-                  No menu items yet. Add your first item!
+                  Belum ada item menu. Tambahkan item pertama Anda!
                 </p>
               )}
             </div>
@@ -379,27 +379,27 @@ export default function DriverPage() {
         <Dialog open={isEditMenuOpen} onOpenChange={setIsEditMenuOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Edit Menu Item</DialogTitle>
-              <DialogDescription>Update menu item information</DialogDescription>
+              <DialogTitle>Edit Item Menu</DialogTitle>
+              <DialogDescription>Perbarui informasi item menu</DialogDescription>
             </DialogHeader>
             {selectedMenuItem && (
               <div className="space-y-4">
                 <Input
-                  placeholder="Item Name"
+                  placeholder="Nama Item"
                   value={selectedMenuItem.name}
                   onChange={(e) => setSelectedMenuItem({ ...selectedMenuItem, name: e.target.value })}
                 />
                 <Input
                   type="number"
-                  placeholder="Price"
+                  placeholder="Harga"
                   value={selectedMenuItem.price}
                   onChange={(e) => setSelectedMenuItem({ ...selectedMenuItem, price: parseFloat(e.target.value) || 0 })}
                 />
               </div>
             )}
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsEditMenuOpen(false)}>Cancel</Button>
-              <Button onClick={handleUpdateMenuItem}>Update Menu Item</Button>
+              <Button variant="outline" onClick={() => setIsEditMenuOpen(false)}>Batal</Button>
+              <Button onClick={handleUpdateMenuItem}>Perbarui Item Menu</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

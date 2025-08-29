@@ -14,7 +14,7 @@ export default function HomePage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">Loading...</div>
+        <div className="text-lg">Memuat...</div>
       </div>
     );
   }
@@ -30,8 +30,8 @@ export default function HomePage() {
               onClick={() => setShowRegister(!showRegister)}
             >
               {showRegister 
-                ? "Already have an account? Login" 
-                : "Don't have an account? Register"
+                ? "Sudah punya akun? Masuk" 
+                : "Belum punya akun? Daftar"
               }
             </Button>
           </div>
@@ -45,10 +45,10 @@ export default function HomePage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">
-            Welcome to Boedor, {user.username}!
+            Selamat datang di Boedor, {user.username}!
           </h1>
           <p className="mt-2 text-gray-600">
-            You are logged in as a <span className="font-medium capitalize">{user.role}</span>
+            Anda masuk sebagai <span className="font-medium capitalize">{user.role}</span>
           </p>
         </div>
 
@@ -56,16 +56,16 @@ export default function HomePage() {
           {user.role === "admin" && (
             <>
               <div className="bg-white p-6 rounded-lg shadow">
-                <h3 className="text-lg font-medium text-gray-900">Manage Users</h3>
-                <p className="mt-2 text-gray-600">View and manage all users in the system</p>
+                <h3 className="text-lg font-medium text-gray-900">Kelola Pengguna</h3>
+                <p className="mt-2 text-gray-600">Lihat dan kelola semua pengguna dalam sistem</p>
               </div>
               <div className="bg-white p-6 rounded-lg shadow">
-                <h3 className="text-lg font-medium text-gray-900">Menu Management</h3>
-                <p className="mt-2 text-gray-600">Manage menu items and pricing</p>
+                <h3 className="text-lg font-medium text-gray-900">Kelola Menu</h3>
+                <p className="mt-2 text-gray-600">Kelola item menu dan harga</p>
               </div>
               <div className="bg-white p-6 rounded-lg shadow">
-                <h3 className="text-lg font-medium text-gray-900">Order Management</h3>
-                <p className="mt-2 text-gray-600">View and manage all orders</p>
+                <h3 className="text-lg font-medium text-gray-900">Kelola Pesanan</h3>
+                <p className="mt-2 text-gray-600">Lihat dan kelola semua pesanan</p>
               </div>
             </>
           )}
@@ -73,16 +73,16 @@ export default function HomePage() {
           {user.role === "driver" && (
             <>
               <div className="bg-white p-6 rounded-lg shadow">
-                <h3 className="text-lg font-medium text-gray-900">Menu Items</h3>
-                <p className="mt-2 text-gray-600">View and add menu items</p>
+                <h3 className="text-lg font-medium text-gray-900">Item Menu</h3>
+                <p className="mt-2 text-gray-600">Lihat dan tambah item menu</p>
               </div>
               <div className="bg-white p-6 rounded-lg shadow">
-                <h3 className="text-lg font-medium text-gray-900">My Orders</h3>
-                <p className="mt-2 text-gray-600">Manage your delivery orders</p>
+                <h3 className="text-lg font-medium text-gray-900">Pesanan Saya</h3>
+                <p className="mt-2 text-gray-600">Kelola pesanan pengiriman Anda</p>
               </div>
               <div className="bg-white p-6 rounded-lg shadow">
-                <h3 className="text-lg font-medium text-gray-900">Location Updates</h3>
-                <p className="mt-2 text-gray-600">Update your current position</p>
+                <h3 className="text-lg font-medium text-gray-900">Update Lokasi</h3>
+                <p className="mt-2 text-gray-600">Perbarui posisi Anda saat ini</p>
               </div>
             </>
           )}
@@ -90,12 +90,12 @@ export default function HomePage() {
           {user.role === "user" && (
             <>
               <div className="bg-white p-6 rounded-lg shadow">
-                <h3 className="text-lg font-medium text-gray-900">Browse Orders</h3>
-                <p className="mt-2 text-gray-600">View available orders to join</p>
+                <h3 className="text-lg font-medium text-gray-900">Jelajahi Pesanan</h3>
+                <p className="mt-2 text-gray-600">Lihat pesanan yang tersedia untuk bergabung</p>
               </div>
               <div className="bg-white p-6 rounded-lg shadow">
-                <h3 className="text-lg font-medium text-gray-900">Add Menu Item</h3>
-                <p className="mt-2 text-gray-600">Suggest new menu items</p>
+                <h3 className="text-lg font-medium text-gray-900">Tambah Item Menu</h3>
+                <p className="mt-2 text-gray-600">Usulkan item menu baru</p>
               </div>
             </>
           )}

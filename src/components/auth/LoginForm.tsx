@@ -30,14 +30,14 @@ export function LoginForm() {
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle>Login to Boedor</CardTitle>
-        <CardDescription>Enter your credentials to access the app</CardDescription>
+        <CardTitle>Masuk ke Boedor</CardTitle>
+        <CardDescription>Masukkan kredensial Anda untuk mengakses aplikasi</CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <label htmlFor="username" className="text-sm font-medium">
-              Username
+              Nama Pengguna
             </label>
             <Input
               id="username"
@@ -49,7 +49,7 @@ export function LoginForm() {
           </div>
           <div className="space-y-2">
             <label htmlFor="password" className="text-sm font-medium">
-              Password
+              Kata Sandi
             </label>
             <Input
               id="password"
@@ -65,7 +65,7 @@ export function LoginForm() {
         </CardContent>
         <CardFooter>
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Logging in..." : "Login"}
+            {isLoading ? "Sedang masuk..." : "Masuk"}
           </Button>
         </CardFooter>
       </form>

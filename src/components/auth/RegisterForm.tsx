@@ -31,14 +31,14 @@ export function RegisterForm() {
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle>Register for Boedor</CardTitle>
-        <CardDescription>Create a new account to get started</CardDescription>
+        <CardTitle>Daftar ke Boedor</CardTitle>
+        <CardDescription>Buat akun baru untuk memulai</CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <label htmlFor="username" className="text-sm font-medium">
-              Username
+              Nama Pengguna
             </label>
             <Input
               id="username"
@@ -50,7 +50,7 @@ export function RegisterForm() {
           </div>
           <div className="space-y-2">
             <label htmlFor="password" className="text-sm font-medium">
-              Password
+              Kata Sandi
             </label>
             <Input
               id="password"
@@ -62,7 +62,7 @@ export function RegisterForm() {
           </div>
           <div className="space-y-2">
             <label htmlFor="role" className="text-sm font-medium">
-              Role
+              Peran
             </label>
             <select
               id="role"
@@ -70,8 +70,8 @@ export function RegisterForm() {
               onChange={(e) => setRole(e.target.value as "driver" | "user")}
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
-              <option value="user">User</option>
-              <option value="driver">Driver</option>
+              <option value="user">Pengguna</option>
+              <option value="driver">Pengemudi</option>
             </select>
           </div>
           {error && (
@@ -80,7 +80,7 @@ export function RegisterForm() {
         </CardContent>
         <CardFooter>
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Registering..." : "Register"}
+            {isLoading ? "Sedang mendaftar..." : "Daftar"}
           </Button>
         </CardFooter>
       </form>

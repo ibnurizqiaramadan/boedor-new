@@ -43,7 +43,7 @@ export default function UserOrderDetailPage() {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <p className="text-red-500">Access denied. User only.</p>
+          <p className="text-red-500">Akses ditolak. Khusus pengguna.</p>
         </div>
       </Layout>
     );
@@ -100,7 +100,7 @@ export default function UserOrderDetailPage() {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <p className="text-gray-500">Loading order details...</p>
+          <p className="text-gray-500">Memuat detail pesanan...</p>
         </div>
       </Layout>
     );
@@ -183,28 +183,28 @@ export default function UserOrderDetailPage() {
           qty: selectedOrderItem.qty,
           currentUserId: user._id,
         });
-        toast.success("Order item updated successfully!");
+        toast.success("Item pesanan berhasil diperbarui!");
         setIsEditItemOpen(false);
         setSelectedOrderItem(null);
       }
     } catch (error) {
       console.error("Failed to update order item:", error);
-      toast.error("Failed to update order item: " + (error as Error).message);
+      toast.error("Gagal memperbarui item pesanan: " + (error as Error).message);
     }
   };
 
   const handleRemoveOrderItem = async (orderItemId: string) => {
     try {
-      if (confirm("Are you sure you want to remove this item from the order?")) {
+      if (confirm("Apakah Anda yakin ingin menghapus item ini dari pesanan?")) {
         await removeOrderItem({
           orderItemId: orderItemId as Id<"boedor_order_items">,
           currentUserId: user._id,
         });
-        toast.success("Order item removed successfully!");
+        toast.success("Item pesanan berhasil dihapus!");
       }
     } catch (error) {
       console.error("Failed to remove order item:", error);
-      toast.error("Failed to remove order item: " + (error as Error).message);
+      toast.error("Gagal menghapus item pesanan: " + (error as Error).message);
     }
   };
 
@@ -233,7 +233,7 @@ export default function UserOrderDetailPage() {
           });
         }
 
-        toast.success("Items added to order successfully!");
+        toast.success("Item berhasil ditambahkan ke pesanan!");
         setIsAddItemOpen(false);
         setSelectedMenuItems([]);
         setAmount("");
@@ -241,7 +241,7 @@ export default function UserOrderDetailPage() {
       }
     } catch (error) {
       console.error("Failed to add items:", error);
-      toast.error("Failed to add items: " + (error as Error).message);
+      toast.error("Gagal menambah item: " + (error as Error).message);
     }
   };
 
@@ -276,8 +276,8 @@ export default function UserOrderDetailPage() {
             Back
           </Button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Order Details</h1>
-            <p className="mt-2 text-gray-600">Order #{orderId.slice(-8)}</p>
+            <h1 className="text-3xl font-bold text-gray-900">Detail Pesanan</h1>
+            <p className="mt-2 text-gray-600">Pesanan #{orderId.slice(-8)}</p>
           </div>
         </div>
 
@@ -291,7 +291,7 @@ export default function UserOrderDetailPage() {
                   <span>Order #{orderId.slice(-8)}</span>
                 </CardTitle>
                 <CardDescription>
-                  Created: {new Date(order.createdAt).toLocaleString()}
+                  Dibuat: {new Date(order.createdAt).toLocaleString()}
                 </CardDescription>
               </div>
               <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
@@ -302,20 +302,20 @@ export default function UserOrderDetailPage() {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
-                <p className="text-sm font-medium text-gray-500">Total Participants</p>
+                <p className="text-sm font-medium text-gray-500">Total Peserta</p>
                 <p className="text-2xl font-bold">{participants?.length || 0}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-500">My Items</p>
+                <p className="text-sm font-medium text-gray-500">Item Saya</p>
                 <p className="text-2xl font-bold">{myItems.length}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-500">My Total</p>
+                <p className="text-sm font-medium text-gray-500">Total Saya</p>
                 <p className="text-2xl font-bold">{formatCurrency(getMyTotal())}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500">
-                  {existingPayment ? "My Change" : "Payment Status"}
+                  {existingPayment ? "Kembalian Saya" : "Status Pembayaran"}
                 </p>
                 {existingPayment ? (
                   <div>
@@ -323,11 +323,11 @@ export default function UserOrderDetailPage() {
                       {formatCurrency(getMyChange())}
                     </p>
                     <p className="text-xs text-gray-500">
-                      Paid: {formatCurrency(existingPayment.amount)}
+                      Dibayar: {formatCurrency(existingPayment.amount)}
                     </p>
                   </div>
                 ) : (
-                  <p className="text-2xl font-bold text-red-600">Not Paid</p>
+                  <p className="text-2xl font-bold text-red-600">Belum Dibayar</p>
                 )}
               </div>
             </div>
@@ -339,9 +339,9 @@ export default function UserOrderDetailPage() {
           <CardHeader>
             <div className="flex justify-between items-start">
               <div>
-                <CardTitle>My Order Items</CardTitle>
+                <CardTitle>Item Pesanan Saya</CardTitle>
                 <CardDescription>
-                  Items you've added to this order {order.status === "open" ? "(editable)" : "(read-only)"}
+                  Item yang telah Anda tambahkan ke pesanan ini {order.status === "open" ? "(dapat diedit)" : "(hanya baca)"}
                 </CardDescription>
               </div>
               {order.status === "open" && (
@@ -350,7 +350,7 @@ export default function UserOrderDetailPage() {
                   className="flex items-center space-x-2"
                 >
                   <Plus className="h-4 w-4" />
-                  <span>Add More Items</span>
+                  <span>Tambah Item Lagi</span>
                 </Button>
               )}
             </div>
@@ -367,9 +367,9 @@ export default function UserOrderDetailPage() {
                       <div className="flex items-center space-x-3">
                         <ShoppingCart className="h-4 w-4 text-gray-400" />
                         <div>
-                          <p className="font-medium">{menuItem?.name || 'Unknown Item'}</p>
+                          <p className="font-medium">{menuItem?.name || 'Item Tidak Dikenal'}</p>
                           <p className="text-sm text-gray-500">
-                            Qty: {item.qty} × {formatCurrency(menuItem?.price || 0)}
+                            Jumlah: {item.qty} × {formatCurrency(menuItem?.price || 0)}
                           </p>
                         </div>
                       </div>
@@ -403,7 +403,7 @@ export default function UserOrderDetailPage() {
               ) : (
                 <div className="text-center py-8">
                   <ShoppingCart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500">You haven't added any items to this order yet.</p>
+                  <p className="text-gray-500">Anda belum menambahkan item apapun ke pesanan ini.</p>
                 </div>
               )}
             </div>
@@ -412,7 +412,7 @@ export default function UserOrderDetailPage() {
 
         {/* All Participants and Their Orders */}
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold text-gray-900">All Participants & Items</h2>
+          <h2 className="text-xl font-semibold text-gray-900">Semua Peserta & Item</h2>
           
           {participants && participants.length > 0 ? (
             participants.map((participant) => {
@@ -432,7 +432,7 @@ export default function UserOrderDetailPage() {
                             {participant._id === user._id && " (You)"}
                           </CardTitle>
                           <CardDescription>
-                            {userItems.length} item(s) • Total: {formatCurrency(userTotal)}
+                            {userItems.length} item • Total: {formatCurrency(userTotal)}
                           </CardDescription>
                         </div>
                       </div>
@@ -450,9 +450,9 @@ export default function UserOrderDetailPage() {
                             <div className="flex items-center space-x-3">
                               <ShoppingCart className="h-4 w-4 text-gray-400" />
                               <div>
-                                <p className="font-medium">{menuItem?.name || 'Unknown Item'}</p>
+                                <p className="font-medium">{menuItem?.name || 'Item Tidak Dikenal'}</p>
                                 <p className="text-sm text-gray-500">
-                                  Qty: {item.qty} × {formatCurrency(menuItem?.price || 0)}
+                                  Jumlah: {item.qty} × {formatCurrency(menuItem?.price || 0)}
                                 </p>
                               </div>
                             </div>
@@ -471,7 +471,7 @@ export default function UserOrderDetailPage() {
             <Card>
               <CardContent className="text-center py-8">
                 <User className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500">No participants have joined this order yet.</p>
+                <p className="text-gray-500">Belum ada peserta yang bergabung dengan pesanan ini.</p>
               </CardContent>
             </Card>
           )}
@@ -481,20 +481,20 @@ export default function UserOrderDetailPage() {
         {orderItems && orderItems.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle>Order Summary</CardTitle>
+              <CardTitle>Ringkasan Pesanan</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span>Total Items:</span>
+                  <span>Total Item:</span>
                   <span>{orderItems.length}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Total Participants:</span>
+                  <span>Total Peserta:</span>
                   <span>{participants?.length || 0}</span>
                 </div>
                 <div className="border-t pt-2 flex justify-between font-semibold">
-                  <span>Total Order Value:</span>
+                  <span>Total Nilai Pesanan:</span>
                   <span>{formatCurrency(getTotalOrderValue())}</span>
                 </div>
               </div>
@@ -506,8 +506,8 @@ export default function UserOrderDetailPage() {
         <Dialog open={isEditItemOpen} onOpenChange={setIsEditItemOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Edit Order Item</DialogTitle>
-              <DialogDescription>Update the quantity for this item</DialogDescription>
+              <DialogTitle>Edit Item Pesanan</DialogTitle>
+              <DialogDescription>Perbarui jumlah untuk item ini</DialogDescription>
             </DialogHeader>
             {selectedOrderItem && (
               <div className="space-y-4">
@@ -521,7 +521,7 @@ export default function UserOrderDetailPage() {
                 </div>
                 <Input
                   type="number"
-                  placeholder="Quantity"
+                  placeholder="Jumlah"
                   min="1"
                   value={selectedOrderItem.qty}
                   onChange={(e) => setSelectedOrderItem({ 
@@ -532,8 +532,8 @@ export default function UserOrderDetailPage() {
               </div>
             )}
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsEditItemOpen(false)}>Cancel</Button>
-              <Button onClick={handleUpdateOrderItem}>Update Item</Button>
+              <Button variant="outline" onClick={() => setIsEditItemOpen(false)}>Batal</Button>
+              <Button onClick={handleUpdateOrderItem}>Perbarui Item</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -542,8 +542,8 @@ export default function UserOrderDetailPage() {
         <Dialog open={isAddItemOpen} onOpenChange={setIsAddItemOpen}>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Add More Items to Order</DialogTitle>
-              <DialogDescription>Select menu items and quantities to add to this order</DialogDescription>
+              <DialogTitle>Tambah Item Lagi ke Pesanan</DialogTitle>
+              <DialogDescription>Pilih item menu dan jumlah untuk ditambahkan ke pesanan ini</DialogDescription>
             </DialogHeader>
             <div className="space-y-4 max-h-96 overflow-y-auto">
               {menuItems?.map((item) => (
@@ -574,7 +574,7 @@ export default function UserOrderDetailPage() {
               {(!menuItems || menuItems.length === 0) && (
                 <div className="text-center py-8">
                   <ShoppingCart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500">No menu items available.</p>
+                  <p className="text-gray-500">Tidak ada item menu tersedia.</p>
                 </div>
               )}
             </div>
@@ -582,31 +582,31 @@ export default function UserOrderDetailPage() {
             {/* Payment Information */}
             <div className="space-y-4 border-t pt-4">
               <h3 className="font-medium text-gray-900">
-                Payment Information {existingPayment && <span className="text-sm text-green-600">(Already set - you can update)</span>}
+                Informasi Pembayaran {existingPayment && <span className="text-sm text-green-600">(Sudah diatur - Anda dapat memperbarui)</span>}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Payment Method
+                    Metode Pembayaran
                   </label>
                   <Select value={paymentMethod} onValueChange={(value: "cash" | "cardless" | "dana") => setPaymentMethod(value)}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select payment method" />
+                      <SelectValue placeholder="Pilih metode pembayaran" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="cash">Cash</SelectItem>
-                      <SelectItem value="cardless">Cardless</SelectItem>
+                      <SelectItem value="cash">Tunai</SelectItem>
+                      <SelectItem value="cardless">Tanpa Kartu</SelectItem>
                       <SelectItem value="dana">DANA</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Amount
+                    Jumlah
                   </label>
                   <Input
                     type="number"
-                    placeholder="Enter amount"
+                    placeholder="Masukkan jumlah"
                     min="0"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
@@ -622,13 +622,13 @@ export default function UserOrderDetailPage() {
                 setAmount("");
                 setPaymentMethod("cash");
               }}>
-                Cancel
+                Batal
               </Button>
               <Button 
                 onClick={handleAddMoreItems}
                 disabled={selectedMenuItems.filter(item => item.qty > 0).length === 0 || (!existingPayment && parseFloat(amount) <= 0)}
               >
-                Add Items ({selectedMenuItems.filter(item => item.qty > 0).length})
+                Tambah Item ({selectedMenuItems.filter(item => item.qty > 0).length})
               </Button>
             </DialogFooter>
           </DialogContent>

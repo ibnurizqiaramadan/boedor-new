@@ -20,23 +20,23 @@ import {
 
 const navigationItems = {
   super_admin: [
-    { name: "Dashboard", href: "/admin", icon: Users },
+    { name: "Dasbor", href: "/admin", icon: Users },
     { name: "Menu", href: "/admin/menu", icon: Settings },
-    { name: "Orders", href: "/admin/orders", icon: ShoppingBag },
+    { name: "Pesanan", href: "/admin/orders", icon: ShoppingBag },
   ],
   admin: [
-    { name: "Dashboard", href: "/admin", icon: Users },
+    { name: "Dasbor", href: "/admin", icon: Users },
     { name: "Menu", href: "/admin/menu", icon: Settings },
-    { name: "Orders", href: "/admin/orders", icon: ShoppingBag },
+    { name: "Pesanan", href: "/admin/orders", icon: ShoppingBag },
   ],
   driver: [
-    { name: "Dashboard", href: "/driver", icon: Menu },
-    { name: "Orders", href: "/driver/orders", icon: ShoppingCart },
-    { name: "My Position", href: "/position", icon: MapPin },
+    { name: "Dasbor", href: "/driver", icon: Menu },
+    { name: "Pesanan", href: "/driver/orders", icon: ShoppingCart },
+    { name: "Posisi Saya", href: "/position", icon: MapPin },
   ],
   user: [
-    { name: "Dashboard", href: "/user", icon: ShoppingCart },
-    { name: "Orders", href: "/orders", icon: Plus },
+    { name: "Dasbor", href: "/user", icon: ShoppingCart },
+    { name: "Pesanan", href: "/orders", icon: Plus },
   ],
 };
 
@@ -86,9 +86,9 @@ export function Sidebar() {
           
           <div className="flex-shrink-0 px-2 pb-4">
             <div className="px-2 py-2 text-sm text-gray-500">
-              Logged in as: <span className="font-medium">{user.username}</span>
+              Masuk sebagai: <span className="font-medium">{user.username}</span>
               <br />
-              Role: <span className="font-medium capitalize">{user.role}</span>
+              Peran: <span className="font-medium capitalize">{user.role}</span>
             </div>
             <Button
               variant="ghost"
@@ -96,7 +96,7 @@ export function Sidebar() {
               className="w-full justify-start text-gray-600 hover:text-gray-900"
             >
               <LogOut className="mr-3 h-5 w-5" />
-              Logout
+              Keluar
             </Button>
           </div>
         </div>

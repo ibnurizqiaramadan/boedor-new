@@ -47,14 +47,14 @@ export default function AdminPage() {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <p className="text-red-500">Access denied. Admin only.</p>
+          <p className="text-red-500">Akses ditolak. Khusus admin.</p>
         </div>
       </Layout>
     );
   }
 
   const handleDeleteUser = async (userId: string) => {
-    if (confirm("Are you sure you want to delete this user?")) {
+    if (confirm("Apakah Anda yakin ingin menghapus pengguna ini?")) {
       await deleteUser({ userId: userId as any, currentUserId: user!._id });
     }
   };
@@ -77,15 +77,15 @@ export default function AdminPage() {
     <Layout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-          <p className="mt-2 text-gray-600">Manage users, orders, and system overview</p>
+          <h1 className="text-3xl font-bold text-gray-900">Dasbor Admin</h1>
+          <p className="mt-2 text-gray-600">Kelola pengguna, pesanan, dan gambaran sistem</p>
         </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+              <CardTitle className="text-sm font-medium">Total Pengguna</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -95,7 +95,7 @@ export default function AdminPage() {
           
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Menu Items</CardTitle>
+              <CardTitle className="text-sm font-medium">Item Menu</CardTitle>
               <ShoppingBag className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -105,7 +105,7 @@ export default function AdminPage() {
           
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
+              <CardTitle className="text-sm font-medium">Total Pesanan</CardTitle>
               <MapPin className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -119,30 +119,30 @@ export default function AdminPage() {
           <CardHeader>
             <div className="flex justify-between items-center">
               <div>
-                <CardTitle>User Management</CardTitle>
-                <CardDescription>Manage all users in the system</CardDescription>
+                <CardTitle>Kelola Pengguna</CardTitle>
+                <CardDescription>Kelola semua pengguna dalam sistem</CardDescription>
               </div>
               <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
                 <DialogTrigger asChild>
                   <Button>
                     <Plus className="h-4 w-4 mr-2" />
-                    Add User
+                    Tambah Pengguna
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Add New User</DialogTitle>
-                    <DialogDescription>Create a new user account</DialogDescription>
+                    <DialogTitle>Tambah Pengguna Baru</DialogTitle>
+                    <DialogDescription>Buat akun pengguna baru</DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4">
                     <Input
-                      placeholder="Username"
+                      placeholder="Nama Pengguna"
                       value={newUser.username}
                       onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
                     />
                     <Input
                       type="password"
-                      placeholder="Password"
+                      placeholder="Kata Sandi"
                       value={newUser.password}
                       onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
                     />
@@ -151,13 +151,13 @@ export default function AdminPage() {
                       value={newUser.role}
                       onChange={(e) => setNewUser({ ...newUser, role: e.target.value as "super_admin" | "admin" | "driver" | "user" })}
                     >
-                      <option value="user">User</option>
-                      <option value="driver">Driver</option>
+                      <option value="user">Pengguna</option>
+                      <option value="driver">Pengemudi</option>
                       <option value="admin">Admin</option>
                     </select>
                   </div>
                   <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsAddUserOpen(false)}>Cancel</Button>
+                    <Button variant="outline" onClick={() => setIsAddUserOpen(false)}>Batal</Button>
                     <Button onClick={async () => {
                       try {
                         await registerUser({
@@ -165,14 +165,14 @@ export default function AdminPage() {
                           password: newUser.password,
                           role: newUser.role,
                         });
-                        toast.success("User added successfully!");
+                        toast.success("Pengguna berhasil ditambahkan!");
                         setIsAddUserOpen(false);
                         setNewUser({ username: "", password: "", role: "user" });
                       } catch (error) {
                         console.error("Failed to add user:", error);
-                        toast.error("Failed to add user: " + (error as Error).message);
+                        toast.error("Gagal menambah pengguna: " + (error as Error).message);
                       }
-                    }}>Add User</Button>
+                    }}>Tambah Pengguna</Button>
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
@@ -191,13 +191,13 @@ export default function AdminPage() {
                       variant="destructive"
                       size="sm"
                       onClick={async () => {
-                        if (confirm("Are you sure you want to delete this user?")) {
+                        if (confirm("Apakah Anda yakin ingin menghapus pengguna ini?")) {
                           try {
                             await deleteUser({ userId: user._id, currentUserId: user._id });
-                            toast.success("User deleted successfully!");
+                            toast.success("Pengguna berhasil dihapus!");
                           } catch (error) {
                             console.error("Failed to delete user:", error);
-                            toast.error("Failed to delete user: " + (error as Error).message);
+                            toast.error("Gagal menghapus pengguna: " + (error as Error).message);
                           }
                         }
                       }}
@@ -216,13 +216,13 @@ export default function AdminPage() {
         <Dialog open={isEditUserOpen} onOpenChange={setIsEditUserOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Edit User</DialogTitle>
-              <DialogDescription>Update user information</DialogDescription>
+              <DialogTitle>Edit Pengguna</DialogTitle>
+              <DialogDescription>Perbarui informasi pengguna</DialogDescription>
             </DialogHeader>
             {selectedUser && (
               <div className="space-y-4">
                 <Input
-                  placeholder="Username"
+                  placeholder="Nama Pengguna"
                   value={selectedUser.username}
                   onChange={(e) => setSelectedUser({ ...selectedUser, username: e.target.value })}
                 />
@@ -231,15 +231,15 @@ export default function AdminPage() {
                   value={selectedUser.role}
                   onChange={(e) => setSelectedUser({ ...selectedUser, role: e.target.value })}
                 >
-                  <option value="user">User</option>
-                  <option value="driver">Driver</option>
+                  <option value="user">Pengguna</option>
+                  <option value="driver">Pengemudi</option>
                   <option value="admin">Admin</option>
                 </select>
               </div>
             )}
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsEditUserOpen(false)}>Cancel</Button>
-              <Button onClick={handleUpdateUser}>Update User</Button>
+              <Button variant="outline" onClick={() => setIsEditUserOpen(false)}>Batal</Button>
+              <Button onClick={handleUpdateUser}>Perbarui Pengguna</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

@@ -116,14 +116,14 @@ export default function UserPage() {
           });
         }
 
-        toast.success("Successfully joined order!");
+        toast.success("Berhasil bergabung dengan pesanan!");
         setIsJoinOrderOpen(false);
         setSelectedOrder(null);
         setSelectedMenuItems([]);
         setAmount("");
         setPaymentMethod("cash");
       } catch (error) {
-        toast.error("Failed to join order");
+        toast.error("Gagal bergabung dengan pesanan");
       }
     }
   };
@@ -149,15 +149,15 @@ export default function UserPage() {
     <Layout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">User Dashboard</h1>
-          <p className="mt-2 text-gray-600">Browse orders and suggest menu items</p>
+          <h1 className="text-3xl font-bold text-gray-900">Dasbor Pengguna</h1>
+          <p className="mt-2 text-gray-600">Jelajahi pesanan dan usulkan item menu</p>
         </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Available Orders</CardTitle>
+              <CardTitle className="text-sm font-medium">Pesanan Tersedia</CardTitle>
               <ShoppingCart className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -169,7 +169,7 @@ export default function UserPage() {
           
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">My Orders</CardTitle>
+              <CardTitle className="text-sm font-medium">Pesanan Saya</CardTitle>
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -179,7 +179,7 @@ export default function UserPage() {
           
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Menu Items</CardTitle>
+              <CardTitle className="text-sm font-medium">Item Menu</CardTitle>
               <CheckCircle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -191,8 +191,8 @@ export default function UserPage() {
         {/* Available Orders */}
         <Card>
           <CardHeader>
-            <CardTitle>Available Orders</CardTitle>
-            <CardDescription>Join existing orders from drivers</CardDescription>
+            <CardTitle>Pesanan Tersedia</CardTitle>
+            <CardDescription>Bergabung dengan pesanan yang ada dari pengemudi</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -202,7 +202,7 @@ export default function UserPage() {
                     <p className="font-medium">Order #{order._id.slice(-6)}</p>
                     <p className="text-sm text-gray-500 capitalize">Status: {order.status}</p>
                     <p className="text-sm text-gray-500">
-                      Created: {new Date(order.createdAt).toLocaleString()}
+                      Dibuat: {new Date(order.createdAt).toLocaleString()}
                     </p>
                   </div>
                   <Button
@@ -213,12 +213,12 @@ export default function UserPage() {
                       setIsJoinOrderOpen(true);
                     }}
                   >
-                    Join Order
+                    Gabung Pesanan
                   </Button>
                 </div>
               ))}
               {(!availableOrders || availableOrders.filter(order => order.status === "open").length === 0) && (
-                <p className="text-gray-500 text-center py-8">No available orders at the moment</p>
+                <p className="text-gray-500 text-center py-8">Tidak ada pesanan tersedia saat ini</p>
               )}
             </div>
           </CardContent>
@@ -227,8 +227,8 @@ export default function UserPage() {
         {/* My Order Items */}
         <Card>
           <CardHeader>
-            <CardTitle>My Order Items</CardTitle>
-            <CardDescription>Items you've added to orders - click to view details</CardDescription>
+            <CardTitle>Item Pesanan Saya</CardTitle>
+            <CardDescription>Item yang telah Anda tambahkan ke pesanan - klik untuk melihat detail</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -240,15 +240,15 @@ export default function UserPage() {
                 >
                   <div>
                     <p className="font-medium">Order #{item.orderId.slice(-6)}</p>
-                    <p className="text-sm text-gray-500">Quantity: {item.qty}</p>
+                    <p className="text-sm text-gray-500">Jumlah: {item.qty}</p>
                   </div>
                   <Button variant="outline" size="sm">
-                    View Details
+                    Lihat Detail
                   </Button>
                 </div>
               ))}
               {(!myOrderItems || myOrderItems.length === 0) && (
-                <p className="text-gray-500 text-center py-8">You haven't joined any orders yet</p>
+                <p className="text-gray-500 text-center py-8">Anda belum bergabung dengan pesanan apapun</p>
               )}
             </div>
           </CardContent>
@@ -259,37 +259,37 @@ export default function UserPage() {
           <CardHeader>
             <div className="flex justify-between items-center">
               <div>
-                <CardTitle>Menu Items</CardTitle>
-                <CardDescription>Suggest new menu items</CardDescription>
+                <CardTitle>Item Menu</CardTitle>
+                <CardDescription>Usulkan item menu baru</CardDescription>
               </div>
               <Dialog open={isAddMenuOpen} onOpenChange={setIsAddMenuOpen}>
                 <DialogTrigger asChild>
                   <Button>
                     <Plus className="h-4 w-4 mr-2" />
-                    Suggest Item
+                    Usulkan Item
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Suggest Menu Item</DialogTitle>
-                    <DialogDescription>Suggest a new menu item</DialogDescription>
+                    <DialogTitle>Usulkan Item Menu</DialogTitle>
+                    <DialogDescription>Usulkan item menu baru</DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4">
                     <Input
-                      placeholder="Item name"
+                      placeholder="Nama item"
                       value={newMenuItem.name}
                       onChange={(e) => setNewMenuItem({ ...newMenuItem, name: e.target.value })}
                     />
                     <Input
                       type="number"
-                      placeholder="Suggested price"
+                      placeholder="Harga yang disarankan"
                       value={newMenuItem.price}
                       onChange={(e) => setNewMenuItem({ ...newMenuItem, price: parseFloat(e.target.value) })}
                     />
                   </div>
                   <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsAddMenuOpen(false)}>Cancel</Button>
-                    <Button onClick={handleAddMenuItem}>Suggest Item</Button>
+                    <Button variant="outline" onClick={() => setIsAddMenuOpen(false)}>Batal</Button>
+                    <Button onClick={handleAddMenuItem}>Usulkan Item</Button>
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
@@ -311,8 +311,8 @@ export default function UserPage() {
         <Dialog open={isJoinOrderOpen} onOpenChange={setIsJoinOrderOpen}>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Join Order #{selectedOrder?._id.slice(-6)}</DialogTitle>
-              <DialogDescription>Select menu items and quantities</DialogDescription>
+              <DialogTitle>Gabung Pesanan #{selectedOrder?._id.slice(-6)}</DialogTitle>
+              <DialogDescription>Pilih item menu dan jumlahnya</DialogDescription>
             </DialogHeader>
             <div className="space-y-4 max-h-96 overflow-y-auto">
               {menuItems?.map((item) => (
@@ -345,31 +345,31 @@ export default function UserPage() {
             {/* Payment Information */}
             <div className="space-y-4 border-t pt-4">
               <h3 className="font-medium text-gray-900">
-                Payment Information {existingPayment && <span className="text-sm text-green-600">(Already set - you can update)</span>}
+                Informasi Pembayaran {existingPayment && <span className="text-sm text-green-600">(Sudah diatur - Anda dapat memperbarui)</span>}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Payment Method
+                    Metode Pembayaran
                   </label>
                   <Select value={paymentMethod} onValueChange={(value: "cash" | "cardless" | "dana") => setPaymentMethod(value)}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select payment method" />
+                      <SelectValue placeholder="Pilih metode pembayaran" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="cash">Cash</SelectItem>
-                      <SelectItem value="cardless">Cardless</SelectItem>
+                      <SelectItem value="cash">Tunai</SelectItem>
+                      <SelectItem value="cardless">Tanpa Kartu</SelectItem>
                       <SelectItem value="dana">DANA</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Amount
+                    Jumlah
                   </label>
                   <Input
                     type="number"
-                    placeholder="Enter amount"
+                    placeholder="Masukkan jumlah"
                     min="0"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
@@ -378,12 +378,12 @@ export default function UserPage() {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsJoinOrderOpen(false)}>Cancel</Button>
+              <Button variant="outline" onClick={() => setIsJoinOrderOpen(false)}>Batal</Button>
               <Button 
                 onClick={handleJoinOrder}
                 disabled={selectedMenuItems.filter(item => item.qty > 0).length === 0 || (!existingPayment && parseFloat(amount) <= 0)}
               >
-                Join Order ({selectedMenuItems.filter(item => item.qty > 0).length} items)
+                Gabung Pesanan ({selectedMenuItems.filter(item => item.qty > 0).length} item)
               </Button>
             </DialogFooter>
           </DialogContent>
