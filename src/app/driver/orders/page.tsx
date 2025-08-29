@@ -190,7 +190,7 @@ export default function DriverOrdersPage() {
           <CardContent>
             <div className="space-y-4">
               {myOrders && myOrders.length > 0 ? (
-                myOrders.map((order) => (
+                myOrders.sort((a, b) => b.createdAt - a.createdAt).map((order) => (
                   <div key={order._id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="flex items-center space-x-4">
                       {getStatusIcon(order.status)}

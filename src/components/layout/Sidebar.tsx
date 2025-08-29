@@ -36,7 +36,8 @@ const navigationItems = {
   ],
   user: [
     { name: "Dasbor", href: "/user", icon: ShoppingCart },
-    { name: "Pesanan", href: "/orders", icon: Plus },
+    { name: "Menu", href: "/user/menu", icon: Menu },
+    { name: "Pesanan", href: "/user/pesanan", icon: Plus },
   ],
 };
 

@@ -105,7 +105,7 @@ export default function AdminOrdersPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {orders?.map((order) => (
+              {orders?.sort((a, b) => b.createdAt - a.createdAt).map((order) => (
                 <div key={order._id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex-1">
                     <div className="flex items-center gap-3">

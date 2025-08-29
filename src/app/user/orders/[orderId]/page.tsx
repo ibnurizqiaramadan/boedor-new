@@ -358,7 +358,7 @@ export default function UserOrderDetailPage() {
           <CardContent>
             <div className="space-y-3">
               {myItems.length > 0 ? (
-                myItems.map((item) => {
+                myItems.sort((a, b) => b._creationTime - a._creationTime).map((item) => {
                   const menuItem = menuItems?.find(m => m._id === item.menuId);
                   const itemTotal = menuItem ? menuItem.price * item.qty : 0;
                   
@@ -370,6 +370,15 @@ export default function UserOrderDetailPage() {
                           <p className="font-medium">{menuItem?.name || 'Item Tidak Dikenal'}</p>
                           <p className="text-sm text-gray-500">
                             Jumlah: {item.qty} × {formatCurrency(menuItem?.price || 0)}
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            {new Date(item._creationTime).toLocaleString('id-ID', {
+                              year: 'numeric',
+                              month: '2-digit',
+                              day: '2-digit',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
                           </p>
                         </div>
                       </div>
@@ -441,7 +450,7 @@ export default function UserOrderDetailPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      {userItems.map((item) => {
+                      {userItems.sort((a, b) => b._creationTime - a._creationTime).map((item) => {
                         const menuItem = menuItems?.find(m => m._id === item.menuId);
                         const itemTotal = menuItem ? menuItem.price * item.qty : 0;
                         

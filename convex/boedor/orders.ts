@@ -110,8 +110,8 @@ export const updateOrderStatus = mutation({
     const order = await ctx.db.get(args.orderId);
     if (!order) throw new Error("Order not found");
     
-    // Admin can update any order, drivers can only update their own orders
-    if (user.role !== "admin" && order.driverId !== args.currentUserId) {
+    // Super admin and admin can update any order, drivers can only update their own orders
+    if (user.role !== "super_admin" && user.role !== "admin" && order.driverId !== args.currentUserId) {
       throw new Error("Unauthorized");
     }
     

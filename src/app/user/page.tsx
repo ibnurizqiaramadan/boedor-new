@@ -188,41 +188,6 @@ export default function UserPage() {
           </Card>
         </div>
 
-        {/* Available Orders */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Pesanan Tersedia</CardTitle>
-            <CardDescription>Bergabung dengan pesanan yang ada dari pengemudi</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {availableOrders?.filter(order => order.status === "open").map((order) => (
-                <div key={order._id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div>
-                    <p className="font-medium">Order #{order._id.slice(-6)}</p>
-                    <p className="text-sm text-gray-500 capitalize">Status: {order.status}</p>
-                    <p className="text-sm text-gray-500">
-                      Dibuat: {new Date(order.createdAt).toLocaleString()}
-                    </p>
-                  </div>
-                  <Button
-                    onClick={() => {
-                      setSelectedOrder(order);
-                      // Reset form when opening dialog
-                      setSelectedMenuItems([]);
-                      setIsJoinOrderOpen(true);
-                    }}
-                  >
-                    Gabung Pesanan
-                  </Button>
-                </div>
-              ))}
-              {(!availableOrders || availableOrders.filter(order => order.status === "open").length === 0) && (
-                <p className="text-gray-500 text-center py-8">Tidak ada pesanan tersedia saat ini</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
 
         {/* My Order Items */}
         <Card>
@@ -232,21 +197,55 @@ export default function UserPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {myOrderItems?.map((item) => (
-                <div 
-                  key={item._id} 
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-                  onClick={() => router.push(`/user/orders/${item.orderId}`)}
-                >
-                  <div>
-                    <p className="font-medium">Order #{item.orderId.slice(-6)}</p>
-                    <p className="text-sm text-gray-500">Jumlah: {item.qty}</p>
+              {(() => {
+                // Group order items by orderId
+                const groupedOrders = myOrderItems?.reduce((acc, item) => {
+                  const orderId = item.orderId;
+                  if (!acc[orderId]) {
+                    acc[orderId] = {
+                      orderId,
+                      totalItems: 0,
+                      items: []
+                    };
+                  }
+                  acc[orderId].totalItems += item.qty;
+                  acc[orderId].items.push(item);
+                  return acc;
+                }, {} as Record<string, { orderId: string; totalItems: number; items: any[] }>);
+
+                return Object.values(groupedOrders || {})
+                  .sort((a, b) => {
+                    // Sort by newest order first (assuming orderId contains timestamp info)
+                    // If orders have createdAt, use that. Otherwise use orderId comparison
+                    const aItem = a.items[0];
+                    const bItem = b.items[0];
+                    return bItem.orderId.localeCompare(aItem.orderId);
+                  })
+                  .map((group) => (
+                  <div 
+                    key={group.orderId} 
+                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                    onClick={() => router.push(`/user/orders/${group.orderId}`)}
+                  >
+                    <div>
+                      <p className="font-medium">Order #{group.orderId.slice(-6)}</p>
+                      <p className="text-sm text-gray-500">Jumlah: {group.totalItems}</p>
+                      <p className="text-xs text-gray-400">
+                        {new Date(group.items[0]._creationTime).toLocaleString('id-ID', {
+                          year: 'numeric',
+                          month: '2-digit',
+                          day: '2-digit',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </p>
+                    </div>
+                    <Button variant="outline" size="sm">
+                      Lihat Detail
+                    </Button>
                   </div>
-                  <Button variant="outline" size="sm">
-                    Lihat Detail
-                  </Button>
-                </div>
-              ))}
+                ));
+              })()}
               {(!myOrderItems || myOrderItems.length === 0) && (
                 <p className="text-gray-500 text-center py-8">Anda belum bergabung dengan pesanan apapun</p>
               )}
@@ -254,58 +253,6 @@ export default function UserPage() {
           </CardContent>
         </Card>
 
-        {/* Menu Items */}
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <div>
-                <CardTitle>Item Menu</CardTitle>
-                <CardDescription>Usulkan item menu baru</CardDescription>
-              </div>
-              <Dialog open={isAddMenuOpen} onOpenChange={setIsAddMenuOpen}>
-                <DialogTrigger asChild>
-                  <Button>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Usulkan Item
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Usulkan Item Menu</DialogTitle>
-                    <DialogDescription>Usulkan item menu baru</DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <Input
-                      placeholder="Nama item"
-                      value={newMenuItem.name}
-                      onChange={(e) => setNewMenuItem({ ...newMenuItem, name: e.target.value })}
-                    />
-                    <Input
-                      type="number"
-                      placeholder="Harga yang disarankan"
-                      value={newMenuItem.price}
-                      onChange={(e) => setNewMenuItem({ ...newMenuItem, price: parseFloat(e.target.value) })}
-                    />
-                  </div>
-                  <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsAddMenuOpen(false)}>Batal</Button>
-                    <Button onClick={handleAddMenuItem}>Usulkan Item</Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {menuItems?.map((item) => (
-                <div key={item._id} className="p-4 border rounded-lg">
-                  <h3 className="font-medium">{item.name}</h3>
-                  <p className="text-lg font-bold text-green-600">{formatCurrency(item.price)}</p>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Join Order Dialog */}
         <Dialog open={isJoinOrderOpen} onOpenChange={setIsJoinOrderOpen}>

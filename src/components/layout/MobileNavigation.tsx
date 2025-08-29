@@ -17,23 +17,24 @@ import {
 
 const navigationItems = {
   super_admin: [
-    { name: "Dashboard", href: "/admin", icon: Users },
+    { name: "Dasbor", href: "/admin", icon: Users },
     { name: "Menu", href: "/admin/menu", icon: Settings },
-    { name: "Orders", href: "/admin/orders", icon: ShoppingBag },
+    { name: "Pesanan", href: "/admin/orders", icon: ShoppingBag },
   ],
   admin: [
-    { name: "Dashboard", href: "/admin", icon: Users },
+    { name: "Dasbor", href: "/admin", icon: Users },
     { name: "Menu", href: "/admin/menu", icon: Settings },
-    { name: "Orders", href: "/admin/orders", icon: ShoppingBag },
+    { name: "Pesanan", href: "/admin/orders", icon: ShoppingBag },
   ],
   driver: [
-    { name: "Dashboard", href: "/driver", icon: Menu },
-    { name: "Orders", href: "/driver/orders", icon: ShoppingCart },
-    { name: "My Position", href: "/position", icon: MapPin },
+    { name: "Dasbor", href: "/driver", icon: Menu },
+    { name: "Pesanan", href: "/driver/orders", icon: ShoppingCart },
+    { name: "Posisi Saya", href: "/position", icon: MapPin },
   ],
   user: [
-    { name: "Dashboard", href: "/user", icon: ShoppingCart },
-    { name: "Orders", href: "/orders", icon: Plus },
+    { name: "Dasbor", href: "/user", icon: ShoppingCart },
+    { name: "Menu", href: "/user/menu", icon: Menu },
+    { name: "Pesanan", href: "/user/pesanan", icon: Plus },
   ],
 };
 
