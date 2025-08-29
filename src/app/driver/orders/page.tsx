@@ -9,8 +9,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Truck, Clock, CheckCircle, XCircle, Eye } from "lucide-react";
+import { Plus, Truck, Clock, CheckCircle, Eye } from "lucide-react";
 import { toast } from "sonner";
+import { getStatusIcon, getStatusColor, formatStatus } from "@/lib/status";
 
 export default function DriverOrdersPage() {
   const { user } = useAuth();
@@ -32,7 +33,7 @@ export default function DriverOrdersPage() {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <p className="text-red-500">Access denied. Driver only.</p>
+          <p className="text-red-500">Akses ditolak. Khusus driver.</p>
         </div>
       </Layout>
     );
@@ -78,45 +79,21 @@ export default function DriverOrdersPage() {
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "open":
-        return <Clock className="h-4 w-4 text-blue-500" />;
-      case "closed":
-        return <XCircle className="h-4 w-4 text-orange-500" />;
-      case "completed":
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
-      default:
-        return <Clock className="h-4 w-4 text-gray-500" />;
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "open":
-        return "text-blue-600 bg-blue-100";
-      case "closed":
-        return "text-orange-600 bg-orange-100";
-      case "completed":
-        return "text-green-600 bg-green-100";
-      default:
-        return "text-gray-600 bg-gray-100";
-    }
-  };
+  
 
   return (
     <Layout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Driver Orders</h1>
-          <p className="mt-2 text-gray-600">Manage your delivery orders</p>
+          <h1 className="text-3xl font-bold text-gray-900">Pesanan Driver</h1>
+          <p className="mt-2 text-gray-600">Kelola pesanan antar Anda</p>
         </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">My Orders</CardTitle>
+              <CardTitle className="text-sm font-medium">Pesanan Saya</CardTitle>
               <Truck className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -126,7 +103,7 @@ export default function DriverOrdersPage() {
           
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Open Orders</CardTitle>
+              <CardTitle className="text-sm font-medium">Pesanan Terbuka</CardTitle>
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -138,7 +115,7 @@ export default function DriverOrdersPage() {
           
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Completed</CardTitle>
+              <CardTitle className="text-sm font-medium">Selesai</CardTitle>
               <CheckCircle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -154,34 +131,34 @@ export default function DriverOrdersPage() {
           <CardHeader>
             <div className="flex justify-between items-center">
               <div>
-                <CardTitle>My Orders</CardTitle>
-                <CardDescription>Manage your delivery orders</CardDescription>
+                <CardTitle>Pesanan Saya</CardTitle>
+                <CardDescription>Kelola pesanan antar Anda</CardDescription>
               </div>
               <Dialog open={isCreateOrderOpen} onOpenChange={setIsCreateOrderOpen}>
                 <DialogTrigger asChild>
                   <Button>
                     <Plus className="h-4 w-4 mr-2" />
-                    Create Order
+                    Buat Pesanan
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Create New Order</DialogTitle>
+                    <DialogTitle>Buat Pesanan Baru</DialogTitle>
                     <DialogDescription>
-                      Create a new delivery order assigned to you
+                      Buat pesanan antar baru yang ditugaskan kepada Anda
                     </DialogDescription>
                   </DialogHeader>
                   <div className="py-4">
                     <p className="text-sm text-gray-600">
-                      This will create a new order assigned to you as the driver.
-                      The order will start with "open" status.
+                      Ini akan membuat pesanan baru yang ditugaskan kepada Anda sebagai driver.
+                      Pesanan akan dimulai dengan status "terbuka".
                     </p>
                   </div>
                   <DialogFooter>
                     <Button variant="outline" onClick={() => setIsCreateOrderOpen(false)}>
-                      Cancel
+                      Batal
                     </Button>
-                    <Button onClick={handleCreateOrder}>Create Order</Button>
+                    <Button onClick={handleCreateOrder}>Buat Pesanan</Button>
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
@@ -195,15 +172,15 @@ export default function DriverOrdersPage() {
                     <div className="flex items-center space-x-4">
                       {getStatusIcon(order.status)}
                       <div>
-                        <p className="font-medium">Order #{order._id.slice(-8)}</p>
+                        <p className="font-medium">Pesanan #{order._id.slice(-8)}</p>
                         <p className="text-sm text-gray-500">
-                          Created: {new Date(order.createdAt).toLocaleDateString()}
+                          Dibuat: {new Date(order.createdAt).toLocaleDateString('id-ID')}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
-                        {order.status}
+                        {formatStatus(order.status)}
                       </span>
                       <div className="flex space-x-1">
                         <Button
@@ -220,7 +197,7 @@ export default function DriverOrdersPage() {
                             variant="outline"
                             onClick={() => handleUpdateOrderStatus(order._id, "closed")}
                           >
-                            Close
+                            Tutup
                           </Button>
                         )}
                         {order.status === "closed" && (
@@ -230,13 +207,13 @@ export default function DriverOrdersPage() {
                               variant="outline"
                               onClick={() => handleUpdateOrderStatus(order._id, "open")}
                             >
-                              Reopen
+                              Buka Kembali
                             </Button>
                             <Button
                               size="sm"
                               onClick={() => handleUpdateOrderStatus(order._id, "completed")}
                             >
-                              Complete
+                              Selesaikan
                             </Button>
                           </>
                         )}
@@ -246,7 +223,7 @@ export default function DriverOrdersPage() {
                             variant="outline"
                             onClick={() => handleUpdateOrderStatus(order._id, "open")}
                           >
-                            Reopen
+                            Buka Kembali
                           </Button>
                         )}
                       </div>
@@ -256,7 +233,7 @@ export default function DriverOrdersPage() {
               ) : (
                 <div className="text-center py-8">
                   <Truck className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500">No orders yet. Create your first order!</p>
+                  <p className="text-gray-500">Belum ada pesanan. Buat pesanan pertama Anda!</p>
                 </div>
               )}
             </div>

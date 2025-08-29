@@ -8,8 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ShoppingBag, Clock, CheckCircle, XCircle } from "lucide-react";
+import { ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
+import { getStatusIcon, getStatusColor, formatStatus } from "@/lib/status";
 
 export default function AdminOrdersPage() {
   const { user } = useAuth();
@@ -37,7 +38,7 @@ export default function AdminOrdersPage() {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <p className="text-red-500">Access denied. Admin only.</p>
+          <p className="text-red-500">Akses ditolak. Khusus admin.</p>
         </div>
       </Layout>
     );
@@ -50,44 +51,38 @@ export default function AdminOrdersPage() {
         status,
         currentUserId: user!._id,
       });
-      toast.success(`Order status updated to ${status}!`);
+      toast.success(`Status pesanan diperbarui menjadi ${status}!`);
     } catch (error) {
       console.error("Failed to update order status:", error);
-      toast.error("Failed to update order status: " + (error as Error).message);
+      toast.error("Gagal memperbarui status pesanan: " + (error as Error).message);
     }
   };
 
   const handleDeleteOrder = async (orderId: string) => {
-    if (confirm("Are you sure you want to delete this order?")) {
+    if (confirm("Apakah Anda yakin ingin menghapus pesanan ini?")) {
       try {
         await deleteOrder({ orderId: orderId as any, currentUserId: user!._id });
-        toast.success("Order deleted successfully!");
+        toast.success("Pesanan berhasil dihapus!");
       } catch (error) {
         console.error("Failed to delete order:", error);
-        toast.error("Failed to delete order: " + (error as Error).message);
+        toast.error("Gagal menghapus pesanan: " + (error as Error).message);
       }
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "open":
-        return <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800"><Clock className="h-3 w-3 mr-1" />Open</span>;
-      case "closed":
-        return <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800"><XCircle className="h-3 w-3 mr-1" />Closed</span>;
-      case "completed":
-        return <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 border border-green-500"><CheckCircle className="h-3 w-3 mr-1" />Completed</span>;
-      default:
-        return <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">{status}</span>;
-    }
-  };
+  const getStatusBadge = (status: string) => (
+    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(status)}`}>
+      <span className="shrink-0">{getStatusIcon(status)}</span>
+      {formatStatus(status)}
+    </span>
+  );
 
   return (
     <Layout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Orders Management</h1>
-          <p className="mt-2 text-gray-600">Monitor and manage all orders</p>
+          <h1 className="text-3xl font-bold text-gray-900">Manajemen Pesanan</h1>
+          <p className="mt-2 text-gray-600">Pantau dan kelola semua pesanan</p>
         </div>
 
         {/* Orders Management */}
@@ -97,9 +92,9 @@ export default function AdminOrdersPage() {
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <ShoppingBag className="h-5 w-5" />
-                  All Orders
+                  Semua Pesanan
                 </CardTitle>
-                <CardDescription>View and manage order status</CardDescription>
+                <CardDescription>Lihat dan kelola status pesanan</CardDescription>
               </div>
             </div>
           </CardHeader>
@@ -109,11 +104,11 @@ export default function AdminOrdersPage() {
                 <div key={order._id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex-1">
                     <div className="flex items-center gap-3">
-                      <p className="font-medium">Order #{order._id.slice(-6)}</p>
+                      <p className="font-medium">Pesanan #{order._id.slice(-6)}</p>
                       {getStatusBadge(order.status)}
                     </div>
                     <p className="text-sm text-gray-500 mt-1">
-                      Driver ID: {order.driverId.slice(-6)} • Created: {new Date(order._creationTime).toLocaleDateString()}
+                      ID Driver: {order.driverId.slice(-6)} • Dibuat: {new Date(order._creationTime).toLocaleDateString('id-ID')}
                     </p>
                   </div>
                   <div className="flex space-x-2">
@@ -123,7 +118,7 @@ export default function AdminOrdersPage() {
                         size="sm"
                         onClick={() => handleUpdateOrderStatus(order._id, "closed")}
                       >
-                        Close Order
+                        Tutup Pesanan
                       </Button>
                     )}
                     {order.status === "closed" && (
@@ -132,7 +127,7 @@ export default function AdminOrdersPage() {
                         size="sm"
                         onClick={() => handleUpdateOrderStatus(order._id, "completed")}
                       >
-                        Complete Order
+                        Selesaikan Pesanan
                       </Button>
                     )}
                     <Button
@@ -140,14 +135,14 @@ export default function AdminOrdersPage() {
                       size="sm"
                       onClick={() => handleDeleteOrder(order._id)}
                     >
-                      Delete
+                      Hapus
                     </Button>
                   </div>
                 </div>
               ))}
               {orders?.length === 0 && (
                 <div className="text-center py-8 text-gray-500">
-                  No orders found.
+                  Tidak ada pesanan.
                 </div>
               )}
             </div>

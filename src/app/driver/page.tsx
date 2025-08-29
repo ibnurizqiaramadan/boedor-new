@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import { Plus, MapPin, Clock, CheckCircle, Truck, Edit, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils";
+import { formatStatus } from "@/lib/status";
 
 export default function DriverPage() {
   const { user } = useAuth();
@@ -51,7 +52,7 @@ export default function DriverPage() {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <p className="text-red-500">Akses ditolak. Khusus pengemudi.</p>
+          <p className="text-red-500">Akses ditolak. Khusus driver.</p>
         </div>
       </Layout>
     );
@@ -74,6 +75,8 @@ export default function DriverPage() {
       toast.error("Gagal menambah item menu: " + (error as Error).message);
     }
   };
+
+  
 
   const handleUpdateMenuItem = async () => {
     try {
@@ -244,7 +247,7 @@ export default function DriverPage() {
               <p className="text-sm text-gray-600">
                 Posisi saat ini: {myPosition.lat.toFixed(6)}, {myPosition.lng.toFixed(6)}
                 <br />
-                Terakhir diperbarui: {new Date(myPosition.updatedAt).toLocaleString()}
+                Terakhir diperbarui: {new Date(myPosition.updatedAt).toLocaleString('id-ID')}
               </p>
             ) : (
               <p className="text-sm text-gray-500">Tidak ada data lokasi tersedia</p>
@@ -263,10 +266,10 @@ export default function DriverPage() {
               {myOrders?.map((order) => (
                 <div key={order._id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div>
-                    <p className="font-medium">Order #{order._id.slice(-6)}</p>
-                    <p className="text-sm text-gray-500 capitalize">Status: {order.status}</p>
+                    <p className="font-medium">Pesanan #{order._id.slice(-6)}</p>
+                    <p className="text-sm text-gray-500">Status: {formatStatus(order.status)}</p>
                     <p className="text-sm text-gray-500">
-                      Dibuat: {new Date(order.createdAt).toLocaleString()}
+                      Dibuat: {new Date(order.createdAt).toLocaleString('id-ID')}
                     </p>
                   </div>
                   <div className="flex space-x-2">

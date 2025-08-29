@@ -15,6 +15,7 @@ import { useRouter } from "next/navigation";
 import { Plus, ShoppingCart, Clock, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils";
+import { getStatusIcon, getStatusColor, formatStatus } from "@/lib/status";
 
 export default function UserPage() {
   const { user } = useAuth();
@@ -73,11 +74,13 @@ export default function UserPage() {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <p className="text-red-500">Access denied. User only.</p>
+          <p className="text-red-500">Akses ditolak. Khusus pengguna.</p>
         </div>
       </Layout>
     );
   }
+
+  
 
   const handleAddMenuItem = async () => {
     if (newMenuItem.name && newMenuItem.price > 0) {
@@ -221,30 +224,39 @@ export default function UserPage() {
                     const bItem = b.items[0];
                     return bItem.orderId.localeCompare(aItem.orderId);
                   })
-                  .map((group) => (
-                  <div 
-                    key={group.orderId} 
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-                    onClick={() => router.push(`/user/orders/${group.orderId}`)}
-                  >
-                    <div>
-                      <p className="font-medium">Order #{group.orderId.slice(-6)}</p>
-                      <p className="text-sm text-gray-500">Jumlah: {group.totalItems}</p>
-                      <p className="text-xs text-gray-400">
-                        {new Date(group.items[0]._creationTime).toLocaleString('id-ID', {
-                          year: 'numeric',
-                          month: '2-digit',
-                          day: '2-digit',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </p>
-                    </div>
-                    <Button variant="outline" size="sm">
-                      Lihat Detail
-                    </Button>
-                  </div>
-                ));
+                  .map((group) => {
+                    const status = availableOrders?.find((o: any) => o._id === group.orderId)?.status || "";
+                    return (
+                      <div 
+                        key={group.orderId} 
+                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                        onClick={() => router.push(`/user/orders/${group.orderId}`)}
+                      >
+                        <div>
+                          <p className="font-medium">Pesanan #{group.orderId.slice(-6)}</p>
+                          <p className="text-sm text-gray-500">Jumlah: {group.totalItems}</p>
+                          <p className="text-xs text-gray-400">
+                            {new Date(group.items[0]._creationTime).toLocaleString('id-ID', {
+                              year: 'numeric',
+                              month: '2-digit',
+                              day: '2-digit',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </p>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          {getStatusIcon(status)}
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(status)}`}>
+                            {formatStatus(status)}
+                          </span>
+                          <Button variant="outline" size="sm">
+                            Lihat Detail
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  });
               })()}
               {(!myOrderItems || myOrderItems.length === 0) && (
                 <p className="text-gray-500 text-center py-8">Anda belum bergabung dengan pesanan apapun</p>

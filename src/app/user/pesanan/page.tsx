@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useState } from "react";
 import { toast } from "sonner";
 import { Id } from "../../../../convex/_generated/dataModel";
+import { formatStatus } from "@/lib/status";
 
 export default function UserPesananPage() {
   const { user } = useAuth();
@@ -29,6 +30,8 @@ export default function UserPesananPage() {
   const [selectedMenuItems, setSelectedMenuItems] = useState<Array<{menuId: string, qty: number}>>([]);
   const [amount, setAmount] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "cardless" | "dana">("cash");
+
+  
 
   const handleJoinOrder = async () => {
     if (selectedOrder && selectedMenuItems.length > 0) {
@@ -121,10 +124,10 @@ export default function UserPesananPage() {
                 .map((order) => (
                 <div key={order._id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div>
-                    <p className="font-medium">Order #{order._id.slice(-6)}</p>
-                    <p className="text-sm text-gray-500 capitalize">Status: {order.status}</p>
+                    <p className="font-medium">Pesanan #{order._id.slice(-6)}</p>
+                    <p className="text-sm text-gray-500">Status: {formatStatus(order.status)}</p>
                     <p className="text-sm text-gray-500">
-                      Dibuat: {new Date(order.createdAt).toLocaleString()}
+                      Dibuat: {new Date(order.createdAt).toLocaleString('id-ID')}
                     </p>
                   </div>
                   <Button

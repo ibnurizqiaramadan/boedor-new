@@ -9,9 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { ArrowLeft, User, ShoppingCart, Clock, CheckCircle, XCircle } from "lucide-react";
+import { ArrowLeft, User, ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils";
+import { getStatusIcon, getStatusColor, formatStatus } from "@/lib/status";
 
 export default function OrderDetailPage() {
   const { user } = useAuth();
@@ -34,7 +35,7 @@ export default function OrderDetailPage() {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <p className="text-red-500">Access denied. Driver only.</p>
+          <p className="text-red-500">Akses ditolak. Khusus driver.</p>
         </div>
       </Layout>
     );
@@ -70,7 +71,7 @@ export default function OrderDetailPage() {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <p className="text-gray-500">Loading order details...</p>
+          <p className="text-gray-500">Memuat detail pesanan...</p>
         </div>
       </Layout>
     );
@@ -88,31 +89,7 @@ export default function OrderDetailPage() {
       return acc;
     }, {} as Record<string, typeof orderItems>) : {};
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "open":
-        return <Clock className="h-5 w-5 text-blue-500" />;
-      case "closed":
-        return <XCircle className="h-5 w-5 text-orange-500" />;
-      case "completed":
-        return <CheckCircle className="h-5 w-5 text-green-500" />;
-      default:
-        return <Clock className="h-5 w-5 text-gray-500" />;
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "open":
-        return "text-blue-600 bg-blue-100";
-      case "closed":
-        return "text-orange-600 bg-orange-100";
-      case "completed":
-        return "text-green-600 bg-green-100";
-      default:
-        return "text-gray-600 bg-gray-100";
-    }
-  };
+  
 
   const getTotalOrderValue = () => {
     if (!orderItems || !menuItems) return 0;
@@ -152,11 +129,11 @@ export default function OrderDetailPage() {
             onClick={() => router.back()}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
+            Kembali
           </Button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Order Details</h1>
-            <p className="mt-2 text-gray-600">Order #{orderId.slice(-8)}</p>
+            <h1 className="text-3xl font-bold text-gray-900">Detail Pesanan</h1>
+            <p className="mt-2 text-gray-600">Pesanan #{orderId.slice(-8)}</p>
           </div>
         </div>
 
@@ -167,38 +144,38 @@ export default function OrderDetailPage() {
               <div>
                 <CardTitle className="flex items-center space-x-2">
                   {getStatusIcon(order.status)}
-                  <span>Order #{orderId.slice(-8)}</span>
+                  <span>Pesanan #{orderId.slice(-8)}</span>
                 </CardTitle>
                 <CardDescription>
-                  Created: {new Date(order.createdAt).toLocaleString()}
+                  Dibuat: {new Date(order.createdAt).toLocaleString('id-ID')}
                 </CardDescription>
               </div>
               <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
-                {order.status}
+                {formatStatus(order.status)}
               </span>
             </div>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <p className="text-sm font-medium text-gray-500">Total Participants</p>
+                <p className="text-sm font-medium text-gray-500">Total Peserta</p>
                 <p className="text-2xl font-bold">{participants?.length || 0}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-500">Total Items</p>
+                <p className="text-sm font-medium text-gray-500">Total Item</p>
                 <p className="text-2xl font-bold">{orderItems?.length || 0}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-500">Total Value</p>
+                <p className="text-sm font-medium text-gray-500">Total Nilai</p>
                 <p className="text-2xl font-bold">{formatCurrency(getTotalOrderValue())}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Participants and Their Orders */}
+        {/* Peserta dan Item */}
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold text-gray-900">Participants & Items</h2>
+          <h2 className="text-xl font-semibold text-gray-900">Peserta & Item</h2>
           
           {participants && participants.length > 0 ? (
             participants.map((participant) => {
@@ -213,24 +190,22 @@ export default function OrderDetailPage() {
                       <div className="flex items-center space-x-3">
                         <User className="h-5 w-5 text-gray-400" />
                         <div>
-                          <CardTitle className="text-lg">{participant.username}</CardTitle>
+                          <CardTitle className="text-lg">{participant.username}{participant._id === user._id && " (Anda)"}</CardTitle>
                           <CardDescription>
-                            {userItems.length} item(s) • Total: {formatCurrency(userTotal)}
+                            {userItems.length} item • Total: {formatCurrency(userTotal)}
                           </CardDescription>
                         </div>
                       </div>
                       <div className="text-right">
                         {getUserPayment(participant._id) ? (
                           <div className="space-y-1">
-                            <p className="text-sm font-medium text-green-600">
-                              Change: {formatCurrency(getUserChange(participant._id))}
-                            </p>
+                            <p className="text-sm font-medium text-green-600">Kembalian: {formatCurrency(getUserChange(participant._id))}</p>
                             <p className="text-xs text-gray-500">
-                              Paid: {formatCurrency(getUserPayment(participant._id)!.amount)} • Method: {getUserPayment(participant._id)!.paymentMethod}
+                              Dibayar: {formatCurrency(getUserPayment(participant._id)!.amount)} • Metode: {getUserPayment(participant._id)!.paymentMethod}
                             </p>
                           </div>
                         ) : (
-                          <p className="text-sm font-medium text-red-600">Not Paid</p>
+                          <p className="text-sm font-medium text-red-600">Belum Dibayar</p>
                         )}
                       </div>
                     </div>
@@ -246,9 +221,9 @@ export default function OrderDetailPage() {
                             <div className="flex items-center space-x-3">
                               <ShoppingCart className="h-4 w-4 text-gray-400" />
                               <div>
-                                <p className="font-medium">{menuItem?.name || 'Unknown Item'}</p>
+                                <p className="font-medium">{menuItem?.name || 'Item Tidak Dikenal'}</p>
                                 <p className="text-sm text-gray-500">
-                                  Qty: {item.qty} × {formatCurrency(menuItem?.price || 0)}
+                                  Jumlah: {item.qty} × {formatCurrency(menuItem?.price || 0)}
                                 </p>
                               </div>
                             </div>
@@ -267,18 +242,18 @@ export default function OrderDetailPage() {
             <Card>
               <CardContent className="text-center py-8">
                 <User className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500">No participants have joined this order yet.</p>
+                <p className="text-gray-500">Belum ada peserta yang bergabung dengan pesanan ini.</p>
               </CardContent>
             </Card>
           )}
         </div>
 
-        {/* Payment Summary */}
+        {/* Ringkasan Pembayaran */}
         {orderPayments && orderPayments.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle>Payment Summary</CardTitle>
-              <CardDescription>Overview of all payments and changes for this order</CardDescription>
+              <CardTitle>Ringkasan Pembayaran</CardTitle>
+              <CardDescription>Ringkasan semua pembayaran dan kembalian untuk pesanan ini</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
@@ -292,16 +267,16 @@ export default function OrderDetailPage() {
                       <div className="flex items-center space-x-3">
                         <User className="h-4 w-4 text-gray-400" />
                         <div>
-                          <p className="font-medium">{participant?.username || 'Unknown User'}</p>
+                          <p className="font-medium">{participant?.username || 'Pengguna Tidak Dikenal'}</p>
                           <p className="text-sm text-gray-500">
-                            Method: {payment.paymentMethod} • Items Total: {formatCurrency(userTotal)}
+                            Metode: {payment.paymentMethod} • Total Item: {formatCurrency(userTotal)}
                           </p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-medium">Paid: {formatCurrency(payment.amount)}</p>
+                        <p className="font-medium">Dibayar: {formatCurrency(payment.amount)}</p>
                         <p className={`text-sm font-medium ${change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          Change: {formatCurrency(change)}
+                          Kembalian: {formatCurrency(change)}
                         </p>
                       </div>
                     </div>
@@ -311,16 +286,14 @@ export default function OrderDetailPage() {
                 <div className="border-t pt-3 mt-4">
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <p className="text-gray-500">Total Paid:</p>
+                      <p className="text-gray-500">Total Dibayar:</p>
                       <p className="font-semibold">
                         {formatCurrency(orderPayments.reduce((sum, p) => sum + p.amount, 0))}
                       </p>
                     </div>
                     <div>
-                      <p className="text-gray-500">Total Changes:</p>
-                      <p className="font-semibold text-green-600">
-                        {formatCurrency(orderPayments.reduce((sum, p) => sum + (p.amount - getUserTotal(p.userId)), 0))}
-                      </p>
+                      <p className="text-gray-500">Total Kembalian:</p>
+                      <p className="font-semibold text-green-600">{formatCurrency(orderPayments.reduce((sum, p) => sum + (p.amount - getUserTotal(p.userId)), 0))}</p>
                     </div>
                   </div>
                 </div>
@@ -329,28 +302,28 @@ export default function OrderDetailPage() {
           </Card>
         )}
 
-        {/* Order Summary */}
+        {/* Ringkasan Pesanan */}
         {orderItems && orderItems.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle>Order Summary</CardTitle>
+              <CardTitle>Ringkasan Pesanan</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span>Total Items:</span>
+                  <span>Total Item:</span>
                   <span>{orderItems.length}</span>
                 </div>
                 <div className="border-t pt-2 flex justify-between font-semibold">
-                  <span>Total Participants:</span>
+                  <span>Total Peserta:</span>
                   <span>{participants?.length || 0}</span>
                 </div>
                 <div className="border-t pt-2 flex justify-between font-semibold">
-                  <span>Total Order Value:</span>
+                  <span>Total Nilai Pesanan:</span>
                   <span>{formatCurrency(getTotalOrderValue())}</span>
                 </div>
                 <div className="border-t pt-2 flex justify-between font-semibold">
-                  <span>Paid Participants:</span>
+                  <span>Peserta yang Sudah Bayar:</span>
                   <span>{orderPayments?.length || 0} / {participants?.length || 0}</span>
                 </div>
               </div>

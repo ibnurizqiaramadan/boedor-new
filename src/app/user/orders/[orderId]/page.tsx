@@ -12,9 +12,10 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { ArrowLeft, User, ShoppingCart, Clock, CheckCircle, XCircle, Edit, Trash2, Plus } from "lucide-react";
+import { ArrowLeft, User, ShoppingCart, Edit, Trash2, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils";
+import { getStatusIcon, getStatusColor, formatStatus } from "@/lib/status";
 
 export default function UserOrderDetailPage() {
   const { user } = useAuth();
@@ -120,31 +121,7 @@ export default function UserOrderDetailPage() {
   // Get user's own items
   const myItems = orderItems ? orderItems.filter(item => item.userId === user._id) : [];
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "open":
-        return <Clock className="h-5 w-5 text-blue-500" />;
-      case "closed":
-        return <XCircle className="h-5 w-5 text-orange-500" />;
-      case "completed":
-        return <CheckCircle className="h-5 w-5 text-green-500" />;
-      default:
-        return <Clock className="h-5 w-5 text-gray-500" />;
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "open":
-        return "text-blue-600 bg-blue-100";
-      case "closed":
-        return "text-orange-600 bg-orange-100";
-      case "completed":
-        return "text-green-600 bg-green-100";
-      default:
-        return "text-gray-600 bg-gray-100";
-    }
-  };
+  
 
   const getTotalOrderValue = () => {
     if (!orderItems || !menuItems) return 0;
@@ -273,7 +250,7 @@ export default function UserOrderDetailPage() {
             onClick={() => router.back()}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
+            Kembali
           </Button>
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Detail Pesanan</h1>
@@ -288,14 +265,14 @@ export default function UserOrderDetailPage() {
               <div>
                 <CardTitle className="flex items-center space-x-2">
                   {getStatusIcon(order.status)}
-                  <span>Order #{orderId.slice(-8)}</span>
+                  <span>Pesanan #{orderId.slice(-8)}</span>
                 </CardTitle>
                 <CardDescription>
-                  Dibuat: {new Date(order.createdAt).toLocaleString()}
+                  Dibuat: {new Date(order.createdAt).toLocaleString('id-ID')}
                 </CardDescription>
               </div>
               <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
-                {order.status}
+                {formatStatus(order.status)}
               </span>
             </div>
           </CardHeader>
@@ -438,7 +415,7 @@ export default function UserOrderDetailPage() {
                         <div>
                           <CardTitle className="text-lg">
                             {participant.username}
-                            {participant._id === user._id && " (You)"}
+                            {participant._id === user._id && " (Anda)"}
                           </CardTitle>
                           <CardDescription>
                             {userItems.length} item • Total: {formatCurrency(userTotal)}
