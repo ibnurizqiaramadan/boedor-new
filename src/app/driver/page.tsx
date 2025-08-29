@@ -10,30 +10,20 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, MapPin, Clock, CheckCircle, Truck, Edit, Trash2 } from "lucide-react";
-import { toast } from "sonner";
-import { formatCurrency } from "@/lib/utils";
+import { MapPin, Clock, CheckCircle, Truck } from "lucide-react";
 import { formatStatus } from "@/lib/status";
 
 export default function DriverPage() {
   const { user } = useAuth();
   const router = useRouter();
-  const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
-  const [isEditMenuOpen, setIsEditMenuOpen] = useState(false);
   const [isUpdateLocationOpen, setIsUpdateLocationOpen] = useState(false);
-  const [newMenuItem, setNewMenuItem] = useState({ name: "", price: 0 });
-  const [selectedMenuItem, setSelectedMenuItem] = useState<any>(null);
   const [location, setLocation] = useState({ lat: 0, lng: 0 });
 
   // Queries
   const myOrders = useQuery(api.boedor.orders.getOrdersByDriver, user ? { driverId: user._id, currentUserId: user._id } : "skip");
-  const menuItems = useQuery(api.boedor.menu.getAllMenuItems, user ? { currentUserId: user._id } : "skip");
   const myPosition = useQuery(api.boedor.driverPositions.getDriverPosition, user ? { driverId: user._id, currentUserId: user._id } : "skip");
 
   // Mutations
-  const addMenuItem = useMutation(api.boedor.menu.createMenuItem);
-  const updateMenuItem = useMutation(api.boedor.menu.updateMenuItem);
-  const deleteMenuItem = useMutation(api.boedor.menu.deleteMenuItem);
   const updateOrderStatus = useMutation(api.boedor.orders.updateOrderStatus);
   const updatePosition = useMutation(api.boedor.driverPositions.updateDriverPosition);
 
@@ -58,59 +48,7 @@ export default function DriverPage() {
     );
   }
 
-  const handleAddMenuItem = async () => {
-    try {
-      if (newMenuItem.name && newMenuItem.price > 0) {
-        await addMenuItem({
-          name: newMenuItem.name,
-          price: newMenuItem.price,
-          currentUserId: user._id,
-        });
-        toast.success("Item menu berhasil ditambahkan!");
-        setIsAddMenuOpen(false);
-        setNewMenuItem({ name: "", price: 0 });
-      }
-    } catch (error) {
-      console.error("Failed to add menu item:", error);
-      toast.error("Gagal menambah item menu: " + (error as Error).message);
-    }
-  };
-
-  
-
-  const handleUpdateMenuItem = async () => {
-    try {
-      if (selectedMenuItem) {
-        await updateMenuItem({
-          menuId: selectedMenuItem._id,
-          name: selectedMenuItem.name,
-          price: selectedMenuItem.price,
-          currentUserId: user._id,
-        });
-        toast.success("Item menu berhasil diperbarui!");
-        setIsEditMenuOpen(false);
-        setSelectedMenuItem(null);
-      }
-    } catch (error) {
-      console.error("Failed to update menu item:", error);
-      toast.error("Gagal memperbarui item menu: " + (error as Error).message);
-    }
-  };
-
-  const handleDeleteMenuItem = async (menuId: string) => {
-    try {
-      if (confirm("Apakah Anda yakin ingin menghapus item menu ini?")) {
-        await deleteMenuItem({ 
-          menuId: menuId as any, 
-          currentUserId: user._id 
-        });
-        toast.success("Item menu berhasil dihapus!");
-      }
-    } catch (error) {
-      console.error("Failed to delete menu item:", error);
-      toast.error("Gagal menghapus item menu: " + (error as Error).message);
-    }
-  };
+  // Menu manajemen dipindahkan ke /driver/menu
 
   const handleUpdateOrderStatus = async (orderId: string, status: "open" | "closed" | "completed") => {
     await updateOrderStatus({ orderId: orderId as any, status, currentUserId: user!._id });
@@ -263,7 +201,7 @@ export default function DriverPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {myOrders?.map((order) => (
+              {myOrders?.slice().sort((a, b) => b.createdAt - a.createdAt).map((order) => (
                 <div key={order._id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div>
                     <p className="font-medium">Pesanan #{order._id.slice(-6)}</p>
@@ -299,113 +237,7 @@ export default function DriverPage() {
           </CardContent>
         </Card>
 
-        {/* Menu Items Management */}
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <div>
-                <CardTitle>Item Menu</CardTitle>
-                <CardDescription>Tambahkan item menu baru ke sistem</CardDescription>
-              </div>
-              <Dialog open={isAddMenuOpen} onOpenChange={setIsAddMenuOpen}>
-                <DialogTrigger asChild>
-                  <Button>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Tambah Item Menu
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Tambah Item Menu</DialogTitle>
-                    <DialogDescription>Buat item menu baru</DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <Input
-                      placeholder="Nama item"
-                      value={newMenuItem.name}
-                      onChange={(e) => setNewMenuItem({ ...newMenuItem, name: e.target.value })}
-                    />
-                    <Input
-                      type="number"
-                      placeholder="Harga"
-                      value={newMenuItem.price}
-                      onChange={(e) => setNewMenuItem({ ...newMenuItem, price: parseFloat(e.target.value) })}
-                    />
-                  </div>
-                  <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsAddMenuOpen(false)}>Batal</Button>
-                    <Button onClick={handleAddMenuItem}>Tambah Item</Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {menuItems?.map((item) => (
-                <div key={item._id} className="flex justify-between items-center p-2 border rounded">
-                  <div>
-                    <span className="font-medium">{item.name}</span>
-                    <p className="text-sm text-gray-500">{formatCurrency(item.price)}</p>
-                  </div>
-                  <div className="flex space-x-1">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedMenuItem(item);
-                        setIsEditMenuOpen(true);
-                      }}
-                    >
-                      <Edit className="h-3 w-3" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDeleteMenuItem(item._id)}
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-              {(!menuItems || menuItems.length === 0) && (
-                <p className="text-sm text-gray-500 text-center py-4">
-                  Belum ada item menu. Tambahkan item pertama Anda!
-                </p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Edit Menu Item Dialog */}
-        <Dialog open={isEditMenuOpen} onOpenChange={setIsEditMenuOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Edit Item Menu</DialogTitle>
-              <DialogDescription>Perbarui informasi item menu</DialogDescription>
-            </DialogHeader>
-            {selectedMenuItem && (
-              <div className="space-y-4">
-                <Input
-                  placeholder="Nama Item"
-                  value={selectedMenuItem.name}
-                  onChange={(e) => setSelectedMenuItem({ ...selectedMenuItem, name: e.target.value })}
-                />
-                <Input
-                  type="number"
-                  placeholder="Harga"
-                  value={selectedMenuItem.price}
-                  onChange={(e) => setSelectedMenuItem({ ...selectedMenuItem, price: parseFloat(e.target.value) || 0 })}
-                />
-              </div>
-            )}
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsEditMenuOpen(false)}>Batal</Button>
-              <Button onClick={handleUpdateMenuItem}>Perbarui Item Menu</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        {/* Menu item telah dipindahkan ke halaman /driver/menu */}
       </div>
     </Layout>
   );

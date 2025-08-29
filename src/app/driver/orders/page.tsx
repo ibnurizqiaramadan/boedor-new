@@ -18,6 +18,16 @@ export default function DriverOrdersPage() {
   const router = useRouter();
   const [isCreateOrderOpen, setIsCreateOrderOpen] = useState(false);
 
+  // Queries (moved above conditional returns; use "skip" when user is not ready)
+  const myOrders = useQuery(
+    api.boedor.orders.getOrdersByDriver,
+    user ? { driverId: user._id, currentUserId: user._id } : "skip"
+  );
+
+  // Mutations
+  const createOrder = useMutation(api.boedor.orders.createOrder);
+  const updateOrderStatus = useMutation(api.boedor.orders.updateOrderStatus);
+
   // Redirect to home page if user is not logged in
   useEffect(() => {
     if (user === null) {
@@ -38,17 +48,6 @@ export default function DriverOrdersPage() {
       </Layout>
     );
   }
-
-  // Queries
-  const allOrders = useQuery(api.boedor.orders.getAllOrders, { currentUserId: user._id });
-  const myOrders = useQuery(api.boedor.orders.getOrdersByDriver, { 
-    driverId: user._id, 
-    currentUserId: user._id 
-  });
-
-  // Mutations
-  const createOrder = useMutation(api.boedor.orders.createOrder);
-  const updateOrderStatus = useMutation(api.boedor.orders.updateOrderStatus);
 
   // Handlers
   const handleCreateOrder = async () => {
@@ -85,7 +84,7 @@ export default function DriverOrdersPage() {
     <Layout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Pesanan Driver</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Pesanan Saya</h1>
           <p className="mt-2 text-gray-600">Kelola pesanan antar Anda</p>
         </div>
 
@@ -165,71 +164,130 @@ export default function DriverOrdersPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            {/* Mobile: stacked list without boxes */}
+            <div className="md:hidden">
               {myOrders && myOrders.length > 0 ? (
-                myOrders.sort((a, b) => b.createdAt - a.createdAt).map((order) => (
-                  <div key={order._id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center space-x-4">
-                      {getStatusIcon(order.status)}
-                      <div>
-                        <p className="font-medium">Pesanan #{order._id.slice(-8)}</p>
-                        <p className="text-sm text-gray-500">
-                          Dibuat: {new Date(order.createdAt).toLocaleDateString('id-ID')}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
-                        {formatStatus(order.status)}
-                      </span>
-                      <div className="flex space-x-1">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => router.push(`/driver/orders/${order._id}`)}
-                        >
-                          <Eye className="h-4 w-4 mr-1" />
-                          Detail
-                        </Button>
-                        {order.status === "open" && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleUpdateOrderStatus(order._id, "closed")}
-                          >
-                            Tutup
+                <div className="divide-y divide-gray-200">
+                  {myOrders
+                    .slice()
+                    .sort((a, b) => b.createdAt - a.createdAt)
+                    .map((order) => (
+                      <div key={order._id} className="py-3">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center space-x-3">
+                            {getStatusIcon(order.status)}
+                            <div>
+                              <div className="font-medium">#{order._id.slice(-8)}</div>
+                              <div className="text-xs text-gray-500">Dibuat: {new Date(order.createdAt).toLocaleDateString('id-ID')}</div>
+                            </div>
+                          </div>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                            {formatStatus(order.status)}
+                          </span>
+                        </div>
+                        <div className="mt-2 flex flex-wrap gap-2 justify-end">
+                          <Button size="sm" variant="outline" onClick={() => router.push(`/driver/orders/${order._id}`)}>
+                            <Eye className="h-4 w-4 mr-1" />
+                            Detail
                           </Button>
-                        )}
-                        {order.status === "closed" && (
-                          <>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleUpdateOrderStatus(order._id, "open")}
-                            >
+                          {order.status === "open" && (
+                            <Button size="sm" variant="outline" onClick={() => handleUpdateOrderStatus(order._id, "closed")}>
+                              Tutup
+                            </Button>
+                          )}
+                          {order.status === "closed" && (
+                            <>
+                              <Button size="sm" variant="outline" onClick={() => handleUpdateOrderStatus(order._id, "open")}>
+                                Buka Kembali
+                              </Button>
+                              <Button size="sm" onClick={() => handleUpdateOrderStatus(order._id, "completed")}>
+                                Selesaikan
+                              </Button>
+                            </>
+                          )}
+                          {order.status === "completed" && (
+                            <Button size="sm" variant="outline" onClick={() => handleUpdateOrderStatus(order._id, "open")}>
                               Buka Kembali
                             </Button>
-                            <Button
-                              size="sm"
-                              onClick={() => handleUpdateOrderStatus(order._id, "completed")}
-                            >
-                              Selesaikan
-                            </Button>
-                          </>
-                        )}
-                        {order.status === "completed" && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleUpdateOrderStatus(order._id, "open")}
-                          >
-                            Buka Kembali
-                          </Button>
-                        )}
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                ))
+                    ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Truck className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-500">Belum ada pesanan. Buat pesanan pertama Anda!</p>
+                </div>
+              )}
+            </div>
+
+            {/* Desktop: table */}
+            <div className="hidden md:block">
+              {myOrders && myOrders.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-sm">
+                    <thead className="bg-gray-50 border-b border-gray-200">
+                      <tr>
+                        <th className="text-left px-4 py-3 font-medium text-gray-700">Pesanan</th>
+                        <th className="text-left px-4 py-3 font-medium text-gray-700">Status</th>
+                        <th className="text-left px-4 py-3 font-medium text-gray-700">Dibuat</th>
+                        <th className="text-left px-4 py-3 font-medium text-gray-700">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {myOrders
+                        .slice()
+                        .sort((a, b) => b.createdAt - a.createdAt)
+                        .map((order) => (
+                          <tr key={order._id} className="hover:bg-gray-50">
+                            <td className="px-4 py-3">
+                              <div className="flex items-center space-x-3">
+                                {getStatusIcon(order.status)}
+                                <div>
+                                  <div className="font-medium">#{order._id.slice(-8)}</div>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                                {formatStatus(order.status)}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3">{new Date(order.createdAt).toLocaleDateString('id-ID')}</td>
+                            <td className="px-4 py-3 text-right">
+                              <div className="flex items-center gap-2 justify-end">
+                                <Button size="sm" variant="outline" onClick={() => router.push(`/driver/orders/${order._id}`)}>
+                                  <Eye className="h-4 w-4 mr-1" />
+                                  Detail
+                                </Button>
+                                {order.status === "open" && (
+                                  <Button size="sm" variant="outline" onClick={() => handleUpdateOrderStatus(order._id, "closed")}>
+                                    Tutup
+                                  </Button>
+                                )}
+                                {order.status === "closed" && (
+                                  <>
+                                    <Button size="sm" variant="outline" onClick={() => handleUpdateOrderStatus(order._id, "open")}>
+                                      Buka Kembali
+                                    </Button>
+                                    <Button size="sm" onClick={() => handleUpdateOrderStatus(order._id, "completed")}>
+                                      Selesaikan
+                                    </Button>
+                                  </>
+                                )}
+                                {order.status === "completed" && (
+                                  <Button size="sm" variant="outline" onClick={() => handleUpdateOrderStatus(order._id, "open")}>
+                                    Buka Kembali
+                                  </Button>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
               ) : (
                 <div className="text-center py-8">
                   <Truck className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -238,7 +296,7 @@ export default function DriverOrdersPage() {
               )}
             </div>
           </CardContent>
-        </Card>
+          </Card>
       </div>
     </Layout>
   );
