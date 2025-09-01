@@ -24,7 +24,7 @@ export function LoginForm() {
     try {
       const schema = z.object({
         username: z.string().min(3, 'Nama pengguna minimal 3 karakter'),
-        password: z.string().min(6, 'Kata sandi minimal 6 karakter'),
+        password: z.string().min(3, 'Kata sandi minimal 6 karakter'),
       });
       const parsed = schema.safeParse({ username, password });
       if (!parsed.success) {
