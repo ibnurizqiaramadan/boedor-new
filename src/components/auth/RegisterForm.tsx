@@ -23,7 +23,11 @@ export function RegisterForm() {
 
     try {
       const schema = z.object({
-        username: z.string().min(3, 'Nama pengguna minimal 3 karakter'),
+          username: z
+          .string()
+          .trim()
+          .min(3, 'Nama pengguna minimal 3 karakter')
+          .regex(/^\S+$/, 'Nama pengguna tidak boleh mengandung spasi'),
         password: z.string().min(6, 'Kata sandi minimal 6 karakter'),
         role: z.enum([ 'driver', 'user' ], { message: 'Peran tidak valid' }),
       });
@@ -38,7 +42,8 @@ export function RegisterForm() {
         setIsLoading(false);
         return;
       }
-      await register(username, password, role);
+      const { username: cleanUsername, password: cleanPassword, role: cleanRole } = parsed.data;
+      await register(cleanUsername, cleanPassword, cleanRole);
     } catch (err: any) {
       setError(err.message || 'Registration failed');
     } finally {

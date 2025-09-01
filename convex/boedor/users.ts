@@ -77,7 +77,21 @@ export const updateUser = mutation({
     await requireRole(ctx, args.currentUserId, ["super_admin", "admin"]);
     
     const updateData: any = {};
-    if (args.username !== undefined) updateData.username = args.username;
+    if (args.username !== undefined) {
+      const cleanUsername = args.username.trim();
+      if (!/^\S+$/.test(cleanUsername)) {
+        throw new Error("Username tidak boleh mengandung spasi");
+      }
+      // Ensure username is unique (excluding current user)
+      const existing = await ctx.db
+        .query("boedor_users")
+        .withIndex("by_username", (q: any) => q.eq("username", cleanUsername))
+        .first();
+      if (existing && existing._id !== args.userId) {
+        throw new Error("Username already exists");
+      }
+      updateData.username = cleanUsername;
+    }
     if (args.role !== undefined) updateData.role = args.role;
     
     await ctx.db.patch(args.userId, updateData);

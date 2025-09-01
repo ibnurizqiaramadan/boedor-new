@@ -65,11 +65,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (username: string, password: string) => {
     try {
-      const result = await loginAction({ username, password });
+      const result = await loginAction({ username: username.trim(), password });
       setUserId(result.userId as Id<'boedor_users'>);
       localStorage.setItem('boedor_user_id', result.userId);
     } catch (error) {
-      throw error;
+      // Mask raw Convex/server errors with a friendly message
+      throw new Error('Nama pengguna atau kata sandi salah');
     }
   };
 

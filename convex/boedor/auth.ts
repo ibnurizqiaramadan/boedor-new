@@ -21,10 +21,16 @@ export const createUserInternal = internalMutation({
     role: v.union(v.literal("super_admin"), v.literal("admin"), v.literal("driver"), v.literal("user")),
   },
   handler: async (ctx, args) => {
+    // Normalize & validate username: no spaces allowed
+    const cleanUsername = args.username.trim();
+    if (!/^\S+$/.test(cleanUsername)) {
+      throw new Error("Username tidak boleh mengandung spasi");
+    }
+
     // Check if username already exists
     const existingUser = await ctx.db
       .query("boedor_users")
-      .withIndex("by_username", (q) => q.eq("username", args.username))
+      .withIndex("by_username", (q) => q.eq("username", cleanUsername))
       .first();
 
     if (existingUser) {
@@ -33,12 +39,12 @@ export const createUserInternal = internalMutation({
 
     // Create user
     const userId = await ctx.db.insert("boedor_users", {
-      username: args.username,
+      username: cleanUsername,
       passwordHash: args.passwordHash,
       role: args.role,
     });
 
-    return { userId, username: args.username, role: args.role };
+    return { userId, username: cleanUsername, role: args.role };
   },
 });
 
@@ -63,13 +69,18 @@ export const register = action({
     role: v.union(v.literal("super_admin"), v.literal("admin"), v.literal("driver"), v.literal("user")),
   },
   handler: async (ctx, args): Promise<{ userId: Id<"boedor_users">; username: string; role: "super_admin" | "admin" | "driver" | "user" }> => {
+    // Normalize & validate username on action layer as well
+    const cleanUsername = args.username.trim();
+    if (!/^\S+$/.test(cleanUsername)) {
+      throw new Error("Username tidak boleh mengandung spasi");
+    }
     // Hash password
     const saltRounds = 10;
     const passwordHash = await bcrypt.hash(args.password, saltRounds);
 
     // Call internal mutation to create user
     return await ctx.runMutation(internal.boedor.auth.createUserInternal, {
-      username: args.username,
+      username: cleanUsername,
       passwordHash,
       role: args.role,
     });
