@@ -252,7 +252,7 @@ export default function UserPesananPage() {
 
         {/* Available Orders */}
         <Card>
-          <CardContent className="pt-8">
+          <CardContent className="pt-6">
             <div className="space-y-4">
               {availableOrders?.filter((order) => order.status === 'open')
                 .sort((a, b) => b.createdAt - a.createdAt)
