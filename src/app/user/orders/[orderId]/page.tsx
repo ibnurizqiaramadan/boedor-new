@@ -22,22 +22,22 @@ export default function UserOrderDetailPage() {
   const router = useRouter();
   const params = useParams();
   const orderId = params.orderId as string;
-  const [ isEditItemOpen, setIsEditItemOpen ] = useState(false);
-  const [ isAddItemOpen, setIsAddItemOpen ] = useState(false);
-  const [ selectedOrderItem, setSelectedOrderItem ] = useState<any>(null);
-  const [ selectedMenuItems, setSelectedMenuItems ] = useState<{ menuId: string; qty: number }[]>([]);
-  const [ itemNotes, setItemNotes ] = useState<Record<string, string>>({});
-  const [ paymentMethod, setPaymentMethod ] = useState<'cash' | 'cardless' | 'dana'>('cash');
-  const [ amount, setAmount ] = useState<string>('');
-  const [ payErrors, setPayErrors ] = useState<{ amount?: string }>([] as any as { amount?: string });
-  const [ errors, setErrors ] = useState<{ amount?: string }>({});
+  const [isEditItemOpen, setIsEditItemOpen] = useState(false);
+  const [isAddItemOpen, setIsAddItemOpen] = useState(false);
+  const [selectedOrderItem, setSelectedOrderItem] = useState<any>(null);
+  const [selectedMenuItems, setSelectedMenuItems] = useState<{ menuId: string; qty: number }[]>([]);
+  const [itemNotes, setItemNotes] = useState<Record<string, string>>({});
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'cardless' | 'dana'>('cash');
+  const [amount, setAmount] = useState<string>('');
+  const [payErrors, setPayErrors] = useState<{ amount?: string }>([] as any as { amount?: string });
+  const [errors, setErrors] = useState<{ amount?: string }>({});
 
   // Redirect to home page if user is not logged in
   useEffect(() => {
     if (user === null) {
       router.push('/');
     }
-  }, [ user, router ]);
+  }, [user, router]);
 
   if (!user) {
     return null; // Don't render anything while redirecting
@@ -65,7 +65,7 @@ export default function UserOrderDetailPage() {
   const menuItems = useQuery(api.boedor.menu.getAllMenuItems, { currentUserId: user._id });
 
   // Get unique participant IDs from order items
-  const participantIds = orderItems ? [ ...new Set(orderItems.map((item) => item.userId)) ] : [];
+  const participantIds = orderItems ? [...new Set(orderItems.map((item) => item.userId))] : [];
 
   // Get usernames for participants
   const participants = useQuery(
@@ -98,7 +98,7 @@ export default function UserOrderDetailPage() {
       setPaymentMethod('cash');
       setAmount('');
     }
-  }, [ existingPayment ]);
+  }, [existingPayment]);
 
   if (!order) {
     return (
@@ -187,6 +187,20 @@ export default function UserOrderDetailPage() {
   const handleUpdateOrderItem = async () => {
     try {
       if (selectedOrderItem && selectedOrderItem.qty > 0) {
+        // If payment exists, ensure the new total (with edited item qty) does not exceed payment
+        if (existingPayment && menuItems) {
+          const price = menuItems.find((m) => m._id === selectedOrderItem.menuId)?.price || 0;
+          const currentTotalExcluding = myItems.reduce((sum, it) => {
+            if (it._id === selectedOrderItem._id) return sum;
+            const m = menuItems.find((mm) => mm._id === it.menuId);
+            return sum + (m ? m.price * it.qty : 0);
+          }, 0);
+          const projected = currentTotalExcluding + (price * selectedOrderItem.qty);
+          if (projected > existingPayment.amount) {
+            toast.error('Perubahan melebihi jumlah bayar yang tersimpan');
+            return;
+          }
+        }
         await updateOrderItem({
           orderItemId: selectedOrderItem._id,
           qty: selectedOrderItem.qty,
@@ -225,10 +239,13 @@ export default function UserOrderDetailPage() {
         const m = menuItems?.find((mi) => mi._id === sel.menuId);
         return sum + (m ? m.price * sel.qty : 0);
       }, 0);
-      // If user already has a payment recorded, ensure it covers the new subtotal
-      if (existingPayment && existingPayment.amount < subtotal) {
-        toast.error('Subtotal melebihi jumlah bayar yang tersimpan');
-        return;
+      // If user already has a payment recorded, ensure current total + new subtotal does not exceed it
+      if (existingPayment) {
+        const myCurrent = getMyTotal();
+        if (myCurrent + subtotal > existingPayment.amount) {
+          toast.error('Subtotal melebihi jumlah bayar yang tersimpan');
+          return;
+        }
       }
 
       if (selectedMenuItems.length > 0) {
@@ -262,7 +279,7 @@ export default function UserOrderDetailPage() {
       const existing = prev.find((item) => item.menuId === menuId);
       const next = existing
         ? prev.map((item) => (item.menuId === menuId ? { ...item, qty } : item))
-        : [ ...prev, { menuId, qty } ];
+        : [...prev, { menuId, qty }];
       return next;
     });
     // Clear note when qty becomes 0
@@ -370,13 +387,13 @@ export default function UserOrderDetailPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Metode Pembayaran</label>
                 <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
                   <div className="flex gap-2 w-full sm:w-auto">
-                    <button type="button" onClick={() => setPaymentMethod('cash')} className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition ${paymentMethod==='cash' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white hover:bg-gray-50'}`}>
+                    <button type="button" onClick={() => setPaymentMethod('cash')} className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition ${paymentMethod === 'cash' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white hover:bg-gray-50'}`}>
                       <Wallet className="h-4 w-4" /> Tunai
                     </button>
-                    <button type="button" onClick={() => setPaymentMethod('cardless')} className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition ${paymentMethod==='cardless' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white hover:bg-gray-50'}`}>
+                    <button type="button" onClick={() => setPaymentMethod('cardless')} className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition ${paymentMethod === 'cardless' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white hover:bg-gray-50'}`}>
                       <CreditCard className="h-4 w-4" /> Tanpa Kartu
                     </button>
-                    <button type="button" onClick={() => setPaymentMethod('dana')} className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition ${paymentMethod==='dana' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white hover:bg-gray-50'}`}>
+                    <button type="button" onClick={() => setPaymentMethod('dana')} className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition ${paymentMethod === 'dana' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white hover:bg-gray-50'}`}>
                       <Smartphone className="h-4 w-4" /> DANA
                     </button>
                   </div>
@@ -390,8 +407,8 @@ export default function UserOrderDetailPage() {
                           min="0"
                           value={amount}
                           onChange={(e) => {
- setAmount(e.target.value); if (payErrors.amount) setPayErrors({});
-}}
+                            setAmount(e.target.value); if (payErrors.amount) setPayErrors({});
+                          }}
                           className="border-0 focus-visible:ring-0 text-center py-2"
                         />
                       </div>
@@ -401,8 +418,8 @@ export default function UserOrderDetailPage() {
                       <Button
                         onClick={handleSavePayment}
                         disabled={(() => {
- const amt = parseFloat(amount); const myTotal = getMyTotal(); return isNaN(amt) || amt <= 0 || amt < myTotal;
-})()}
+                          const amt = parseFloat(amount); const myTotal = getMyTotal(); return isNaN(amt) || amt <= 0 || amt < myTotal;
+                        })()}
                         className="py-2"
                       >
                         Simpan Pembayaran
@@ -709,13 +726,11 @@ export default function UserOrderDetailPage() {
             <div className="flex items-center justify-between pt-4">
               <span className="font-semibold">Subtotal</span>
               <span className={`font-semibold ${(() => {
- const subtotal = selectedMenuItems.reduce((sum, sel) => {
- const m = menuItems?.find((mi) => mi._id === sel.menuId); return sum + (m ? m.price * sel.qty : 0);
-}, 0); const effective = existingPayment?.amount ?? Number.POSITIVE_INFINITY; return subtotal > effective ? 'text-red-600' : '';
-})()}`}>
-                {formatCurrency(selectedMenuItems.reduce((sum, sel) => {
- const m = menuItems?.find((mi) => mi._id === sel.menuId); return sum + (m ? m.price * sel.qty : 0);
-}, 0))}
+                const subtotal = selectedMenuItems.reduce((sum, sel) => { const m = menuItems?.find((mi) => mi._id === sel.menuId); return sum + (m ? m.price * sel.qty : 0); }, 0);
+                const remaining = existingPayment ? (existingPayment.amount - getMyTotal()) : Number.POSITIVE_INFINITY;
+                return subtotal > remaining ? 'text-red-600' : '';
+              })()}`}>
+                {formatCurrency(selectedMenuItems.reduce((sum, sel) => { const m = menuItems?.find((mi) => mi._id === sel.menuId); return sum + (m ? m.price * sel.qty : 0); }, 0))}
               </span>
             </div>
 
@@ -729,9 +744,13 @@ export default function UserOrderDetailPage() {
               </Button>
               <Button
                 onClick={handleAddMoreItems}
-                disabled={selectedMenuItems.filter((item) => item.qty > 0).length === 0 || (existingPayment ? (selectedMenuItems.reduce((sum, sel) => {
- const m = menuItems?.find((mi) => mi._id === sel.menuId); return sum + (m ? m.price * sel.qty : 0);
-}, 0) > existingPayment.amount) : false)}
+                disabled={(() => {
+                  const count = selectedMenuItems.filter((item) => item.qty > 0).length;
+                  if (count === 0) return true;
+                  if (!existingPayment) return false;
+                  const newSubtotal = selectedMenuItems.reduce((sum, sel) => { const m = menuItems?.find((mi) => mi._id === sel.menuId); return sum + (m ? m.price * sel.qty : 0); }, 0);
+                  return (getMyTotal() + newSubtotal) > existingPayment.amount;
+                })()}
               >
                 Tambah Item ({selectedMenuItems.filter((item) => item.qty > 0).length})
               </Button>

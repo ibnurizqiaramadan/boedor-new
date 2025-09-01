@@ -27,19 +27,19 @@ export default function UserPesananPage() {
   const addOrderItem = useMutation(api.boedor.orderItems.addOrderItem);
   const upsertPayment = useMutation(api.boedor.payment.upsertPayment);
 
-  const [ isJoinOrderOpen, setIsJoinOrderOpen ] = useState(false);
-  const [ selectedOrder, setSelectedOrder ] = useState<any>(null);
-  const [ selectedMenuItems, setSelectedMenuItems ] = useState<Array<{menuId: string, qty: number}>>([]);
-  const [ errors, setErrors ] = useState<{ items?: string; selectedOrder?: string; payment?: string }>({});
+  const [isJoinOrderOpen, setIsJoinOrderOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [selectedMenuItems, setSelectedMenuItems] = useState<Array<{ menuId: string, qty: number }>>([]);
+  const [errors, setErrors] = useState<{ items?: string; selectedOrder?: string; payment?: string }>({});
 
   // Payment form state
-  const [ paymentMethod, setPaymentMethod ] = useState<'cash' | 'cardless' | 'dana'>('cash');
-  const [ amount, setAmount ] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'cardless' | 'dana'>('cash');
+  const [amount, setAmount] = useState('');
   // Per-item notes keyed by menuId
-  const [ itemNotes, setItemNotes ] = useState<Record<string, string>>({});
+  const [itemNotes, setItemNotes] = useState<Record<string, string>>({});
 
   // Menu filter state
-  const [ menuFilter, setMenuFilter ] = useState('');
+  const [menuFilter, setMenuFilter] = useState('');
 
   // Fetch existing payment for this user and selected order (to prefill form)
   const existingPayment = useQuery(
@@ -47,6 +47,15 @@ export default function UserPesananPage() {
     selectedOrder && user ? {
       orderId: selectedOrder._id,
       userId: user._id,
+      currentUserId: user._id,
+    } : 'skip',
+  );
+
+  // Fetch current order items for selected order to know user's current total (remaining balance)
+  const orderItems = useQuery(
+    api.boedor.orderItems.getOrderItemsByOrder,
+    selectedOrder && user ? {
+      orderId: selectedOrder._id as Id<'boedor_orders'>,
       currentUserId: user._id,
     } : 'skip',
   );
@@ -60,7 +69,7 @@ export default function UserPesananPage() {
       setPaymentMethod('cash');
       setAmount('');
     }
-  }, [ existingPayment ]);
+  }, [existingPayment]);
 
 
 
@@ -80,7 +89,7 @@ export default function UserPesananPage() {
     if (!existingPayment) {
       return z.object({
         ...baseSchema,
-        paymentMethod: z.enum([ 'cash', 'cardless', 'dana' ]),
+        paymentMethod: z.enum(['cash', 'cardless', 'dana']),
         amount: z.string().min(1, 'Masukkan jumlah pembayaran').refine((val) => {
           const num = parseFloat(val);
           return !isNaN(num) && num > 0;
@@ -125,6 +134,16 @@ export default function UserPesananPage() {
       try {
         const validation = validateForm();
         if (!('ok' in validation) || !validation.ok) return;
+
+        // If user has an existing payment for this order, ensure current items + new subtotal <= payment amount
+        const subtotal = calcSubtotal();
+        if (existingPayment && typeof existingPayment.amount === 'number') {
+          const myCurrent = getMyCurrentTotal();
+          if (myCurrent + subtotal > existingPayment.amount) {
+            toast.error('Subtotal melebihi sisa kembalian Anda');
+            return;
+          }
+        }
 
         // Add all selected items to the order
         for (const item of selectedMenuItems) {
@@ -175,7 +194,7 @@ export default function UserPesananPage() {
       const existing = prev.find((item) => item.menuId === menuId);
       const next = existing
         ? prev.map((item) => (item.menuId === menuId ? { ...item, qty } : item))
-        : [ ...prev, { menuId, qty } ];
+        : [...prev, { menuId, qty }];
       return next;
     });
     // If qty becomes 0, clear its note
@@ -208,6 +227,16 @@ export default function UserPesananPage() {
       const item = menuItems.find((m) => m._id === sel.menuId);
       if (!item) return sum;
       return sum + (item.price * sel.qty);
+    }, 0);
+  };
+
+  // Current user's existing total on the selected order (before adding in this dialog)
+  const getMyCurrentTotal = () => {
+    if (!orderItems || !menuItems || !user) return 0;
+    const myItems = orderItems.filter((it: any) => it.userId === user._id);
+    return myItems.reduce((sum: number, it: any) => {
+      const m = menuItems.find((mm) => mm._id === it.menuId);
+      return sum + (m ? m.price * it.qty : 0);
     }, 0);
   };
 
@@ -257,27 +286,27 @@ export default function UserPesananPage() {
               {availableOrders?.filter((order) => order.status === 'open')
                 .sort((a, b) => b.createdAt - a.createdAt)
                 .map((order) => (
-                <div key={order._id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div>
-                    <p className="font-medium">Pesanan #{order._id.slice(-6)}</p>
-                    <p className="text-sm text-gray-500">Status: {formatStatus(order.status)}</p>
-                    <p className="text-sm text-gray-500">
-                      Dibuat: {new Date(order.createdAt).toLocaleString('id-ID')}
-                    </p>
+                  <div key={order._id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                      <p className="font-medium">Pesanan #{order._id.slice(-6)}</p>
+                      <p className="text-sm text-gray-500">Status: {formatStatus(order.status)}</p>
+                      <p className="text-sm text-gray-500">
+                        Dibuat: {new Date(order.createdAt).toLocaleString('id-ID')}
+                      </p>
+                    </div>
+                    <Button
+                      onClick={() => {
+                        setSelectedOrder(order);
+                        // Reset form when opening dialog
+                        setSelectedMenuItems([]);
+                        setMenuFilter('');
+                        setIsJoinOrderOpen(true);
+                      }}
+                    >
+                      Gabung Pesanan
+                    </Button>
                   </div>
-                  <Button
-                    onClick={() => {
-                      setSelectedOrder(order);
-                      // Reset form when opening dialog
-                      setSelectedMenuItems([]);
-                      setMenuFilter('');
-                      setIsJoinOrderOpen(true);
-                    }}
-                  >
-                    Gabung Pesanan
-                  </Button>
-                </div>
-              ))}
+                ))}
               {(!availableOrders || availableOrders.filter((order) => order.status === 'open').length === 0) && (
                 <p className="text-gray-500 text-center py-8">Tidak ada pesanan tersedia saat ini</p>
               )}
@@ -358,8 +387,10 @@ export default function UserPesananPage() {
             <div className="flex items-center justify-between pt-4">
               <span className="font-semibold">Subtotal</span>
               <span className={`font-semibold ${(() => {
- const subtotal = calcSubtotal(); const eff = existingPayment?.amount; return (typeof eff === 'number' && subtotal > eff) ? 'text-red-600' : '';
-})()}`}>
+                const subtotal = calcSubtotal();
+                const remaining = existingPayment ? (existingPayment.amount - getMyCurrentTotal()) : Number.POSITIVE_INFINITY;
+                return subtotal > remaining ? 'text-red-600' : '';
+              })()}`}>
                 {formatCurrency(calcSubtotal())}
               </span>
             </div>
@@ -383,21 +414,21 @@ export default function UserPesananPage() {
                       <button
                         type="button"
                         onClick={() => setPaymentMethod('cash')}
-                        className={`flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition ${paymentMethod==='cash' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white hover:bg-gray-50'}`}
+                        className={`flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition ${paymentMethod === 'cash' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white hover:bg-gray-50'}`}
                       >
                         <Wallet className="h-4 w-4" /> Tunai
                       </button>
                       <button
                         type="button"
                         onClick={() => setPaymentMethod('cardless')}
-                        className={`flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition ${paymentMethod==='cardless' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white hover:bg-gray-50'}`}
+                        className={`flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition ${paymentMethod === 'cardless' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white hover:bg-gray-50'}`}
                       >
                         <CreditCard className="h-4 w-4" /> Tanpa Kartu
                       </button>
                       <button
                         type="button"
                         onClick={() => setPaymentMethod('dana')}
-                        className={`flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition ${paymentMethod==='dana' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white hover:bg-gray-50'}`}
+                        className={`flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition ${paymentMethod === 'dana' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white hover:bg-gray-50'}`}
                       >
                         <Smartphone className="h-4 w-4" /> DANA
                       </button>
@@ -428,7 +459,13 @@ export default function UserPesananPage() {
               <Button variant="outline" onClick={() => setIsJoinOrderOpen(false)}>Batal</Button>
               <Button
                 onClick={handleJoinOrder}
-                disabled={selectedMenuItems.filter((item) => item.qty > 0).length === 0}
+                disabled={(() => {
+                  const hasSelection = selectedMenuItems.some((i) => i.qty > 0);
+                  if (!hasSelection) return true;
+                  if (!existingPayment) return false;
+                  const newSubtotal = calcSubtotal();
+                  return (getMyCurrentTotal() + newSubtotal) > existingPayment.amount;
+                })()}
               >
                 Gabung Pesanan ({selectedMenuItems.filter((item) => item.qty > 0).length} item)
               </Button>
