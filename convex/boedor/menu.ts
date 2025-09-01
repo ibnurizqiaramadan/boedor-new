@@ -17,8 +17,10 @@ export const getAllMenuItems = query({
     // All authenticated users can view menu items
     const user = await ctx.db.get(args.currentUserId);
     if (!user) throw new Error("Unauthorized");
-    
-    return await ctx.db.query("boedor_menu").collect();
+
+    const items = await ctx.db.query("boedor_menu").collect();
+    // Sort by name ascending (case-insensitive)
+    return items.sort((a, b) => a.name.localeCompare(b.name, 'id', { sensitivity: 'base' }));
   },
 });
 
