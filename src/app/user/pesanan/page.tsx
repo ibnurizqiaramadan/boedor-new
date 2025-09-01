@@ -316,7 +316,7 @@ export default function UserPesananPage() {
 
         {/* Join Order Dialog */}
         <Dialog open={isJoinOrderOpen} onOpenChange={setIsJoinOrderOpen}>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Gabung Pesanan #{selectedOrder?._id.slice(-6)}</DialogTitle>
               <DialogDescription>Pilih item menu dan jumlahnya</DialogDescription>
