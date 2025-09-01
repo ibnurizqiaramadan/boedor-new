@@ -10,29 +10,29 @@ import {
   Menu,
   ShoppingCart,
   Plus,
-  Settings,
+  SquareMenu,
   ShoppingBag,
 } from 'lucide-react';
 
 const navigationItems = {
   super_admin: [
     { name: 'Dasbor', href: '/admin', icon: Users },
-    { name: 'Menu', href: '/admin/menu', icon: Settings },
+    { name: 'Menu', href: '/admin/menu', icon: SquareMenu },
     { name: 'Pesanan', href: '/admin/orders', icon: ShoppingBag },
   ],
   admin: [
     { name: 'Dasbor', href: '/admin', icon: Users },
-    { name: 'Menu', href: '/admin/menu', icon: Settings },
+    { name: 'Menu', href: '/admin/menu', icon: SquareMenu },
     { name: 'Pesanan', href: '/admin/orders', icon: ShoppingBag },
   ],
   driver: [
     { name: 'Dasbor', href: '/driver', icon: Menu },
-    { name: 'Menu', href: '/driver/menu', icon: Settings },
+    { name: 'Menu', href: '/driver/menu', icon: SquareMenu },
     { name: 'Pesanan', href: '/driver/orders', icon: ShoppingCart },
   ],
   user: [
     { name: 'Dasbor', href: '/user', icon: ShoppingCart },
-    { name: 'Menu', href: '/user/menu', icon: Menu },
+    { name: 'Menu', href: '/user/menu', icon: SquareMenu },
     { name: 'Pesanan', href: '/user/pesanan', icon: Plus },
   ],
 };
