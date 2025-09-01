@@ -35,6 +35,8 @@ export default function UserPesananPage() {
   // Payment form state
   const [ paymentMethod, setPaymentMethod ] = useState<'cash' | 'cardless' | 'dana'>('cash');
   const [ amount, setAmount ] = useState('');
+  // Per-item notes keyed by menuId
+  const [ itemNotes, setItemNotes ] = useState<Record<string, string>>({});
 
   // Menu filter state
   const [ menuFilter, setMenuFilter ] = useState('');
@@ -131,6 +133,7 @@ export default function UserPesananPage() {
               orderId: selectedOrder._id,
               menuId: item.menuId as Id<'boedor_menu'>,
               qty: item.qty,
+              note: itemNotes[item.menuId]?.trim() ? itemNotes[item.menuId].trim() : undefined,
               currentUserId: user!._id,
             });
           }
@@ -160,6 +163,7 @@ export default function UserPesananPage() {
         setSelectedMenuItems([]);
         setPaymentMethod('cash');
         setAmount('');
+        setItemNotes({});
       } catch (error) {
         toast.error('Gagal bergabung dengan pesanan');
       }
@@ -169,18 +173,26 @@ export default function UserPesananPage() {
   const updateMenuItemQuantity = (menuId: string, qty: number) => {
     setSelectedMenuItems((prev) => {
       const existing = prev.find((item) => item.menuId === menuId);
-      if (existing) {
-        return prev.map((item) =>
-          item.menuId === menuId ? { ...item, qty } : item,
-        );
-      } else {
-        return [ ...prev, { menuId, qty } ];
-      }
+      const next = existing
+        ? prev.map((item) => (item.menuId === menuId ? { ...item, qty } : item))
+        : [ ...prev, { menuId, qty } ];
+      return next;
     });
+    // If qty becomes 0, clear its note
+    if (qty === 0) {
+      setItemNotes((prev) => {
+        const { [menuId]: _, ...rest } = prev;
+        return rest;
+      });
+    }
   };
 
   const getMenuItemQuantity = (menuId: string) => {
     return selectedMenuItems.find((item) => item.menuId === menuId)?.qty || 0;
+  };
+
+  const setMenuItemNote = (menuId: string, note: string) => {
+    setItemNotes((prev) => ({ ...prev, [menuId]: note }));
   };
 
   const formatCurrency = (amount: number) =>
@@ -299,33 +311,44 @@ export default function UserPesananPage() {
 
             <div className="space-y-4 max-h-96 overflow-y-auto">
               {getFilteredMenuItems().map((item) => (
-                <div key={item._id} className="flex items-center justify-between p-3 border rounded">
-                  <div>
-                    <p className="font-medium">{item.name}</p>
-                    <p className="text-sm text-gray-500">
-                      {new Intl.NumberFormat('id-ID', {
-                        style: 'currency',
-                        currency: 'IDR',
-                        minimumFractionDigits: 0,
-                      }).format(item.price)}
-                    </p>
+                <div key={item._id} className="p-3 border rounded">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">{item.name}</p>
+                      <p className="text-sm text-gray-500">
+                        {new Intl.NumberFormat('id-ID', {
+                          style: 'currency',
+                          currency: 'IDR',
+                          minimumFractionDigits: 0,
+                        }).format(item.price)}
+                      </p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => updateMenuItemQuantity(item._id, Math.max(0, getMenuItemQuantity(item._id) - 1))}
+                      >
+                        -
+                      </Button>
+                      <span className="w-8 text-center">{getMenuItemQuantity(item._id)}</span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => updateMenuItemQuantity(item._id, getMenuItemQuantity(item._id) + 1)}
+                      >
+                        +
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => updateMenuItemQuantity(item._id, Math.max(0, getMenuItemQuantity(item._id) - 1))}
-                    >
-                      -
-                    </Button>
-                    <span className="w-8 text-center">{getMenuItemQuantity(item._id)}</span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => updateMenuItemQuantity(item._id, getMenuItemQuantity(item._id) + 1)}
-                    >
-                      +
-                    </Button>
+                  <div className="mt-2">
+                    <Input
+                      value={itemNotes[item._id] ?? ''}
+                      onChange={(e) => setMenuItemNote(item._id, e.target.value)}
+                      placeholder="Catatan (opsional) untuk item ini"
+                      className="w-full"
+                      disabled={getMenuItemQuantity(item._id) === 0}
+                    />
                   </div>
                 </div>
               ))}
@@ -340,6 +363,8 @@ export default function UserPesananPage() {
                 {formatCurrency(calcSubtotal())}
               </span>
             </div>
+
+            {/* Per-item notes are provided inline above; no global note field */}
 
             {/* Payment Form - Show only if no existing payment */}
             {!existingPayment && (

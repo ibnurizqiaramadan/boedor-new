@@ -105,6 +105,7 @@ export const updateOrderItem = mutation({
   args: {
     orderItemId: v.id("boedor_order_items"),
     qty: v.number(),
+    note: v.optional(v.string()),
     currentUserId: v.id("boedor_users"),
   },
   handler: async (ctx, args) => {
@@ -129,7 +130,10 @@ export const updateOrderItem = mutation({
       await ctx.db.delete(args.orderItemId);
       return { success: true, deleted: true };
     } else {
-      await ctx.db.patch(args.orderItemId, { qty: args.qty });
+      await ctx.db.patch(args.orderItemId, { 
+        qty: args.qty,
+        ...(args.note !== undefined ? { note: args.note } : {}),
+      });
       return await ctx.db.get(args.orderItemId);
     }
   },

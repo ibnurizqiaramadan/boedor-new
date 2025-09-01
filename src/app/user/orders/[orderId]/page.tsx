@@ -26,6 +26,7 @@ export default function UserOrderDetailPage() {
   const [ isAddItemOpen, setIsAddItemOpen ] = useState(false);
   const [ selectedOrderItem, setSelectedOrderItem ] = useState<any>(null);
   const [ selectedMenuItems, setSelectedMenuItems ] = useState<{ menuId: string; qty: number }[]>([]);
+  const [ itemNotes, setItemNotes ] = useState<Record<string, string>>({});
   const [ paymentMethod, setPaymentMethod ] = useState<'cash' | 'cardless' | 'dana'>('cash');
   const [ amount, setAmount ] = useState<string>('');
   const [ payErrors, setPayErrors ] = useState<{ amount?: string }>([] as any as { amount?: string });
@@ -189,6 +190,7 @@ export default function UserOrderDetailPage() {
         await updateOrderItem({
           orderItemId: selectedOrderItem._id,
           qty: selectedOrderItem.qty,
+          note: selectedOrderItem.note?.trim() ? selectedOrderItem.note.trim() : undefined,
           currentUserId: user._id,
         });
         toast.success('Item pesanan berhasil diperbarui!');
@@ -237,6 +239,7 @@ export default function UserOrderDetailPage() {
               orderId: orderId as Id<'boedor_orders'>,
               menuId: item.menuId as Id<'boedor_menu'>,
               qty: item.qty,
+              note: itemNotes[item.menuId]?.trim() ? itemNotes[item.menuId].trim() : undefined,
               currentUserId: user._id,
             });
           }
@@ -245,6 +248,7 @@ export default function UserOrderDetailPage() {
         toast.success('Item berhasil ditambahkan ke pesanan!');
         setIsAddItemOpen(false);
         setSelectedMenuItems([]);
+        setItemNotes({});
         setErrors({}); // keep payment state for Payment section
       }
     } catch (error) {
@@ -256,18 +260,26 @@ export default function UserOrderDetailPage() {
   const updateMenuItemQuantity = (menuId: string, qty: number) => {
     setSelectedMenuItems((prev) => {
       const existing = prev.find((item) => item.menuId === menuId);
-      if (existing) {
-        return prev.map((item) =>
-          item.menuId === menuId ? { ...item, qty } : item,
-        );
-      } else {
-        return [ ...prev, { menuId, qty } ];
-      }
+      const next = existing
+        ? prev.map((item) => (item.menuId === menuId ? { ...item, qty } : item))
+        : [ ...prev, { menuId, qty } ];
+      return next;
     });
+    // Clear note when qty becomes 0
+    if (qty === 0) {
+      setItemNotes((prev) => {
+        const { [menuId]: _, ...rest } = prev;
+        return rest;
+      });
+    }
   };
 
   const getMenuItemQuantity = (menuId: string) => {
     return selectedMenuItems.find((item) => item.menuId === menuId)?.qty || 0;
+  };
+
+  const setMenuItemNote = (menuId: string, note: string) => {
+    setItemNotes((prev) => ({ ...prev, [menuId]: note }));
   };
 
   return (
@@ -455,6 +467,9 @@ export default function UserOrderDetailPage() {
                           <p className="text-sm text-gray-500">
                             Jumlah: {item.qty} × {formatCurrency(menuItem?.price || 0)}
                           </p>
+                          {item.note && (
+                            <p className="text-sm text-gray-600 italic">Catatan: {item.note}</p>
+                          )}
                           <p className="text-xs text-gray-400">
                             {new Date(item._creationTime).toLocaleString('id-ID', {
                               year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit',
@@ -543,6 +558,9 @@ export default function UserOrderDetailPage() {
                                 <p className="text-sm text-gray-500">
                                   Jumlah: {item.qty} × {formatCurrency(menuItem?.price || 0)}
                                 </p>
+                                {item.note && (
+                                  <p className="text-sm text-gray-600 italic">Catatan: {item.note}</p>
+                                )}
                               </div>
                             </div>
                             <div className="text-right">
@@ -618,6 +636,15 @@ export default function UserOrderDetailPage() {
                     qty: parseInt(e.target.value) || 1,
                   })}
                 />
+                <Input
+                  type="text"
+                  placeholder="Catatan (opsional)"
+                  value={selectedOrderItem.note ?? ''}
+                  onChange={(e) => setSelectedOrderItem({
+                    ...selectedOrderItem,
+                    note: e.target.value,
+                  })}
+                />
               </div>
             )}
             <DialogFooter>
@@ -636,27 +663,38 @@ export default function UserOrderDetailPage() {
             </DialogHeader>
             <div className="space-y-4 max-h-96 overflow-y-auto">
               {menuItems?.map((item) => (
-                <div key={item._id} className="flex items-center justify-between p-3 border rounded">
-                  <div>
-                    <p className="font-medium">{item.name}</p>
-                    <p className="text-sm text-gray-500">{formatCurrency(item.price)}</p>
+                <div key={item._id} className="p-3 border rounded">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">{item.name}</p>
+                      <p className="text-sm text-gray-500">{formatCurrency(item.price)}</p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => updateMenuItemQuantity(item._id, Math.max(0, getMenuItemQuantity(item._id) - 1))}
+                      >
+                        -
+                      </Button>
+                      <span className="w-8 text-center">{getMenuItemQuantity(item._id)}</span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => updateMenuItemQuantity(item._id, getMenuItemQuantity(item._id) + 1)}
+                      >
+                        +
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => updateMenuItemQuantity(item._id, Math.max(0, getMenuItemQuantity(item._id) - 1))}
-                    >
-                      -
-                    </Button>
-                    <span className="w-8 text-center">{getMenuItemQuantity(item._id)}</span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => updateMenuItemQuantity(item._id, getMenuItemQuantity(item._id) + 1)}
-                    >
-                      +
-                    </Button>
+                  <div className="mt-2">
+                    <Input
+                      value={itemNotes[item._id] ?? ''}
+                      onChange={(e) => setMenuItemNote(item._id, e.target.value)}
+                      placeholder="Catatan (opsional) untuk item ini"
+                      className="w-full"
+                      disabled={getMenuItemQuantity(item._id) === 0}
+                    />
                   </div>
                 </div>
               ))}
