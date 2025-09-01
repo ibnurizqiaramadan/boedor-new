@@ -225,6 +225,9 @@ export default function OrderDetailPage() {
                                 <p className="text-sm text-gray-500">
                                   Jumlah: {item.qty} × {formatCurrency(menuItem?.price || 0)}
                                 </p>
+                                {item.note && (
+                                  <p className="text-sm text-gray-600 italic">Catatan: {item.note}</p>
+                                )}
                               </div>
                             </div>
                             <div className="text-right">
