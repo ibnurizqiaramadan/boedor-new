@@ -6,9 +6,8 @@ import { api } from '../../../convex/_generated/api';
 import Layout from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { useState, useEffect } from 'react';
+// Removed Dialog imports; using a toggle button instead
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { MapPin, Clock, CheckCircle, Truck } from 'lucide-react';
 import { formatStatus } from '@/lib/status';
@@ -16,8 +15,11 @@ import { formatStatus } from '@/lib/status';
 export default function DriverPage() {
   const { user } = useAuth();
   const router = useRouter();
-  const [ isUpdateLocationOpen, setIsUpdateLocationOpen ] = useState(false);
   const [ location, setLocation ] = useState({ lat: 0, lng: 0 });
+  const [ isTracking, setIsTracking ] = useState(false);
+  const watchIdRef = useRef<number | null>(null);
+  const locationRef = useRef<{ lat: number; lng: number }>({ lat: 0, lng: 0 });
+  const [ lastUpdatedAt, setLastUpdatedAt ] = useState<number | null>(null);
 
   // Queries
   const myOrders = useQuery(api.boedor.orders.getOrdersByDriver, user ? { driverId: user._id, currentUserId: user._id } : 'skip');
@@ -34,19 +36,8 @@ export default function DriverPage() {
     }
   }, [ user, router ]);
 
-  if (!user) {
-    return null; // Don't render anything while redirecting
-  }
-
-  if (user.role !== 'driver') {
-    return (
-      <Layout>
-        <div className="flex items-center justify-center h-64">
-          <p className="text-red-500">Akses ditolak. Khusus driver.</p>
-        </div>
-      </Layout>
-    );
-  }
+  const isLoggedIn = !!user;
+  const isDriver = user?.role === 'driver';
 
   // Menu manajemen dipindahkan ke /driver/menu
 
@@ -54,33 +45,99 @@ export default function DriverPage() {
     await updateOrderStatus({ orderId: orderId as any, status, currentUserId: user!._id });
   };
 
-  const handleUpdateLocation = async () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(async (position) => {
-        const lat = position.coords.latitude;
-        const lng = position.coords.longitude;
+  // Removed manual handleUpdateLocation; tracking toggle handles updates
+
+  // Restore tracking state from localStorage on mount
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const saved = localStorage.getItem('driverTracking');
+    if (saved === 'true') {
+      setIsTracking(true);
+    }
+  }, []);
+
+  // Start/stop geolocation watcher based on isTracking
+  useEffect(() => {
+    if (!user) return;
+
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('driverTracking', isTracking ? 'true' : 'false');
+    }
+
+    if (!isTracking) {
+      if (watchIdRef.current !== null && navigator.geolocation) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+      }
+      watchIdRef.current = null;
+      return;
+    }
+
+    if (!navigator.geolocation) return;
+
+    const watchId = navigator.geolocation.watchPosition(
+      async (position) => {
+        try {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          await updatePosition({
+            driverId: user._id,
+            lat,
+            lng,
+            currentUserId: user._id,
+          });
+          setLocation({ lat, lng });
+          setLastUpdatedAt(Date.now());
+        } catch (_) {
+          // ignore background errors
+        }
+      },
+      () => {
+        // error ignored for background watcher
+      },
+      { enableHighAccuracy: true, maximumAge: 2000, timeout: 5000 },
+    );
+    watchIdRef.current = watchId as unknown as number;
+
+    return () => {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+        watchIdRef.current = null;
+      }
+    };
+  }, [user, isTracking, updatePosition]);
+
+  // Keep a ref of latest location for polling
+  useEffect(() => {
+    locationRef.current = location;
+  }, [location]);
+
+  // Fallback: poll every 3s to refresh updatedAt even if device doesn't move
+  useEffect(() => {
+    if (!user || !isTracking) return;
+    const interval = setInterval(async () => {
+      try {
+        const { lat, lng } = locationRef.current;
         await updatePosition({
           driverId: user._id,
           lat,
           lng,
           currentUserId: user._id,
         });
-        setLocation({ lat, lng });
-      });
-    } else {
-      // Manual location input
-      await updatePosition({
-        driverId: user._id,
-        lat: location.lat,
-        lng: location.lng,
-        currentUserId: user._id,
-      });
-    }
-    setIsUpdateLocationOpen(false);
-  };
+        setLastUpdatedAt(Date.now());
+      } catch (_) {
+        // ignore background errors
+      }
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [user, isTracking, updatePosition]);
 
   return (
     <Layout>
+      {!isLoggedIn ? null : !isDriver ? (
+        <div className="flex items-center justify-center h-64">
+          <p className="text-red-500">Akses ditolak. Khusus driver.</p>
+        </div>
+      ) : (
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Dasbor Pengemudi</h1>
@@ -132,63 +189,31 @@ export default function DriverPage() {
                 <CardTitle>Status Lokasi</CardTitle>
                 <CardDescription>Perbarui lokasi Anda saat ini untuk pelanggan</CardDescription>
               </div>
-              <Dialog open={isUpdateLocationOpen} onOpenChange={setIsUpdateLocationOpen}>
-                <DialogTrigger asChild>
-                  <Button>
-                    <MapPin className="h-4 w-4 mr-2" />
-                    Perbarui Lokasi
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Perbarui Lokasi</DialogTitle>
-                    <DialogDescription>Perbarui posisi Anda saat ini</DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <Button onClick={() => {
-                      if (navigator.geolocation) {
-                        navigator.geolocation.getCurrentPosition((position) => {
-                          setLocation({
-                            lat: position.coords.latitude,
-                            lng: position.coords.longitude,
-                          });
-                        });
-                      }
-                    }}>
-                      Gunakan Lokasi Saat Ini
-                    </Button>
-                    <div className="grid grid-cols-2 gap-4">
-                      <Input
-                        type="number"
-                        placeholder="Lintang"
-                        value={location.lat}
-                        onChange={(e) => setLocation({ ...location, lat: parseFloat(e.target.value) })}
-                      />
-                      <Input
-                        type="number"
-                        placeholder="Bujur"
-                        value={location.lng}
-                        onChange={(e) => setLocation({ ...location, lng: parseFloat(e.target.value) })}
-                      />
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsUpdateLocationOpen(false)}>Batal</Button>
-                    <Button onClick={handleUpdateLocation}>Perbarui Lokasi</Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+              <Button
+                onClick={() => setIsTracking((prev) => !prev)}
+                variant={isTracking ? 'default' : 'outline'}
+              >
+                <MapPin className="h-4 w-4 mr-2" />
+                {isTracking ? 'Matikan Pelacakan' : 'Nyalakan Pelacakan'}
+              </Button>
             </div>
           </CardHeader>
           <CardContent>
             {myPosition ? (
               <p className="text-sm text-gray-600">
-                Posisi saat ini: {myPosition.lat.toFixed(6)}, {myPosition.lng.toFixed(6)}
+                Posisi saat ini: {(location.lat || myPosition.lat).toFixed(6)}, {(location.lng || myPosition.lng).toFixed(6)}
                 <br />
-                Terakhir diperbarui: {new Date(myPosition.updatedAt).toLocaleString('id-ID')}
+                {(() => {
+                  const ts = lastUpdatedAt ?? myPosition.updatedAt;
+                  return (
+                    <>
+                      Terakhir diperbarui: {new Date(ts).toLocaleString('id-ID')}
+                    </>
+                  );
+                })()}
               </p>
             ) : (
-              <p className="text-sm text-gray-500">Tidak ada data lokasi tersedia</p>
+              <p className="text-sm text-gray-600">Belum ada data posisi.</p>
             )}
           </CardContent>
         </Card>
@@ -239,6 +264,7 @@ export default function DriverPage() {
 
         {/* Menu item telah dipindahkan ke halaman /driver/menu */}
       </div>
+      )}
     </Layout>
   );
 }

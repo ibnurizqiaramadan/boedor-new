@@ -10,7 +10,6 @@ import {
   Home,
   Users,
   ShoppingBag,
-  MapPin,
   LogOut,
   Settings,
   Menu,
@@ -33,7 +32,6 @@ const navigationItems = {
     { name: 'Dasbor', href: '/driver', icon: Menu },
     { name: 'Menu', href: '/driver/menu', icon: Settings },
     { name: 'Pesanan', href: '/driver/orders', icon: ShoppingCart },
-    { name: 'Posisi Saya', href: '/position', icon: MapPin },
   ],
   user: [
     { name: 'Dasbor', href: '/user', icon: ShoppingCart },
