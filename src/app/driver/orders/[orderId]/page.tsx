@@ -325,10 +325,10 @@ export default function OrderDetailPage() {
                   <span>Total Nilai Pesanan:</span>
                   <span>{formatCurrency(getTotalOrderValue())}</span>
                 </div>
-                <div className="border-t pt-2 flex justify-between font-semibold">
+                {/* <div className="border-t pt-2 flex justify-between font-semibold">
                   <span>Peserta yang Sudah Bayar:</span>
                   <span>{orderPayments?.length || 0} / {participants?.length || 0}</span>
-                </div>
+                </div> */}
               </div>
             </CardContent>
           </Card>
