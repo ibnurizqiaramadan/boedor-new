@@ -1,27 +1,27 @@
-"use client";
+'use client';
 
-import { useAuth } from "@/contexts/AuthContext";
-import { useQuery, useMutation } from "convex/react";
-import { api } from "../../../convex/_generated/api";
-import Layout from "@/components/layout/Layout";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { MapPin, Clock, CheckCircle, Truck } from "lucide-react";
-import { formatStatus } from "@/lib/status";
+import { useAuth } from '@/contexts/AuthContext';
+import { useQuery, useMutation } from 'convex/react';
+import { api } from '../../../convex/_generated/api';
+import Layout from '@/components/layout/Layout';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { MapPin, Clock, CheckCircle, Truck } from 'lucide-react';
+import { formatStatus } from '@/lib/status';
 
 export default function DriverPage() {
   const { user } = useAuth();
   const router = useRouter();
-  const [isUpdateLocationOpen, setIsUpdateLocationOpen] = useState(false);
-  const [location, setLocation] = useState({ lat: 0, lng: 0 });
+  const [ isUpdateLocationOpen, setIsUpdateLocationOpen ] = useState(false);
+  const [ location, setLocation ] = useState({ lat: 0, lng: 0 });
 
   // Queries
-  const myOrders = useQuery(api.boedor.orders.getOrdersByDriver, user ? { driverId: user._id, currentUserId: user._id } : "skip");
-  const myPosition = useQuery(api.boedor.driverPositions.getDriverPosition, user ? { driverId: user._id, currentUserId: user._id } : "skip");
+  const myOrders = useQuery(api.boedor.orders.getOrdersByDriver, user ? { driverId: user._id, currentUserId: user._id } : 'skip');
+  const myPosition = useQuery(api.boedor.driverPositions.getDriverPosition, user ? { driverId: user._id, currentUserId: user._id } : 'skip');
 
   // Mutations
   const updateOrderStatus = useMutation(api.boedor.orders.updateOrderStatus);
@@ -30,15 +30,15 @@ export default function DriverPage() {
   // Redirect to home page if user is not logged in
   useEffect(() => {
     if (user === null) {
-      router.push("/");
+      router.push('/');
     }
-  }, [user, router]);
+  }, [ user, router ]);
 
   if (!user) {
     return null; // Don't render anything while redirecting
   }
 
-  if (user.role !== "driver") {
+  if (user.role !== 'driver') {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
@@ -50,7 +50,7 @@ export default function DriverPage() {
 
   // Menu manajemen dipindahkan ke /driver/menu
 
-  const handleUpdateOrderStatus = async (orderId: string, status: "open" | "closed" | "completed") => {
+  const handleUpdateOrderStatus = async (orderId: string, status: 'open' | 'closed' | 'completed') => {
     await updateOrderStatus({ orderId: orderId as any, status, currentUserId: user!._id });
   };
 
@@ -98,7 +98,7 @@ export default function DriverPage() {
               <div className="text-2xl font-bold">{myOrders?.length || 0}</div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Pesanan Tertunda</CardTitle>
@@ -106,11 +106,11 @@ export default function DriverPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {myOrders?.filter(order => order.status === "open").length || 0}
+                {myOrders?.filter((order) => order.status === 'open').length || 0}
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Selesai</CardTitle>
@@ -118,7 +118,7 @@ export default function DriverPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {myOrders?.filter(order => order.status === "completed").length || 0}
+                {myOrders?.filter((order) => order.status === 'completed').length || 0}
               </div>
             </CardContent>
           </Card>
@@ -150,7 +150,7 @@ export default function DriverPage() {
                         navigator.geolocation.getCurrentPosition((position) => {
                           setLocation({
                             lat: position.coords.latitude,
-                            lng: position.coords.longitude
+                            lng: position.coords.longitude,
                           });
                         });
                       }
@@ -211,18 +211,18 @@ export default function DriverPage() {
                     </p>
                   </div>
                   <div className="flex space-x-2">
-                    {order.status === "open" && (
+                    {order.status === 'open' && (
                       <Button
                         size="sm"
-                        onClick={() => handleUpdateOrderStatus(order._id, "closed")}
+                        onClick={() => handleUpdateOrderStatus(order._id, 'closed')}
                       >
                         Mulai Pengiriman
                       </Button>
                     )}
-                    {order.status === "closed" && (
+                    {order.status === 'closed' && (
                       <Button
                         size="sm"
-                        onClick={() => handleUpdateOrderStatus(order._id, "completed")}
+                        onClick={() => handleUpdateOrderStatus(order._id, 'completed')}
                       >
                         Tandai Selesai
                       </Button>

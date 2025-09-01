@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
-import Layout from "@/components/layout/Layout";
-import { LoginForm } from "@/components/auth/LoginForm";
-import { RegisterForm } from "@/components/auth/RegisterForm";
-import { Button } from "@/components/ui/button";
+import React, { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import Layout from '@/components/layout/Layout';
+import { LoginForm } from '@/components/auth/LoginForm';
+import { RegisterForm } from '@/components/auth/RegisterForm';
+import { Button } from '@/components/ui/button';
 
 export default function HomePage() {
   const { user, isLoading } = useAuth();
-  const [showRegister, setShowRegister] = useState(false);
+  const [ showRegister, setShowRegister ] = useState(false);
 
   if (isLoading) {
     return (
@@ -29,9 +29,9 @@ export default function HomePage() {
               variant="link"
               onClick={() => setShowRegister(!showRegister)}
             >
-              {showRegister 
-                ? "Sudah punya akun? Masuk" 
-                : "Belum punya akun? Daftar"
+              {showRegister ?
+                'Sudah punya akun? Masuk' :
+                'Belum punya akun? Daftar'
               }
             </Button>
           </div>
@@ -53,7 +53,7 @@ export default function HomePage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {user.role === "admin" && (
+          {user.role === 'admin' && (
             <>
               <div className="bg-white p-6 rounded-lg shadow">
                 <h3 className="text-lg font-medium text-gray-900">Kelola Pengguna</h3>
@@ -70,7 +70,7 @@ export default function HomePage() {
             </>
           )}
 
-          {user.role === "driver" && (
+          {user.role === 'driver' && (
             <>
               <div className="bg-white p-6 rounded-lg shadow">
                 <h3 className="text-lg font-medium text-gray-900">Item Menu</h3>
@@ -87,7 +87,7 @@ export default function HomePage() {
             </>
           )}
 
-          {user.role === "user" && (
+          {user.role === 'user' && (
             <>
               <div className="bg-white p-6 rounded-lg shadow">
                 <h3 className="text-lg font-medium text-gray-900">Jelajahi Pesanan</h3>

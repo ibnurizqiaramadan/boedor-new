@@ -54,6 +54,7 @@ export const addOrderItem = mutation({
     orderId: v.id("boedor_orders"),
     menuId: v.id("boedor_menu"),
     qty: v.number(),
+    note: v.optional(v.string()),
     currentUserId: v.id("boedor_users"),
   },
   handler: async (ctx, args) => {
@@ -81,7 +82,8 @@ export const addOrderItem = mutation({
     if (existingItem) {
       // Update quantity
       await ctx.db.patch(existingItem._id, { 
-        qty: existingItem.qty + args.qty 
+        qty: existingItem.qty + args.qty,
+        ...(args.note !== undefined ? { note: args.note } : {}),
       });
       return await ctx.db.get(existingItem._id);
     } else {
@@ -91,6 +93,7 @@ export const addOrderItem = mutation({
         menuId: args.menuId,
         userId: args.currentUserId,
         qty: args.qty,
+        note: args.note,
       });
       return await ctx.db.get(orderItemId);
     }

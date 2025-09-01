@@ -1,34 +1,34 @@
-"use client";
+'use client';
 
-import { useAuth } from "@/contexts/AuthContext";
-import { useQuery, useMutation } from "convex/react";
-import { api } from "../../../../convex/_generated/api";
-import Layout from "@/components/layout/Layout";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { useState, useEffect } from "react";
-import { z } from "zod";
-import { useRouter } from "next/navigation";
-import { Plus, Trash2, Edit, ShoppingBag } from "lucide-react";
-import { toast } from "sonner";
-import { formatCurrency } from "@/lib/utils";
+import { useAuth } from '@/contexts/AuthContext';
+import { useQuery, useMutation } from 'convex/react';
+import { api } from '../../../../convex/_generated/api';
+import Layout from '@/components/layout/Layout';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useState, useEffect } from 'react';
+import { z } from 'zod';
+import { useRouter } from 'next/navigation';
+import { Plus, Trash2, Edit, ShoppingBag } from 'lucide-react';
+import { toast } from 'sonner';
+import { formatCurrency } from '@/lib/utils';
 
 export default function AdminMenuPage() {
   const { user } = useAuth();
   const router = useRouter();
-  
+
   // Menu states
-  const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
-  const [isEditMenuOpen, setIsEditMenuOpen] = useState(false);
-  const [selectedMenuItem, setSelectedMenuItem] = useState<any>(null);
-  const [newMenuItem, setNewMenuItem] = useState({ name: "", price: 0 });
-  const [addErrors, setAddErrors] = useState<{ name?: string; price?: string }>({});
-  const [editErrors, setEditErrors] = useState<{ name?: string; price?: string }>({});
+  const [ isAddMenuOpen, setIsAddMenuOpen ] = useState(false);
+  const [ isEditMenuOpen, setIsEditMenuOpen ] = useState(false);
+  const [ selectedMenuItem, setSelectedMenuItem ] = useState<any>(null);
+  const [ newMenuItem, setNewMenuItem ] = useState({ name: '', price: 0 });
+  const [ addErrors, setAddErrors ] = useState<{ name?: string; price?: string }>({});
+  const [ editErrors, setEditErrors ] = useState<{ name?: string; price?: string }>({});
 
   // Queries
-  const menuItems = useQuery(api.boedor.menu.getAllMenuItems, user ? { currentUserId: user._id } : "skip");
+  const menuItems = useQuery(api.boedor.menu.getAllMenuItems, user ? { currentUserId: user._id } : 'skip');
 
   // Menu mutations
   const createMenuItem = useMutation(api.boedor.menu.createMenuItem);
@@ -38,15 +38,15 @@ export default function AdminMenuPage() {
   // Redirect to home page if user is not logged in
   useEffect(() => {
     if (user === null) {
-      router.push("/");
+      router.push('/');
     }
-  }, [user, router]);
+  }, [ user, router ]);
 
   if (!user) {
     return null; // Don't render anything while redirecting
   }
 
-  if (user.role !== "admin" && user.role !== "super_admin") {
+  if (user.role !== 'admin' && user.role !== 'super_admin') {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
@@ -58,8 +58,8 @@ export default function AdminMenuPage() {
 
   // Menu handlers
   const menuSchema = z.object({
-    name: z.string().trim().min(1, "Nama item wajib diisi"),
-    price: z.number().positive("Harga harus lebih dari 0"),
+    name: z.string().trim().min(1, 'Nama item wajib diisi'),
+    price: z.number().positive('Harga harus lebih dari 0'),
   });
 
   const handleAddMenuItem = async () => {
@@ -73,7 +73,7 @@ export default function AdminMenuPage() {
           next[key] = issue.message;
         }
         setAddErrors(next);
-        toast.error("Periksa input Anda");
+        toast.error('Periksa input Anda');
         return;
       }
       await createMenuItem({
@@ -81,12 +81,12 @@ export default function AdminMenuPage() {
         price: newMenuItem.price,
         currentUserId: user!._id,
       });
-      toast.success("Item menu berhasil ditambahkan!");
+      toast.success('Item menu berhasil ditambahkan!');
       setIsAddMenuOpen(false);
-      setNewMenuItem({ name: "", price: 0 });
+      setNewMenuItem({ name: '', price: 0 });
     } catch (error) {
-      console.error("Failed to add menu item:", error);
-      toast.error("Gagal menambah item menu: " + (error as Error).message);
+      console.error('Failed to add menu item:', error);
+      toast.error('Gagal menambah item menu: ' + (error as Error).message);
     }
   };
 
@@ -102,7 +102,7 @@ export default function AdminMenuPage() {
             next[key] = issue.message;
           }
           setEditErrors(next);
-          toast.error("Periksa input Anda");
+          toast.error('Periksa input Anda');
           return;
         }
         await updateMenuItem({
@@ -111,24 +111,24 @@ export default function AdminMenuPage() {
           price: selectedMenuItem.price,
           currentUserId: user!._id,
         });
-        toast.success("Item menu berhasil diperbarui!");
+        toast.success('Item menu berhasil diperbarui!');
         setIsEditMenuOpen(false);
         setSelectedMenuItem(null);
       } catch (error) {
-        console.error("Failed to update menu item:", error);
-        toast.error("Gagal memperbarui item menu: " + (error as Error).message);
+        console.error('Failed to update menu item:', error);
+        toast.error('Gagal memperbarui item menu: ' + (error as Error).message);
       }
     }
   };
 
   const handleDeleteMenuItem = async (menuId: string) => {
-    if (confirm("Apakah Anda yakin ingin menghapus item menu ini?")) {
+    if (confirm('Apakah Anda yakin ingin menghapus item menu ini?')) {
       try {
         await deleteMenuItem({ menuId: menuId as any, currentUserId: user!._id });
-        toast.success("Item menu berhasil dihapus!");
+        toast.success('Item menu berhasil dihapus!');
       } catch (error) {
-        console.error("Failed to delete menu item:", error);
-        toast.error("Gagal menghapus item menu: " + (error as Error).message);
+        console.error('Failed to delete menu item:', error);
+        toast.error('Gagal menghapus item menu: ' + (error as Error).message);
       }
     }
   };

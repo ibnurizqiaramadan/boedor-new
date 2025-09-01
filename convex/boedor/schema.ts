@@ -26,6 +26,7 @@ export const tables = {
     menuId: v.id("boedor_menu"),
     userId: v.id("boedor_users"),
     qty: v.number(),
+    note: v.optional(v.string()),
     // Legacy fields for backward compatibility with existing data
     paymentMethod: v.optional(v.union(v.literal("cash"), v.literal("cardless"), v.literal("dana"))),
     amount: v.optional(v.number()),

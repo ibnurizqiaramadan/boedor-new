@@ -1,25 +1,25 @@
-"use client";
+'use client';
 
-import { useQuery, useMutation } from "convex/react";
+import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../../convex/_generated/api';
-import { useAuth } from "@/contexts/AuthContext";
-import Layout from "@/components/layout/Layout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { useState } from "react";
-import { z } from "zod";
-import { toast } from "sonner";
+import { useAuth } from '@/contexts/AuthContext';
+import Layout from '@/components/layout/Layout';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useState } from 'react';
+import { z } from 'zod';
+import { toast } from 'sonner';
 
 export default function UserMenuPage() {
   const { user } = useAuth();
-  const menuItems = useQuery(api.boedor.menu.getAllMenuItems, user?._id ? { currentUserId: user._id } : "skip");
+  const menuItems = useQuery(api.boedor.menu.getAllMenuItems, user?._id ? { currentUserId: user._id } : 'skip');
   const addMenuItem = useMutation(api.boedor.menu.createMenuItem);
 
-  const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
-  const [newMenuItem, setNewMenuItem] = useState({ name: "", price: 0 });
-  const [errors, setErrors] = useState<{ name?: string; price?: string }>({});
+  const [ isAddMenuOpen, setIsAddMenuOpen ] = useState(false);
+  const [ newMenuItem, setNewMenuItem ] = useState({ name: '', price: 0 });
+  const [ errors, setErrors ] = useState<{ name?: string; price?: string }>({});
 
   // Format currency
   const formatCurrency = (amount: number) => {
@@ -31,8 +31,8 @@ export default function UserMenuPage() {
   };
 
   const schema = z.object({
-    name: z.string().trim().min(1, "Nama item wajib diisi"),
-    price: z.number().positive("Harga harus lebih dari 0"),
+    name: z.string().trim().min(1, 'Nama item wajib diisi'),
+    price: z.number().positive('Harga harus lebih dari 0'),
   });
 
   const handleAddMenuItem = async () => {
@@ -46,7 +46,7 @@ export default function UserMenuPage() {
           next[key] = issue.message;
         }
         setErrors(next);
-        toast.error("Periksa input Anda");
+        toast.error('Periksa input Anda');
         return;
       }
       await addMenuItem({
@@ -54,12 +54,12 @@ export default function UserMenuPage() {
         price: newMenuItem.price,
         currentUserId: user!._id,
       });
-      toast.success("Item menu berhasil diusulkan!");
+      toast.success('Item menu berhasil diusulkan!');
       setIsAddMenuOpen(false);
-      setNewMenuItem({ name: "", price: 0 });
+      setNewMenuItem({ name: '', price: 0 });
     } catch (error) {
-      console.error("Failed to suggest menu item:", error);
-      toast.error("Gagal mengusulkan item menu: " + (error as Error).message);
+      console.error('Failed to suggest menu item:', error);
+      toast.error('Gagal mengusulkan item menu: ' + (error as Error).message);
     }
   };
 
@@ -73,7 +73,7 @@ export default function UserMenuPage() {
     );
   }
 
-  if (user.role !== "user") {
+  if (user.role !== 'user') {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">

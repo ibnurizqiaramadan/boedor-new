@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { ConvexProvider } from "convex/react";
-import { AuthProvider } from "@/contexts/AuthContext";
-import convex from "@/lib/convex";
+import { ConvexProvider } from 'convex/react';
+import { AuthProvider } from '@/contexts/AuthContext';
+import convex from '@/lib/convex';
 
 export function ConvexClientProvider({
   children,

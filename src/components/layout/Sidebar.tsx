@@ -1,44 +1,44 @@
-"use client";
+'use client';
 
-import React from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { useAuth } from "@/contexts/AuthContext";
-import { 
-  Home, 
-  Users, 
-  ShoppingBag, 
-  MapPin, 
-  LogOut, 
+import React from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
+import {
+  Home,
+  Users,
+  ShoppingBag,
+  MapPin,
+  LogOut,
   Settings,
   Menu,
   ShoppingCart,
-  Plus
-} from "lucide-react";
+  Plus,
+} from 'lucide-react';
 
 const navigationItems = {
   super_admin: [
-    { name: "Dasbor", href: "/admin", icon: Users },
-    { name: "Menu", href: "/admin/menu", icon: Settings },
-    { name: "Pesanan", href: "/admin/orders", icon: ShoppingBag },
+    { name: 'Dasbor', href: '/admin', icon: Users },
+    { name: 'Menu', href: '/admin/menu', icon: Settings },
+    { name: 'Pesanan', href: '/admin/orders', icon: ShoppingBag },
   ],
   admin: [
-    { name: "Dasbor", href: "/admin", icon: Users },
-    { name: "Menu", href: "/admin/menu", icon: Settings },
-    { name: "Pesanan", href: "/admin/orders", icon: ShoppingBag },
+    { name: 'Dasbor', href: '/admin', icon: Users },
+    { name: 'Menu', href: '/admin/menu', icon: Settings },
+    { name: 'Pesanan', href: '/admin/orders', icon: ShoppingBag },
   ],
   driver: [
-    { name: "Dasbor", href: "/driver", icon: Menu },
-    { name: "Menu", href: "/driver/menu", icon: Settings },
-    { name: "Pesanan", href: "/driver/orders", icon: ShoppingCart },
-    { name: "Posisi Saya", href: "/position", icon: MapPin },
+    { name: 'Dasbor', href: '/driver', icon: Menu },
+    { name: 'Menu', href: '/driver/menu', icon: Settings },
+    { name: 'Pesanan', href: '/driver/orders', icon: ShoppingCart },
+    { name: 'Posisi Saya', href: '/position', icon: MapPin },
   ],
   user: [
-    { name: "Dasbor", href: "/user", icon: ShoppingCart },
-    { name: "Menu", href: "/user/menu", icon: Menu },
-    { name: "Pesanan", href: "/user/pesanan", icon: Plus },
+    { name: 'Dasbor', href: '/user', icon: ShoppingCart },
+    { name: 'Menu', href: '/user/menu', icon: Menu },
+    { name: 'Pesanan', href: '/user/pesanan', icon: Plus },
   ],
 };
 
@@ -56,28 +56,28 @@ export function Sidebar() {
         <div className="flex items-center flex-shrink-0 px-4">
           <h1 className="text-xl font-bold text-gray-900">Boedor</h1>
         </div>
-        
+
         <div className="mt-5 flex-grow flex flex-col">
           <nav className="flex-1 px-2 pb-4 space-y-1">
             {userNavItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
-              
+
               return (
                 <Link
                   key={item.name}
                   href={item.href}
                   className={cn(
-                    "group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors",
-                    isActive
-                      ? "bg-primary text-primary-foreground"
-                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                    'group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors',
+                    isActive ?
+                      'bg-primary text-primary-foreground' :
+                      'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
                   )}
                 >
                   <Icon
                     className={cn(
-                      "mr-3 flex-shrink-0 h-5 w-5",
-                      isActive ? "text-primary-foreground" : "text-gray-400 group-hover:text-gray-500"
+                      'mr-3 flex-shrink-0 h-5 w-5',
+                      isActive ? 'text-primary-foreground' : 'text-gray-400 group-hover:text-gray-500',
                     )}
                   />
                   {item.name}
@@ -85,7 +85,7 @@ export function Sidebar() {
               );
             })}
           </nav>
-          
+
           <div className="flex-shrink-0 px-2 pb-4">
             <div className="px-2 py-2 text-sm text-gray-500">
               Masuk sebagai: <span className="font-medium">{user.username}</span>

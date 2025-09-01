@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import { useAuth } from "@/contexts/AuthContext";
-import { useQuery } from "convex/react";
-import { api } from "../../../../../convex/_generated/api";
-import { Id } from "../../../../../convex/_generated/dataModel";
-import Layout from "@/components/layout/Layout";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
-import { ArrowLeft, User, ShoppingCart } from "lucide-react";
-import { toast } from "sonner";
-import { formatCurrency } from "@/lib/utils";
-import { getStatusIcon, getStatusColor, formatStatus } from "@/lib/status";
+import { useAuth } from '@/contexts/AuthContext';
+import { useQuery } from 'convex/react';
+import { api } from '../../../../../convex/_generated/api';
+import { Id } from '../../../../../convex/_generated/dataModel';
+import Layout from '@/components/layout/Layout';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useEffect } from 'react';
+import { useRouter, useParams } from 'next/navigation';
+import { ArrowLeft, User, ShoppingCart } from 'lucide-react';
+import { toast } from 'sonner';
+import { formatCurrency } from '@/lib/utils';
+import { getStatusIcon, getStatusColor, formatStatus } from '@/lib/status';
 
 export default function OrderDetailPage() {
   const { user } = useAuth();
@@ -23,15 +23,15 @@ export default function OrderDetailPage() {
   // Redirect to home page if user is not logged in
   useEffect(() => {
     if (user === null) {
-      router.push("/");
+      router.push('/');
     }
-  }, [user, router]);
+  }, [ user, router ]);
 
   if (!user) {
     return null; // Don't render anything while redirecting
   }
 
-  if (user.role !== "driver") {
+  if (user.role !== 'driver') {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
@@ -42,29 +42,29 @@ export default function OrderDetailPage() {
   }
 
   // Queries
-  const order = useQuery(api.boedor.orders.getOrderById, { 
-    orderId: orderId as Id<"boedor_orders">, 
-    currentUserId: user._id 
+  const order = useQuery(api.boedor.orders.getOrderById, {
+    orderId: orderId as Id<'boedor_orders'>,
+    currentUserId: user._id,
   });
-  const orderItems = useQuery(api.boedor.orderItems.getOrderItemsByOrder, { 
-    orderId: orderId as Id<"boedor_orders">, 
-    currentUserId: user._id 
+  const orderItems = useQuery(api.boedor.orderItems.getOrderItemsByOrder, {
+    orderId: orderId as Id<'boedor_orders'>,
+    currentUserId: user._id,
   });
-  
+
   // Get all payments for this order
   const orderPayments = useQuery(api.boedor.payment.getPaymentsByOrder, {
-    orderId: orderId as Id<"boedor_orders">,
-    currentUserId: user._id
+    orderId: orderId as Id<'boedor_orders'>,
+    currentUserId: user._id,
   });
   const menuItems = useQuery(api.boedor.menu.getAllMenuItems, { currentUserId: user._id });
 
   // Get unique participant IDs from order items
-  const participantIds = orderItems ? [...new Set(orderItems.map(item => item.userId))] : [];
-  
+  const participantIds = orderItems ? [ ...new Set(orderItems.map((item) => item.userId)) ] : [];
+
   // Get usernames for participants
   const participants = useQuery(
-    api.boedor.users.getUsernamesByIds, 
-    participantIds.length > 0 ? { userIds: participantIds, currentUserId: user._id } : "skip"
+    api.boedor.users.getUsernamesByIds,
+    participantIds.length > 0 ? { userIds: participantIds, currentUserId: user._id } : 'skip',
   );
 
   if (!order) {
@@ -79,7 +79,7 @@ export default function OrderDetailPage() {
 
 
   // Group order items by user
-  const itemsByUser = orderItems ? 
+  const itemsByUser = orderItems ?
     orderItems.reduce((acc, item) => {
       const userId = item.userId;
       if (!acc[userId]) {
@@ -89,12 +89,12 @@ export default function OrderDetailPage() {
       return acc;
     }, {} as Record<string, typeof orderItems>) : {};
 
-  
+
 
   const getTotalOrderValue = () => {
     if (!orderItems || !menuItems) return 0;
     return orderItems.reduce((total, item) => {
-      const menuItem = menuItems.find(m => m._id === item.menuId);
+      const menuItem = menuItems.find((m) => m._id === item.menuId);
       return total + (menuItem ? menuItem.price * item.qty : 0);
     }, 0);
   };
@@ -102,13 +102,13 @@ export default function OrderDetailPage() {
   const getUserTotal = (userId: string) => {
     const userItems = itemsByUser[userId] || [];
     return userItems.reduce((total, item) => {
-      const menuItem = menuItems?.find(m => m._id === item.menuId);
+      const menuItem = menuItems?.find((m) => m._id === item.menuId);
       return total + (menuItem ? menuItem.price * item.qty : 0);
     }, 0);
   };
 
   const getUserPayment = (userId: string) => {
-    return orderPayments?.find(payment => payment.userId === userId);
+    return orderPayments?.find((payment) => payment.userId === userId);
   };
 
   const getUserChange = (userId: string) => {
@@ -176,13 +176,13 @@ export default function OrderDetailPage() {
         {/* Peserta dan Item */}
         <div className="space-y-4">
           <h2 className="text-xl font-semibold text-gray-900">Peserta & Item</h2>
-          
+
           {participants && participants.length > 0 ? (
             participants.map((participant) => {
               if (!participant) return null;
               const userItems = itemsByUser[participant._id] || [];
               const userTotal = getUserTotal(participant._id);
-              
+
               return (
                 <Card key={participant._id}>
                   <CardHeader>
@@ -190,7 +190,7 @@ export default function OrderDetailPage() {
                       <div className="flex items-center space-x-3">
                         <User className="h-5 w-5 text-gray-400" />
                         <div>
-                          <CardTitle className="text-lg">{participant.username}{participant._id === user._id && " (Anda)"}</CardTitle>
+                          <CardTitle className="text-lg">{participant.username}{participant._id === user._id && ' (Anda)'}</CardTitle>
                           <CardDescription>
                             {userItems.length} item • Total: {formatCurrency(userTotal)}
                           </CardDescription>
@@ -213,9 +213,9 @@ export default function OrderDetailPage() {
                   <CardContent>
                     <div className="space-y-3">
                       {userItems.map((item) => {
-                        const menuItem = menuItems?.find(m => m._id === item.menuId);
+                        const menuItem = menuItems?.find((m) => m._id === item.menuId);
                         const itemTotal = menuItem ? menuItem.price * item.qty : 0;
-                        
+
                         return (
                           <div key={item._id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                             <div className="flex items-center space-x-3">
@@ -258,10 +258,10 @@ export default function OrderDetailPage() {
             <CardContent>
               <div className="space-y-3">
                 {orderPayments.map((payment) => {
-                  const participant = participants?.find(p => p?._id === payment.userId);
+                  const participant = participants?.find((p) => p?._id === payment.userId);
                   const userTotal = getUserTotal(payment.userId);
                   const change = payment.amount - userTotal;
-                  
+
                   return (
                     <div key={payment._id} className="flex items-center justify-between p-3 border rounded-lg">
                       <div className="flex items-center space-x-3">
@@ -282,7 +282,7 @@ export default function OrderDetailPage() {
                     </div>
                   );
                 })}
-                
+
                 <div className="border-t pt-3 mt-4">
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>

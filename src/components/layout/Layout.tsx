@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import React from "react";
-import { Sidebar } from "./Sidebar";
-import { MobileNavigation } from "./MobileNavigation";
-import { useAuth } from "@/contexts/AuthContext";
+import React from 'react';
+import { Sidebar } from './Sidebar';
+import { MobileNavigation } from './MobileNavigation';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface LayoutProps {
   children: React.ReactNode;

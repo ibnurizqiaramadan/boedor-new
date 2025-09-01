@@ -1,27 +1,27 @@
-"use client";
+'use client';
 
-import { useAuth } from "@/contexts/AuthContext";
-import { useQuery, useMutation } from "convex/react";
-import { api } from "../../../../convex/_generated/api";
-import Layout from "@/components/layout/Layout";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { Plus, Truck, Clock, CheckCircle, Eye } from "lucide-react";
-import { toast } from "sonner";
-import { getStatusIcon, getStatusColor, formatStatus } from "@/lib/status";
+import { useAuth } from '@/contexts/AuthContext';
+import { useQuery, useMutation } from 'convex/react';
+import { api } from '../../../../convex/_generated/api';
+import Layout from '@/components/layout/Layout';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Plus, Truck, Clock, CheckCircle, Eye } from 'lucide-react';
+import { toast } from 'sonner';
+import { getStatusIcon, getStatusColor, formatStatus } from '@/lib/status';
 
 export default function DriverOrdersPage() {
   const { user } = useAuth();
   const router = useRouter();
-  const [isCreateOrderOpen, setIsCreateOrderOpen] = useState(false);
+  const [ isCreateOrderOpen, setIsCreateOrderOpen ] = useState(false);
 
   // Queries (moved above conditional returns; use "skip" when user is not ready)
   const myOrders = useQuery(
     api.boedor.orders.getOrdersByDriver,
-    user ? { driverId: user._id, currentUserId: user._id } : "skip"
+    user ? { driverId: user._id, currentUserId: user._id } : 'skip',
   );
 
   // Mutations
@@ -31,15 +31,15 @@ export default function DriverOrdersPage() {
   // Redirect to home page if user is not logged in
   useEffect(() => {
     if (user === null) {
-      router.push("/");
+      router.push('/');
     }
-  }, [user, router]);
+  }, [ user, router ]);
 
   if (!user) {
     return null; // Don't render anything while redirecting
   }
 
-  if (user.role !== "driver") {
+  if (user.role !== 'driver') {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
@@ -56,15 +56,15 @@ export default function DriverOrdersPage() {
         driverId: user._id,
         currentUserId: user._id,
       });
-      toast.success("Order created successfully!");
+      toast.success('Order created successfully!');
       setIsCreateOrderOpen(false);
     } catch (error) {
-      console.error("Failed to create order:", error);
-      toast.error("Failed to create order: " + (error as Error).message);
+      console.error('Failed to create order:', error);
+      toast.error('Failed to create order: ' + (error as Error).message);
     }
   };
 
-  const handleUpdateOrderStatus = async (orderId: string, status: "open" | "closed" | "completed") => {
+  const handleUpdateOrderStatus = async (orderId: string, status: 'open' | 'closed' | 'completed') => {
     try {
       await updateOrderStatus({
         orderId: orderId as any,
@@ -73,12 +73,12 @@ export default function DriverOrdersPage() {
       });
       toast.success(`Order status updated to ${status}!`);
     } catch (error) {
-      console.error("Failed to update order status:", error);
-      toast.error("Failed to update order status: " + (error as Error).message);
+      console.error('Failed to update order status:', error);
+      toast.error('Failed to update order status: ' + (error as Error).message);
     }
   };
 
-  
+
 
   return (
     <Layout>
@@ -99,7 +99,7 @@ export default function DriverOrdersPage() {
               <div className="text-2xl font-bold">{myOrders?.length || 0}</div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Pesanan Terbuka</CardTitle>
@@ -107,11 +107,11 @@ export default function DriverOrdersPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {myOrders?.filter(order => order.status === "open").length || 0}
+                {myOrders?.filter((order) => order.status === 'open').length || 0}
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Selesai</CardTitle>
@@ -119,7 +119,7 @@ export default function DriverOrdersPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {myOrders?.filter(order => order.status === "completed").length || 0}
+                {myOrders?.filter((order) => order.status === 'completed').length || 0}
               </div>
             </CardContent>
           </Card>
@@ -190,23 +190,23 @@ export default function DriverOrdersPage() {
                             <Eye className="h-4 w-4 mr-1" />
                             Detail
                           </Button>
-                          {order.status === "open" && (
-                            <Button size="sm" variant="outline" onClick={() => handleUpdateOrderStatus(order._id, "closed")}>
+                          {order.status === 'open' && (
+                            <Button size="sm" variant="outline" onClick={() => handleUpdateOrderStatus(order._id, 'closed')}>
                               Tutup
                             </Button>
                           )}
-                          {order.status === "closed" && (
+                          {order.status === 'closed' && (
                             <>
-                              <Button size="sm" variant="outline" onClick={() => handleUpdateOrderStatus(order._id, "open")}>
+                              <Button size="sm" variant="outline" onClick={() => handleUpdateOrderStatus(order._id, 'open')}>
                                 Buka Kembali
                               </Button>
-                              <Button size="sm" onClick={() => handleUpdateOrderStatus(order._id, "completed")}>
+                              <Button size="sm" onClick={() => handleUpdateOrderStatus(order._id, 'completed')}>
                                 Selesaikan
                               </Button>
                             </>
                           )}
-                          {order.status === "completed" && (
-                            <Button size="sm" variant="outline" onClick={() => handleUpdateOrderStatus(order._id, "open")}>
+                          {order.status === 'completed' && (
+                            <Button size="sm" variant="outline" onClick={() => handleUpdateOrderStatus(order._id, 'open')}>
                               Buka Kembali
                             </Button>
                           )}
@@ -261,23 +261,23 @@ export default function DriverOrdersPage() {
                                   <Eye className="h-4 w-4 mr-1" />
                                   Detail
                                 </Button>
-                                {order.status === "open" && (
-                                  <Button size="sm" variant="outline" onClick={() => handleUpdateOrderStatus(order._id, "closed")}>
+                                {order.status === 'open' && (
+                                  <Button size="sm" variant="outline" onClick={() => handleUpdateOrderStatus(order._id, 'closed')}>
                                     Tutup
                                   </Button>
                                 )}
-                                {order.status === "closed" && (
+                                {order.status === 'closed' && (
                                   <>
-                                    <Button size="sm" variant="outline" onClick={() => handleUpdateOrderStatus(order._id, "open")}>
+                                    <Button size="sm" variant="outline" onClick={() => handleUpdateOrderStatus(order._id, 'open')}>
                                       Buka Kembali
                                     </Button>
-                                    <Button size="sm" onClick={() => handleUpdateOrderStatus(order._id, "completed")}>
+                                    <Button size="sm" onClick={() => handleUpdateOrderStatus(order._id, 'completed')}>
                                       Selesaikan
                                     </Button>
                                   </>
                                 )}
-                                {order.status === "completed" && (
-                                  <Button size="sm" variant="outline" onClick={() => handleUpdateOrderStatus(order._id, "open")}>
+                                {order.status === 'completed' && (
+                                  <Button size="sm" variant="outline" onClick={() => handleUpdateOrderStatus(order._id, 'open')}>
                                     Buka Kembali
                                   </Button>
                                 )}

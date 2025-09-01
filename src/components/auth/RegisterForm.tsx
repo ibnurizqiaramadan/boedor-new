@@ -1,31 +1,31 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { z } from "zod";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAuth } from "@/contexts/AuthContext";
+import React, { useState } from 'react';
+import { z } from 'zod';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function RegisterForm() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [role, setRole] = useState<"driver" | "user">("user");
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [errors, setErrors] = useState<{ username?: string; password?: string; role?: string }>({});
+  const [ username, setUsername ] = useState('');
+  const [ password, setPassword ] = useState('');
+  const [ role, setRole ] = useState<'driver' | 'user'>('user');
+  const [ isLoading, setIsLoading ] = useState(false);
+  const [ error, setError ] = useState('');
+  const [ errors, setErrors ] = useState<{ username?: string; password?: string; role?: string }>({});
   const { register } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError("");
+    setError('');
 
     try {
       const schema = z.object({
-        username: z.string().min(3, "Nama pengguna minimal 3 karakter"),
-        password: z.string().min(6, "Kata sandi minimal 6 karakter"),
-        role: z.enum(["driver", "user"], { message: "Peran tidak valid" }),
+        username: z.string().min(3, 'Nama pengguna minimal 3 karakter'),
+        password: z.string().min(6, 'Kata sandi minimal 6 karakter'),
+        role: z.enum([ 'driver', 'user' ], { message: 'Peran tidak valid' }),
       });
       const parsed = schema.safeParse({ username, password, role });
       if (!parsed.success) {
@@ -40,7 +40,7 @@ export function RegisterForm() {
       }
       await register(username, password, role);
     } catch (err: any) {
-      setError(err.message || "Registration failed");
+      setError(err.message || 'Registration failed');
     } finally {
       setIsLoading(false);
     }
@@ -89,7 +89,7 @@ export function RegisterForm() {
             <select
               id="role"
               value={role}
-              onChange={(e) => setRole(e.target.value as "driver" | "user")}
+              onChange={(e) => setRole(e.target.value as 'driver' | 'user')}
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <option value="user">Pengguna</option>
@@ -105,7 +105,7 @@ export function RegisterForm() {
         </CardContent>
         <CardFooter>
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Sedang mendaftar..." : "Daftar"}
+            {isLoading ? 'Sedang mendaftar...' : 'Daftar'}
           </Button>
         </CardFooter>
       </form>

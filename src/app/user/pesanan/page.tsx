@@ -1,43 +1,43 @@
-"use client";
+'use client';
 
-import { useQuery, useMutation } from "convex/react";
+import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../../convex/_generated/api';
-import { useAuth } from "@/contexts/AuthContext";
-import Layout from "@/components/layout/Layout";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useState, useEffect } from "react";
-import { z } from "zod";
-import { toast } from "sonner";
-import { Id } from "../../../../convex/_generated/dataModel";
-import { formatStatus } from "@/lib/status";
-import { Wallet, CreditCard, Smartphone } from "lucide-react";
+import { useAuth } from '@/contexts/AuthContext';
+import Layout from '@/components/layout/Layout';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useState, useEffect } from 'react';
+import { z } from 'zod';
+import { toast } from 'sonner';
+import { Id } from '../../../../convex/_generated/dataModel';
+import { formatStatus } from '@/lib/status';
+import { Wallet, CreditCard, Smartphone } from 'lucide-react';
 
 export default function UserPesananPage() {
   const { user } = useAuth();
-  const availableOrders = useQuery(api.boedor.orders.getOrdersByStatus, 
-    user?._id ? { status: "open", currentUserId: user._id } : "skip"
+  const availableOrders = useQuery(api.boedor.orders.getOrdersByStatus,
+    user?._id ? { status: 'open', currentUserId: user._id } : 'skip',
   );
-  const menuItems = useQuery(api.boedor.menu.getAllMenuItems, 
-    user?._id ? { currentUserId: user._id } : "skip"
+  const menuItems = useQuery(api.boedor.menu.getAllMenuItems,
+    user?._id ? { currentUserId: user._id } : 'skip',
   );
   const addOrderItem = useMutation(api.boedor.orderItems.addOrderItem);
   const upsertPayment = useMutation(api.boedor.payment.upsertPayment);
 
-  const [isJoinOrderOpen, setIsJoinOrderOpen] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState<any>(null);
-  const [selectedMenuItems, setSelectedMenuItems] = useState<Array<{menuId: string, qty: number}>>([]);
-  const [errors, setErrors] = useState<{ items?: string; selectedOrder?: string; payment?: string }>({});
-  
+  const [ isJoinOrderOpen, setIsJoinOrderOpen ] = useState(false);
+  const [ selectedOrder, setSelectedOrder ] = useState<any>(null);
+  const [ selectedMenuItems, setSelectedMenuItems ] = useState<Array<{menuId: string, qty: number}>>([]);
+  const [ errors, setErrors ] = useState<{ items?: string; selectedOrder?: string; payment?: string }>({});
+
   // Payment form state
-  const [paymentMethod, setPaymentMethod] = useState<"cash" | "cardless" | "dana">("cash");
-  const [amount, setAmount] = useState("");
-  
+  const [ paymentMethod, setPaymentMethod ] = useState<'cash' | 'cardless' | 'dana'>('cash');
+  const [ amount, setAmount ] = useState('');
+
   // Menu filter state
-  const [menuFilter, setMenuFilter] = useState("");
+  const [ menuFilter, setMenuFilter ] = useState('');
 
   // Fetch existing payment for this user and selected order (to prefill form)
   const existingPayment = useQuery(
@@ -46,46 +46,46 @@ export default function UserPesananPage() {
       orderId: selectedOrder._id,
       userId: user._id,
       currentUserId: user._id,
-    } : "skip"
+    } : 'skip',
   );
 
   // Prefill payment form when existing payment is found
   useEffect(() => {
     if (existingPayment) {
-      setPaymentMethod(existingPayment.paymentMethod as "cash" | "cardless" | "dana");
+      setPaymentMethod(existingPayment.paymentMethod as 'cash' | 'cardless' | 'dana');
       setAmount(existingPayment.amount.toString());
     } else {
-      setPaymentMethod("cash");
-      setAmount("");
+      setPaymentMethod('cash');
+      setAmount('');
     }
-  }, [existingPayment]);
+  }, [ existingPayment ]);
 
-  
+
 
   // Zod Schemas & validator
   const menuItemSchema = z.object({
-    menuId: z.string().min(1, "Menu tidak valid"),
-    qty: z.number().int().min(0, "Jumlah tidak boleh negatif"),
+    menuId: z.string().min(1, 'Menu tidak valid'),
+    qty: z.number().int().min(0, 'Jumlah tidak boleh negatif'),
   });
 
   const buildSchema = () => {
     const baseSchema = {
-      selectedOrder: z.any().refine((v) => !!v && !!v._id, "Pilih pesanan yang valid"),
-      items: z.array(menuItemSchema).refine((arr) => arr.some((i) => i.qty > 0), "Pilih minimal 1 item"),
+      selectedOrder: z.any().refine((v) => !!v && !!v._id, 'Pilih pesanan yang valid'),
+      items: z.array(menuItemSchema).refine((arr) => arr.some((i) => i.qty > 0), 'Pilih minimal 1 item'),
     };
-    
+
     // If no existing payment, require payment fields
     if (!existingPayment) {
       return z.object({
         ...baseSchema,
-        paymentMethod: z.enum(["cash", "cardless", "dana"]),
-        amount: z.string().min(1, "Masukkan jumlah pembayaran").refine((val) => {
+        paymentMethod: z.enum([ 'cash', 'cardless', 'dana' ]),
+        amount: z.string().min(1, 'Masukkan jumlah pembayaran').refine((val) => {
           const num = parseFloat(val);
           return !isNaN(num) && num > 0;
-        }, "Jumlah harus lebih dari 0"),
+        }, 'Jumlah harus lebih dari 0'),
       });
     }
-    
+
     return z.object(baseSchema);
   };
 
@@ -107,13 +107,13 @@ export default function UserPesananPage() {
         const nextErrors: typeof errors = {};
         for (const issue of e.issues as Array<{ path: (string | number)[]; message: string }>) {
           const key = issue.path[0];
-          if (key === "items") nextErrors.items = issue.message;
-          if (key === "selectedOrder") nextErrors.selectedOrder = issue.message;
-          if (key === "paymentMethod" || key === "amount") nextErrors.payment = issue.message;
+          if (key === 'items') nextErrors.items = issue.message;
+          if (key === 'selectedOrder') nextErrors.selectedOrder = issue.message;
+          if (key === 'paymentMethod' || key === 'amount') nextErrors.payment = issue.message;
         }
         setErrors(nextErrors);
       }
-      toast.error("Input tidak valid. Mohon periksa kembali.");
+      toast.error('Input tidak valid. Mohon periksa kembali.');
       return { ok: false };
     }
   };
@@ -129,7 +129,7 @@ export default function UserPesananPage() {
           if (item.qty > 0) {
             await addOrderItem({
               orderId: selectedOrder._id,
-              menuId: item.menuId as Id<"boedor_menu">,
+              menuId: item.menuId as Id<'boedor_menu'>,
               qty: item.qty,
               currentUserId: user!._id,
             });
@@ -140,12 +140,12 @@ export default function UserPesananPage() {
         if (!existingPayment && amount && paymentMethod) {
           const subtotal = calcSubtotal();
           const paymentAmount = parseFloat(amount);
-          
+
           if (paymentAmount < subtotal) {
-            toast.error("Jumlah pembayaran kurang dari total pesanan");
+            toast.error('Jumlah pembayaran kurang dari total pesanan');
             return;
           }
-          
+
           await upsertPayment({
             orderId: selectedOrder._id,
             paymentMethod,
@@ -154,33 +154,33 @@ export default function UserPesananPage() {
           });
         }
 
-        toast.success("Berhasil bergabung dengan pesanan!");
+        toast.success('Berhasil bergabung dengan pesanan!');
         setIsJoinOrderOpen(false);
         setSelectedOrder(null);
         setSelectedMenuItems([]);
-        setPaymentMethod("cash");
-        setAmount("");
+        setPaymentMethod('cash');
+        setAmount('');
       } catch (error) {
-        toast.error("Gagal bergabung dengan pesanan");
+        toast.error('Gagal bergabung dengan pesanan');
       }
     }
   };
 
   const updateMenuItemQuantity = (menuId: string, qty: number) => {
-    setSelectedMenuItems(prev => {
-      const existing = prev.find(item => item.menuId === menuId);
+    setSelectedMenuItems((prev) => {
+      const existing = prev.find((item) => item.menuId === menuId);
       if (existing) {
-        return prev.map(item => 
-          item.menuId === menuId ? { ...item, qty } : item
+        return prev.map((item) =>
+          item.menuId === menuId ? { ...item, qty } : item,
         );
       } else {
-        return [...prev, { menuId, qty }];
+        return [ ...prev, { menuId, qty } ];
       }
     });
   };
 
   const getMenuItemQuantity = (menuId: string) => {
-    return selectedMenuItems.find(item => item.menuId === menuId)?.qty || 0;
+    return selectedMenuItems.find((item) => item.menuId === menuId)?.qty || 0;
   };
 
   const formatCurrency = (amount: number) =>
@@ -202,10 +202,10 @@ export default function UserPesananPage() {
   // Filter and sort menu items
   const getFilteredMenuItems = () => {
     if (!menuItems) return [];
-    
+
     return menuItems
-      .filter(item => 
-        item.name.toLowerCase().includes(menuFilter.toLowerCase())
+      .filter((item) =>
+        item.name.toLowerCase().includes(menuFilter.toLowerCase()),
       )
       .sort((a, b) => a.name.localeCompare(b.name, 'id-ID'));
   };
@@ -220,7 +220,7 @@ export default function UserPesananPage() {
     );
   }
 
-  if (user.role !== "user") {
+  if (user.role !== 'user') {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
@@ -242,7 +242,7 @@ export default function UserPesananPage() {
         <Card>
           <CardContent className="pt-8">
             <div className="space-y-4">
-              {availableOrders?.filter(order => order.status === "open")
+              {availableOrders?.filter((order) => order.status === 'open')
                 .sort((a, b) => b.createdAt - a.createdAt)
                 .map((order) => (
                 <div key={order._id} className="flex items-center justify-between p-4 border rounded-lg">
@@ -258,7 +258,7 @@ export default function UserPesananPage() {
                       setSelectedOrder(order);
                       // Reset form when opening dialog
                       setSelectedMenuItems([]);
-                      setMenuFilter("");
+                      setMenuFilter('');
                       setIsJoinOrderOpen(true);
                     }}
                   >
@@ -266,7 +266,7 @@ export default function UserPesananPage() {
                   </Button>
                 </div>
               ))}
-              {(!availableOrders || availableOrders.filter(order => order.status === "open").length === 0) && (
+              {(!availableOrders || availableOrders.filter((order) => order.status === 'open').length === 0) && (
                 <p className="text-gray-500 text-center py-8">Tidak ada pesanan tersedia saat ini</p>
               )}
             </div>
@@ -280,12 +280,12 @@ export default function UserPesananPage() {
               <DialogTitle>Gabung Pesanan #{selectedOrder?._id.slice(-6)}</DialogTitle>
               <DialogDescription>Pilih item menu dan jumlahnya</DialogDescription>
             </DialogHeader>
-            
+
             {/* Items error */}
             {errors.items && (
               <p className="text-sm text-red-600">{errors.items}</p>
             )}
-            
+
             {/* Menu Filter */}
             <div className="mb-4">
               <Input
@@ -296,7 +296,7 @@ export default function UserPesananPage() {
                 className="w-full"
               />
             </div>
-            
+
             <div className="space-y-4 max-h-96 overflow-y-auto">
               {getFilteredMenuItems().map((item) => (
                 <div key={item._id} className="flex items-center justify-between p-3 border rounded">
@@ -330,11 +330,13 @@ export default function UserPesananPage() {
                 </div>
               ))}
             </div>
-            
+
             {/* Subtotal */}
             <div className="flex items-center justify-between pt-4">
               <span className="font-semibold">Subtotal</span>
-              <span className={`font-semibold ${(() => { const subtotal = calcSubtotal(); const eff = existingPayment?.amount; return (typeof eff === 'number' && subtotal > eff) ? "text-red-600" : ""; })()}`}>
+              <span className={`font-semibold ${(() => {
+ const subtotal = calcSubtotal(); const eff = existingPayment?.amount; return (typeof eff === 'number' && subtotal > eff) ? 'text-red-600' : '';
+})()}`}>
                 {formatCurrency(calcSubtotal())}
               </span>
             </div>
@@ -348,35 +350,35 @@ export default function UserPesananPage() {
                     <p className="text-sm text-red-600 mb-2">{errors.payment}</p>
                   )}
                 </div>
-                
+
                 <div className="space-y-3">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Metode Pembayaran</label>
                     <div className="flex gap-2">
-                      <button 
-                        type="button" 
-                        onClick={() => setPaymentMethod("cash")} 
+                      <button
+                        type="button"
+                        onClick={() => setPaymentMethod('cash')}
                         className={`flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition ${paymentMethod==='cash' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white hover:bg-gray-50'}`}
                       >
                         <Wallet className="h-4 w-4" /> Tunai
                       </button>
-                      <button 
-                        type="button" 
-                        onClick={() => setPaymentMethod("cardless")} 
+                      <button
+                        type="button"
+                        onClick={() => setPaymentMethod('cardless')}
                         className={`flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition ${paymentMethod==='cardless' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white hover:bg-gray-50'}`}
                       >
                         <CreditCard className="h-4 w-4" /> Tanpa Kartu
                       </button>
-                      <button 
-                        type="button" 
-                        onClick={() => setPaymentMethod("dana")} 
+                      <button
+                        type="button"
+                        onClick={() => setPaymentMethod('dana')}
                         className={`flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition ${paymentMethod==='dana' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white hover:bg-gray-50'}`}
                       >
                         <Smartphone className="h-4 w-4" /> DANA
                       </button>
                     </div>
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Jumlah Pembayaran</label>
                     <div className="flex items-center rounded-lg border border-gray-200 bg-white shadow-sm focus-within:ring-2 focus-within:ring-gray-300">
@@ -399,11 +401,11 @@ export default function UserPesananPage() {
             )}
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsJoinOrderOpen(false)}>Batal</Button>
-              <Button 
+              <Button
                 onClick={handleJoinOrder}
-                disabled={selectedMenuItems.filter(item => item.qty > 0).length === 0}
+                disabled={selectedMenuItems.filter((item) => item.qty > 0).length === 0}
               >
-                Gabung Pesanan ({selectedMenuItems.filter(item => item.qty > 0).length} item)
+                Gabung Pesanan ({selectedMenuItems.filter((item) => item.qty > 0).length} item)
               </Button>
             </DialogFooter>
           </DialogContent>

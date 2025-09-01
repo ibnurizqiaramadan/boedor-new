@@ -1,23 +1,23 @@
-"use client";
+'use client';
 
-import { useAuth } from "@/contexts/AuthContext";
-import { useQuery, useMutation } from "convex/react";
-import { api } from "../../../../convex/_generated/api";
-import Layout from "@/components/layout/Layout";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { ShoppingBag } from "lucide-react";
-import { toast } from "sonner";
-import { getStatusIcon, getStatusColor, formatStatus } from "@/lib/status";
+import { useAuth } from '@/contexts/AuthContext';
+import { useQuery, useMutation } from 'convex/react';
+import { api } from '../../../../convex/_generated/api';
+import Layout from '@/components/layout/Layout';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { ShoppingBag } from 'lucide-react';
+import { toast } from 'sonner';
+import { getStatusIcon, getStatusColor, formatStatus } from '@/lib/status';
 
 export default function AdminOrdersPage() {
   const { user } = useAuth();
   const router = useRouter();
 
   // Queries
-  const orders = useQuery(api.boedor.orders.getAllOrders, user ? { currentUserId: user._id } : "skip");
+  const orders = useQuery(api.boedor.orders.getAllOrders, user ? { currentUserId: user._id } : 'skip');
 
   // Mutations
   const updateOrderStatus = useMutation(api.boedor.orders.updateOrderStatus);
@@ -26,15 +26,15 @@ export default function AdminOrdersPage() {
   // Redirect to home page if user is not logged in
   useEffect(() => {
     if (user === null) {
-      router.push("/");
+      router.push('/');
     }
-  }, [user, router]);
+  }, [ user, router ]);
 
   if (!user) {
     return null; // Don't render anything while redirecting
   }
 
-  if (user.role !== "admin" && user.role !== "super_admin") {
+  if (user.role !== 'admin' && user.role !== 'super_admin') {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
@@ -44,7 +44,7 @@ export default function AdminOrdersPage() {
     );
   }
 
-  const handleUpdateOrderStatus = async (orderId: string, status: "open" | "closed" | "completed") => {
+  const handleUpdateOrderStatus = async (orderId: string, status: 'open' | 'closed' | 'completed') => {
     try {
       await updateOrderStatus({
         orderId: orderId as any,
@@ -53,19 +53,19 @@ export default function AdminOrdersPage() {
       });
       toast.success(`Status pesanan diperbarui menjadi ${status}!`);
     } catch (error) {
-      console.error("Failed to update order status:", error);
-      toast.error("Gagal memperbarui status pesanan: " + (error as Error).message);
+      console.error('Failed to update order status:', error);
+      toast.error('Gagal memperbarui status pesanan: ' + (error as Error).message);
     }
   };
 
   const handleDeleteOrder = async (orderId: string) => {
-    if (confirm("Apakah Anda yakin ingin menghapus pesanan ini?")) {
+    if (confirm('Apakah Anda yakin ingin menghapus pesanan ini?')) {
       try {
         await deleteOrder({ orderId: orderId as any, currentUserId: user!._id });
-        toast.success("Pesanan berhasil dihapus!");
+        toast.success('Pesanan berhasil dihapus!');
       } catch (error) {
-        console.error("Failed to delete order:", error);
-        toast.error("Gagal menghapus pesanan: " + (error as Error).message);
+        console.error('Failed to delete order:', error);
+        toast.error('Gagal menghapus pesanan: ' + (error as Error).message);
       }
     }
   };
@@ -112,20 +112,20 @@ export default function AdminOrdersPage() {
                     </p>
                   </div>
                   <div className="flex space-x-2">
-                    {order.status === "open" && (
+                    {order.status === 'open' && (
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleUpdateOrderStatus(order._id, "closed")}
+                        onClick={() => handleUpdateOrderStatus(order._id, 'closed')}
                       >
                         Tutup Pesanan
                       </Button>
                     )}
-                    {order.status === "closed" && (
+                    {order.status === 'closed' && (
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleUpdateOrderStatus(order._id, "completed")}
+                        onClick={() => handleUpdateOrderStatus(order._id, 'completed')}
                       >
                         Selesaikan Pesanan
                       </Button>

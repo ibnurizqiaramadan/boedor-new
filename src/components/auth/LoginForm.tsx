@@ -1,30 +1,30 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { z } from "zod";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAuth } from "@/contexts/AuthContext";
+import React, { useState } from 'react';
+import { z } from 'zod';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function LoginForm() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [errors, setErrors] = useState<{ username?: string; password?: string }>({});
+  const [ username, setUsername ] = useState('');
+  const [ password, setPassword ] = useState('');
+  const [ isLoading, setIsLoading ] = useState(false);
+  const [ error, setError ] = useState('');
+  const [ errors, setErrors ] = useState<{ username?: string; password?: string }>({});
   const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError("");
+    setError('');
     setErrors({});
 
     try {
       const schema = z.object({
-        username: z.string().min(3, "Nama pengguna minimal 3 karakter"),
-        password: z.string().min(6, "Kata sandi minimal 6 karakter"),
+        username: z.string().min(3, 'Nama pengguna minimal 3 karakter'),
+        password: z.string().min(6, 'Kata sandi minimal 6 karakter'),
       });
       const parsed = schema.safeParse({ username, password });
       if (!parsed.success) {
@@ -39,7 +39,7 @@ export function LoginForm() {
       }
       await login(username, password);
     } catch (err: any) {
-      setError(err.message || "Login failed");
+      setError(err.message || 'Login failed');
     } finally {
       setIsLoading(false);
     }
@@ -87,7 +87,7 @@ export function LoginForm() {
         </CardContent>
         <CardFooter>
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Sedang masuk..." : "Masuk"}
+            {isLoading ? 'Sedang masuk...' : 'Masuk'}
           </Button>
         </CardFooter>
       </form>

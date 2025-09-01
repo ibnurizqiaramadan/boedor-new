@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import { useAuth } from "@/contexts/AuthContext";
-import { useQuery, useMutation } from "convex/react";
-import { api } from "../../../../convex/_generated/api";
-import Layout from "@/components/layout/Layout";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { Plus, Edit, Trash2 } from "lucide-react";
-import { toast } from "sonner";
-import { formatCurrency } from "@/lib/utils";
+import { useAuth } from '@/contexts/AuthContext';
+import { useQuery, useMutation } from 'convex/react';
+import { api } from '../../../../convex/_generated/api';
+import Layout from '@/components/layout/Layout';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Plus, Edit, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { formatCurrency } from '@/lib/utils';
 
 // Local type to avoid explicit any
 type MenuItemLite = { _id: string; name: string; price: number };
@@ -21,20 +21,20 @@ export default function DriverMenuPage() {
   const { user } = useAuth();
   const router = useRouter();
 
-  const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
-  const [isEditMenuOpen, setIsEditMenuOpen] = useState(false);
-  const [newMenuItem, setNewMenuItem] = useState({ name: "", price: 0 });
-  const [selectedMenuItem, setSelectedMenuItem] = useState<MenuItemLite | null>(null);
+  const [ isAddMenuOpen, setIsAddMenuOpen ] = useState(false);
+  const [ isEditMenuOpen, setIsEditMenuOpen ] = useState(false);
+  const [ newMenuItem, setNewMenuItem ] = useState({ name: '', price: 0 });
+  const [ selectedMenuItem, setSelectedMenuItem ] = useState<MenuItemLite | null>(null);
 
   useEffect(() => {
     if (user === null) {
-      router.push("/");
+      router.push('/');
     }
-  }, [user, router]);
+  }, [ user, router ]);
 
   if (!user) return null;
 
-  if (user.role !== "driver") {
+  if (user.role !== 'driver') {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
@@ -60,13 +60,13 @@ export default function DriverMenuPage() {
           price: newMenuItem.price,
           currentUserId: user._id,
         });
-        toast.success("Item menu berhasil ditambahkan!");
+        toast.success('Item menu berhasil ditambahkan!');
         setIsAddMenuOpen(false);
-        setNewMenuItem({ name: "", price: 0 });
+        setNewMenuItem({ name: '', price: 0 });
       }
     } catch (error) {
-      console.error("Failed to add menu item:", error);
-      toast.error("Gagal menambah item menu: " + (error as Error).message);
+      console.error('Failed to add menu item:', error);
+      toast.error('Gagal menambah item menu: ' + (error as Error).message);
     }
   };
 
@@ -79,28 +79,28 @@ export default function DriverMenuPage() {
           price: selectedMenuItem.price,
           currentUserId: user._id,
         });
-        toast.success("Item menu berhasil diperbarui!");
+        toast.success('Item menu berhasil diperbarui!');
         setIsEditMenuOpen(false);
         setSelectedMenuItem(null);
       }
     } catch (error) {
-      console.error("Failed to update menu item:", error);
-      toast.error("Gagal memperbarui item menu: " + (error as Error).message);
+      console.error('Failed to update menu item:', error);
+      toast.error('Gagal memperbarui item menu: ' + (error as Error).message);
     }
   };
 
   const handleDeleteMenuItem = async (menuId: string) => {
     try {
-      if (confirm("Apakah Anda yakin ingin menghapus item menu ini?")) {
-        await deleteMenuItem({ 
-          menuId: menuId as any, 
-          currentUserId: user._id 
+      if (confirm('Apakah Anda yakin ingin menghapus item menu ini?')) {
+        await deleteMenuItem({
+          menuId: menuId as any,
+          currentUserId: user._id,
         });
-        toast.success("Item menu berhasil dihapus!");
+        toast.success('Item menu berhasil dihapus!');
       }
     } catch (error) {
-      console.error("Failed to delete menu item:", error);
-      toast.error("Gagal menghapus item menu: " + (error as Error).message);
+      console.error('Failed to delete menu item:', error);
+      toast.error('Gagal menghapus item menu: ' + (error as Error).message);
     }
   };
 

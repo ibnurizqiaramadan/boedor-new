@@ -1,48 +1,48 @@
-"use client";
+'use client';
 
-import { useAuth } from "@/contexts/AuthContext";
-import { useQuery, useMutation } from "convex/react";
-import { api } from "../../../../../convex/_generated/api";
-import { Id } from "../../../../../convex/_generated/dataModel";
-import Layout from "@/components/layout/Layout";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
-import { ArrowLeft, User, ShoppingCart, Edit, Trash2, Plus, Wallet, CreditCard, Smartphone } from "lucide-react";
-import { toast } from "sonner";
-import { formatCurrency } from "@/lib/utils";
-import { getStatusIcon, getStatusColor, formatStatus } from "@/lib/status";
+import { useAuth } from '@/contexts/AuthContext';
+import { useQuery, useMutation } from 'convex/react';
+import { api } from '../../../../../convex/_generated/api';
+import { Id } from '../../../../../convex/_generated/dataModel';
+import Layout from '@/components/layout/Layout';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useEffect, useState } from 'react';
+import { useRouter, useParams } from 'next/navigation';
+import { ArrowLeft, User, ShoppingCart, Edit, Trash2, Plus, Wallet, CreditCard, Smartphone } from 'lucide-react';
+import { toast } from 'sonner';
+import { formatCurrency } from '@/lib/utils';
+import { getStatusIcon, getStatusColor, formatStatus } from '@/lib/status';
 
 export default function UserOrderDetailPage() {
   const { user } = useAuth();
   const router = useRouter();
   const params = useParams();
   const orderId = params.orderId as string;
-  const [isEditItemOpen, setIsEditItemOpen] = useState(false);
-  const [isAddItemOpen, setIsAddItemOpen] = useState(false);
-  const [selectedOrderItem, setSelectedOrderItem] = useState<any>(null);
-  const [selectedMenuItems, setSelectedMenuItems] = useState<{ menuId: string; qty: number }[]>([]);
-  const [paymentMethod, setPaymentMethod] = useState<"cash" | "cardless" | "dana">("cash");
-  const [amount, setAmount] = useState<string>("");
-  const [payErrors, setPayErrors] = useState<{ amount?: string }>([] as any as { amount?: string });
-  const [errors, setErrors] = useState<{ amount?: string }>({});
+  const [ isEditItemOpen, setIsEditItemOpen ] = useState(false);
+  const [ isAddItemOpen, setIsAddItemOpen ] = useState(false);
+  const [ selectedOrderItem, setSelectedOrderItem ] = useState<any>(null);
+  const [ selectedMenuItems, setSelectedMenuItems ] = useState<{ menuId: string; qty: number }[]>([]);
+  const [ paymentMethod, setPaymentMethod ] = useState<'cash' | 'cardless' | 'dana'>('cash');
+  const [ amount, setAmount ] = useState<string>('');
+  const [ payErrors, setPayErrors ] = useState<{ amount?: string }>([] as any as { amount?: string });
+  const [ errors, setErrors ] = useState<{ amount?: string }>({});
 
   // Redirect to home page if user is not logged in
   useEffect(() => {
     if (user === null) {
-      router.push("/");
+      router.push('/');
     }
-  }, [user, router]);
+  }, [ user, router ]);
 
   if (!user) {
     return null; // Don't render anything while redirecting
   }
 
-  if (user.role !== "user") {
+  if (user.role !== 'user') {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
@@ -53,33 +53,33 @@ export default function UserOrderDetailPage() {
   }
 
   // Queries
-  const order = useQuery(api.boedor.orders.getOrderById, { 
-    orderId: orderId as Id<"boedor_orders">, 
-    currentUserId: user._id 
+  const order = useQuery(api.boedor.orders.getOrderById, {
+    orderId: orderId as Id<'boedor_orders'>,
+    currentUserId: user._id,
   });
-  const orderItems = useQuery(api.boedor.orderItems.getOrderItemsByOrder, { 
-    orderId: orderId as Id<"boedor_orders">, 
-    currentUserId: user._id 
+  const orderItems = useQuery(api.boedor.orderItems.getOrderItemsByOrder, {
+    orderId: orderId as Id<'boedor_orders'>,
+    currentUserId: user._id,
   });
   const menuItems = useQuery(api.boedor.menu.getAllMenuItems, { currentUserId: user._id });
 
   // Get unique participant IDs from order items
-  const participantIds = orderItems ? [...new Set(orderItems.map(item => item.userId))] : [];
-  
+  const participantIds = orderItems ? [ ...new Set(orderItems.map((item) => item.userId)) ] : [];
+
   // Get usernames for participants
   const participants = useQuery(
-    api.boedor.users.getUsernamesByIds, 
-    participantIds.length > 0 ? { userIds: participantIds, currentUserId: user._id } : "skip"
+    api.boedor.users.getUsernamesByIds,
+    participantIds.length > 0 ? { userIds: participantIds, currentUserId: user._id } : 'skip',
   );
 
   // Query existing payment for this order
   const existingPayment = useQuery(
     api.boedor.payment.getPaymentByOrderUser,
     user ? {
-      orderId: orderId as Id<"boedor_orders">,
+      orderId: orderId as Id<'boedor_orders'>,
       userId: user._id,
-      currentUserId: user._id
-    } : "skip"
+      currentUserId: user._id,
+    } : 'skip',
   );
 
   // Mutations
@@ -94,10 +94,10 @@ export default function UserOrderDetailPage() {
       setPaymentMethod(existingPayment.paymentMethod);
       setAmount(existingPayment.amount.toString());
     } else {
-      setPaymentMethod("cash");
-      setAmount("");
+      setPaymentMethod('cash');
+      setAmount('');
     }
-  }, [existingPayment]);
+  }, [ existingPayment ]);
 
   if (!order) {
     return (
@@ -110,7 +110,7 @@ export default function UserOrderDetailPage() {
   }
 
   // Group order items by user
-  const itemsByUser = orderItems ? 
+  const itemsByUser = orderItems ?
     orderItems.reduce((acc, item) => {
       const userId = item.userId;
       if (!acc[userId]) {
@@ -121,14 +121,14 @@ export default function UserOrderDetailPage() {
     }, {} as Record<string, typeof orderItems>) : {};
 
   // Get user's own items
-  const myItems = orderItems ? orderItems.filter(item => item.userId === user._id) : [];
+  const myItems = orderItems ? orderItems.filter((item) => item.userId === user._id) : [];
 
-  
+
 
   const getTotalOrderValue = () => {
     if (!orderItems || !menuItems) return 0;
     return orderItems.reduce((total, item) => {
-      const menuItem = menuItems.find(m => m._id === item.menuId);
+      const menuItem = menuItems.find((m) => m._id === item.menuId);
       return total + (menuItem ? menuItem.price * item.qty : 0);
     }, 0);
   };
@@ -139,40 +139,40 @@ export default function UserOrderDetailPage() {
       const amt = parseFloat(amount);
       const myTotal = getMyTotal();
       if (isNaN(amt) || amt <= 0) {
-        setPayErrors({ amount: "Jumlah harus lebih dari 0" });
-        toast.error("Jumlah tidak valid");
+        setPayErrors({ amount: 'Jumlah harus lebih dari 0' });
+        toast.error('Jumlah tidak valid');
         return;
       }
       if (amt < myTotal) {
         setPayErrors({ amount: `Jumlah harus minimal ${formatCurrency(myTotal)}` });
-        toast.error("Jumlah kurang dari total item Anda");
+        toast.error('Jumlah kurang dari total item Anda');
         return;
       }
 
       await upsertPayment({
-        orderId: orderId as Id<"boedor_orders">,
+        orderId: orderId as Id<'boedor_orders'>,
         paymentMethod,
         amount: amt,
         currentUserId: user._id,
       });
-      toast.success("Pembayaran disimpan");
+      toast.success('Pembayaran disimpan');
     } catch (err) {
       console.error(err);
-      toast.error("Gagal menyimpan pembayaran");
+      toast.error('Gagal menyimpan pembayaran');
     }
   };
 
   const getUserTotal = (userId: string) => {
     const userItems = itemsByUser[userId] || [];
     return userItems.reduce((total, item) => {
-      const menuItem = menuItems?.find(m => m._id === item.menuId);
+      const menuItem = menuItems?.find((m) => m._id === item.menuId);
       return total + (menuItem ? menuItem.price * item.qty : 0);
     }, 0);
   };
 
   const getMyTotal = () => {
     return myItems.reduce((total, item) => {
-      const menuItem = menuItems?.find(m => m._id === item.menuId);
+      const menuItem = menuItems?.find((m) => m._id === item.menuId);
       return total + (menuItem ? menuItem.price * item.qty : 0);
     }, 0);
   };
@@ -191,28 +191,28 @@ export default function UserOrderDetailPage() {
           qty: selectedOrderItem.qty,
           currentUserId: user._id,
         });
-        toast.success("Item pesanan berhasil diperbarui!");
+        toast.success('Item pesanan berhasil diperbarui!');
         setIsEditItemOpen(false);
         setSelectedOrderItem(null);
       }
     } catch (error) {
-      console.error("Failed to update order item:", error);
-      toast.error("Gagal memperbarui item pesanan: " + (error as Error).message);
+      console.error('Failed to update order item:', error);
+      toast.error('Gagal memperbarui item pesanan: ' + (error as Error).message);
     }
   };
 
   const handleRemoveOrderItem = async (orderItemId: string) => {
     try {
-      if (confirm("Apakah Anda yakin ingin menghapus item ini dari pesanan?")) {
+      if (confirm('Apakah Anda yakin ingin menghapus item ini dari pesanan?')) {
         await removeOrderItem({
-          orderItemId: orderItemId as Id<"boedor_order_items">,
+          orderItemId: orderItemId as Id<'boedor_order_items'>,
           currentUserId: user._id,
         });
-        toast.success("Item pesanan berhasil dihapus!");
+        toast.success('Item pesanan berhasil dihapus!');
       }
     } catch (error) {
-      console.error("Failed to remove order item:", error);
-      toast.error("Gagal menghapus item pesanan: " + (error as Error).message);
+      console.error('Failed to remove order item:', error);
+      toast.error('Gagal menghapus item pesanan: ' + (error as Error).message);
     }
   };
 
@@ -220,12 +220,12 @@ export default function UserOrderDetailPage() {
     try {
       // Validate against existing payment (if any)
       const subtotal = selectedMenuItems.reduce((sum, sel) => {
-        const m = menuItems?.find(mi => mi._id === sel.menuId);
+        const m = menuItems?.find((mi) => mi._id === sel.menuId);
         return sum + (m ? m.price * sel.qty : 0);
       }, 0);
       // If user already has a payment recorded, ensure it covers the new subtotal
       if (existingPayment && existingPayment.amount < subtotal) {
-        toast.error("Subtotal melebihi jumlah bayar yang tersimpan");
+        toast.error('Subtotal melebihi jumlah bayar yang tersimpan');
         return;
       }
 
@@ -234,40 +234,40 @@ export default function UserOrderDetailPage() {
         for (const item of selectedMenuItems) {
           if (item.qty > 0) {
             await addOrderItem({
-              orderId: orderId as Id<"boedor_orders">,
-              menuId: item.menuId as Id<"boedor_menu">,
+              orderId: orderId as Id<'boedor_orders'>,
+              menuId: item.menuId as Id<'boedor_menu'>,
               qty: item.qty,
               currentUserId: user._id,
             });
           }
         }
 
-        toast.success("Item berhasil ditambahkan ke pesanan!");
+        toast.success('Item berhasil ditambahkan ke pesanan!');
         setIsAddItemOpen(false);
         setSelectedMenuItems([]);
         setErrors({}); // keep payment state for Payment section
       }
     } catch (error) {
-      console.error("Failed to add items:", error);
-      toast.error("Gagal menambah item: " + (error as Error).message);
+      console.error('Failed to add items:', error);
+      toast.error('Gagal menambah item: ' + (error as Error).message);
     }
   };
 
   const updateMenuItemQuantity = (menuId: string, qty: number) => {
-    setSelectedMenuItems(prev => {
-      const existing = prev.find(item => item.menuId === menuId);
+    setSelectedMenuItems((prev) => {
+      const existing = prev.find((item) => item.menuId === menuId);
       if (existing) {
-        return prev.map(item => 
-          item.menuId === menuId ? { ...item, qty } : item
+        return prev.map((item) =>
+          item.menuId === menuId ? { ...item, qty } : item,
         );
       } else {
-        return [...prev, { menuId, qty }];
+        return [ ...prev, { menuId, qty } ];
       }
     });
   };
 
   const getMenuItemQuantity = (menuId: string) => {
-    return selectedMenuItems.find(item => item.menuId === menuId)?.qty || 0;
+    return selectedMenuItems.find((item) => item.menuId === menuId)?.qty || 0;
   };
 
   return (
@@ -323,7 +323,7 @@ export default function UserOrderDetailPage() {
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500">
-                  {existingPayment ? "Kembalian Saya" : "Status Pembayaran"}
+                  {existingPayment ? 'Kembalian Saya' : 'Status Pembayaran'}
                 </p>
                 {existingPayment ? (
                   <div>
@@ -339,7 +339,7 @@ export default function UserOrderDetailPage() {
                 )}
               </div>
             </div>
-            
+
           </CardContent>
         </Card>
 
@@ -358,26 +358,28 @@ export default function UserOrderDetailPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Metode Pembayaran</label>
                 <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
                   <div className="flex gap-2 w-full sm:w-auto">
-                    <button type="button" onClick={() => setPaymentMethod("cash")} className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition ${paymentMethod==='cash' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white hover:bg-gray-50'}`}>
+                    <button type="button" onClick={() => setPaymentMethod('cash')} className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition ${paymentMethod==='cash' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white hover:bg-gray-50'}`}>
                       <Wallet className="h-4 w-4" /> Tunai
                     </button>
-                    <button type="button" onClick={() => setPaymentMethod("cardless")} className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition ${paymentMethod==='cardless' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white hover:bg-gray-50'}`}>
+                    <button type="button" onClick={() => setPaymentMethod('cardless')} className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition ${paymentMethod==='cardless' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white hover:bg-gray-50'}`}>
                       <CreditCard className="h-4 w-4" /> Tanpa Kartu
                     </button>
-                    <button type="button" onClick={() => setPaymentMethod("dana")} className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition ${paymentMethod==='dana' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white hover:bg-gray-50'}`}>
+                    <button type="button" onClick={() => setPaymentMethod('dana')} className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition ${paymentMethod==='dana' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white hover:bg-gray-50'}`}>
                       <Smartphone className="h-4 w-4" /> DANA
                     </button>
                   </div>
                   <div className="flex gap-2 w-full sm:w-auto sm:ml-auto">
                     <div className="flex-1 sm:w-32">
                       <label className="block text-xs text-gray-500 mb-1">Rp</label>
-                      <div className={`flex items-center rounded-lg border ${payErrors.amount ? 'border-red-500 ring-1 ring-red-500' : 'border-gray-200'} bg-white shadow-sm focus-within:ring-2 focus-within:ring-gray-300`}> 
+                      <div className={`flex items-center rounded-lg border ${payErrors.amount ? 'border-red-500 ring-1 ring-red-500' : 'border-gray-200'} bg-white shadow-sm focus-within:ring-2 focus-within:ring-gray-300`}>
                         <Input
                           type="number"
                           placeholder="50000"
                           min="0"
                           value={amount}
-                          onChange={(e) => { setAmount(e.target.value); if (payErrors.amount) setPayErrors({}); }}
+                          onChange={(e) => {
+ setAmount(e.target.value); if (payErrors.amount) setPayErrors({});
+}}
                           className="border-0 focus-visible:ring-0 text-center py-2"
                         />
                       </div>
@@ -386,7 +388,9 @@ export default function UserOrderDetailPage() {
                       <label className="block text-xs text-transparent mb-1">.</label>
                       <Button
                         onClick={handleSavePayment}
-                        disabled={(() => { const amt = parseFloat(amount); const myTotal = getMyTotal(); return isNaN(amt) || amt <= 0 || amt < myTotal; })()}
+                        disabled={(() => {
+ const amt = parseFloat(amount); const myTotal = getMyTotal(); return isNaN(amt) || amt <= 0 || amt < myTotal;
+})()}
                         className="py-2"
                       >
                         Simpan Pembayaran
@@ -426,10 +430,10 @@ export default function UserOrderDetailPage() {
               <div>
                 <CardTitle>Item Pesanan Saya</CardTitle>
                 <CardDescription>
-                  Item yang telah Anda tambahkan ke pesanan ini {order.status === "open" ? "(dapat diedit)" : "(hanya baca)"}
+                  Item yang telah Anda tambahkan ke pesanan ini {order.status === 'open' ? '(dapat diedit)' : '(hanya baca)'}
                 </CardDescription>
               </div>
-              {order.status === "open" && (
+              {order.status === 'open' && (
                 <Button onClick={() => setIsAddItemOpen(true)}>
                   <Plus className="h-4 w-4 mr-2" /> Tambah Item Lagi
                 </Button>
@@ -440,7 +444,7 @@ export default function UserOrderDetailPage() {
             <div className="space-y-3">
               {myItems.length > 0 ? (
                 myItems.sort((a, b) => b._creationTime - a._creationTime).map((item) => {
-                  const menuItem = menuItems?.find(m => m._id === item.menuId);
+                  const menuItem = menuItems?.find((m) => m._id === item.menuId);
                   const itemTotal = menuItem ? menuItem.price * item.qty : 0;
                   return (
                     <div key={item._id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -453,14 +457,14 @@ export default function UserOrderDetailPage() {
                           </p>
                           <p className="text-xs text-gray-400">
                             {new Date(item._creationTime).toLocaleString('id-ID', {
-                              year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
+                              year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit',
                             })}
                           </p>
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
                         <p className="font-medium">{formatCurrency(itemTotal)}</p>
-                        {order.status === "open" && (
+                        {order.status === 'open' && (
                           <div className="flex space-x-1">
                             <Button
                               variant="outline"
@@ -498,13 +502,13 @@ export default function UserOrderDetailPage() {
         {/* All Participants and Their Orders */}
         <div className="space-y-4">
           <h2 className="text-xl font-semibold text-gray-900">Semua Peserta & Item</h2>
-          
+
           {participants && participants.length > 0 ? (
             participants.map((participant) => {
               if (!participant) return null;
               const userItems = itemsByUser[participant._id] || [];
               const userTotal = getUserTotal(participant._id);
-              
+
               return (
                 <Card key={participant._id}>
                   <CardHeader>
@@ -514,7 +518,7 @@ export default function UserOrderDetailPage() {
                         <div>
                           <CardTitle className="text-lg">
                             {participant.username}
-                            {participant._id === user._id && " (Anda)"}
+                            {participant._id === user._id && ' (Anda)'}
                           </CardTitle>
                           <CardDescription>
                             {userItems.length} item • Total: {formatCurrency(userTotal)}
@@ -527,9 +531,9 @@ export default function UserOrderDetailPage() {
                   <CardContent>
                     <div className="space-y-3">
                       {userItems.sort((a, b) => b._creationTime - a._creationTime).map((item) => {
-                        const menuItem = menuItems?.find(m => m._id === item.menuId);
+                        const menuItem = menuItems?.find((m) => m._id === item.menuId);
                         const itemTotal = menuItem ? menuItem.price * item.qty : 0;
-                        
+
                         return (
                           <div key={item._id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                             <div className="flex items-center space-x-3">
@@ -598,10 +602,10 @@ export default function UserOrderDetailPage() {
               <div className="space-y-4">
                 <div>
                   <p className="font-medium">
-                    {menuItems?.find(m => m._id === selectedOrderItem.menuId)?.name}
+                    {menuItems?.find((m) => m._id === selectedOrderItem.menuId)?.name}
                   </p>
                   <p className="text-sm text-gray-500">
-                    {formatCurrency(menuItems?.find(m => m._id === selectedOrderItem.menuId)?.price || 0)} per item
+                    {formatCurrency(menuItems?.find((m) => m._id === selectedOrderItem.menuId)?.price || 0)} per item
                   </p>
                 </div>
                 <Input
@@ -609,9 +613,9 @@ export default function UserOrderDetailPage() {
                   placeholder="Jumlah"
                   min="1"
                   value={selectedOrderItem.qty}
-                  onChange={(e) => setSelectedOrderItem({ 
-                    ...selectedOrderItem, 
-                    qty: parseInt(e.target.value) || 1 
+                  onChange={(e) => setSelectedOrderItem({
+                    ...selectedOrderItem,
+                    qty: parseInt(e.target.value) || 1,
                   })}
                 />
               </div>
@@ -666,11 +670,17 @@ export default function UserOrderDetailPage() {
             {/* Subtotal */}
             <div className="flex items-center justify-between pt-4">
               <span className="font-semibold">Subtotal</span>
-              <span className={`font-semibold ${(() => { const subtotal = selectedMenuItems.reduce((sum, sel) => { const m = menuItems?.find(mi => mi._id === sel.menuId); return sum + (m ? m.price * sel.qty : 0); }, 0); const effective = existingPayment?.amount ?? Number.POSITIVE_INFINITY; return subtotal > effective ? "text-red-600" : ""; })()}`}>
-                {formatCurrency(selectedMenuItems.reduce((sum, sel) => { const m = menuItems?.find(mi => mi._id === sel.menuId); return sum + (m ? m.price * sel.qty : 0); }, 0))}
+              <span className={`font-semibold ${(() => {
+ const subtotal = selectedMenuItems.reduce((sum, sel) => {
+ const m = menuItems?.find((mi) => mi._id === sel.menuId); return sum + (m ? m.price * sel.qty : 0);
+}, 0); const effective = existingPayment?.amount ?? Number.POSITIVE_INFINITY; return subtotal > effective ? 'text-red-600' : '';
+})()}`}>
+                {formatCurrency(selectedMenuItems.reduce((sum, sel) => {
+ const m = menuItems?.find((mi) => mi._id === sel.menuId); return sum + (m ? m.price * sel.qty : 0);
+}, 0))}
               </span>
             </div>
-            
+
             <DialogFooter>
               <Button variant="outline" onClick={() => {
                 setIsAddItemOpen(false);
@@ -679,11 +689,13 @@ export default function UserOrderDetailPage() {
               }}>
                 Batal
               </Button>
-              <Button 
+              <Button
                 onClick={handleAddMoreItems}
-                disabled={selectedMenuItems.filter(item => item.qty > 0).length === 0 || (existingPayment ? (selectedMenuItems.reduce((sum, sel) => { const m = menuItems?.find(mi => mi._id === sel.menuId); return sum + (m ? m.price * sel.qty : 0); }, 0) > existingPayment.amount) : false)}
+                disabled={selectedMenuItems.filter((item) => item.qty > 0).length === 0 || (existingPayment ? (selectedMenuItems.reduce((sum, sel) => {
+ const m = menuItems?.find((mi) => mi._id === sel.menuId); return sum + (m ? m.price * sel.qty : 0);
+}, 0) > existingPayment.amount) : false)}
               >
-                Tambah Item ({selectedMenuItems.filter(item => item.qty > 0).length})
+                Tambah Item ({selectedMenuItems.filter((item) => item.qty > 0).length})
               </Button>
             </DialogFooter>
           </DialogContent>

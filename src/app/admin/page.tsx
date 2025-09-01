@@ -1,31 +1,31 @@
-"use client";
+'use client';
 
-import { useAuth } from "@/contexts/AuthContext";
-import { useQuery, useMutation, useAction } from "convex/react";
-import { api } from "../../../convex/_generated/api";
-import Layout from "@/components/layout/Layout";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { Trash2, Edit, Plus, Users, ShoppingBag, MapPin } from "lucide-react";
-import { toast } from "sonner";
+import { useAuth } from '@/contexts/AuthContext';
+import { useQuery, useMutation, useAction } from 'convex/react';
+import { api } from '../../../convex/_generated/api';
+import Layout from '@/components/layout/Layout';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Trash2, Edit, Plus, Users, ShoppingBag, MapPin } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function AdminPage() {
   const { user } = useAuth();
   const router = useRouter();
-  const [isAddUserOpen, setIsAddUserOpen] = useState(false);
-  const [isEditUserOpen, setIsEditUserOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<any>(null);
-  const [newUser, setNewUser] = useState({ username: "", password: "", role: "user" as "super_admin" | "admin" | "driver" | "user" });
-  
+  const [ isAddUserOpen, setIsAddUserOpen ] = useState(false);
+  const [ isEditUserOpen, setIsEditUserOpen ] = useState(false);
+  const [ selectedUser, setSelectedUser ] = useState<any>(null);
+  const [ newUser, setNewUser ] = useState({ username: '', password: '', role: 'user' as 'super_admin' | 'admin' | 'driver' | 'user' });
+
 
   // Queries
-  const users = useQuery(api.boedor.users.getAllUsers, user ? { currentUserId: user._id } : "skip");
-  const menuItems = useQuery(api.boedor.menu.getAllMenuItems, user ? { currentUserId: user._id } : "skip");
-  const orders = useQuery(api.boedor.orders.getAllOrders, user ? { currentUserId: user._id } : "skip");
+  const users = useQuery(api.boedor.users.getAllUsers, user ? { currentUserId: user._id } : 'skip');
+  const menuItems = useQuery(api.boedor.menu.getAllMenuItems, user ? { currentUserId: user._id } : 'skip');
+  const orders = useQuery(api.boedor.orders.getAllOrders, user ? { currentUserId: user._id } : 'skip');
 
   // Mutations
   const deleteUser = useMutation(api.boedor.users.deleteUser);
@@ -35,15 +35,15 @@ export default function AdminPage() {
   // Redirect to home page if user is not logged in
   useEffect(() => {
     if (user === null) {
-      router.push("/");
+      router.push('/');
     }
-  }, [user, router]);
+  }, [ user, router ]);
 
   if (!user) {
     return null; // Don't render anything while redirecting
   }
 
-  if (user.role !== "admin" && user.role !== "super_admin") {
+  if (user.role !== 'admin' && user.role !== 'super_admin') {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
@@ -54,7 +54,7 @@ export default function AdminPage() {
   }
 
   const handleDeleteUser = async (userId: string) => {
-    if (confirm("Apakah Anda yakin ingin menghapus pengguna ini?")) {
+    if (confirm('Apakah Anda yakin ingin menghapus pengguna ini?')) {
       await deleteUser({ userId: userId as any, currentUserId: user!._id });
     }
   };
@@ -92,7 +92,7 @@ export default function AdminPage() {
               <div className="text-2xl font-bold">{users?.length || 0}</div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Item Menu</CardTitle>
@@ -102,7 +102,7 @@ export default function AdminPage() {
               <div className="text-2xl font-bold">{menuItems?.length || 0}</div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Pesanan</CardTitle>
@@ -149,7 +149,7 @@ export default function AdminPage() {
                     <select
                       className="w-full p-2 border rounded"
                       value={newUser.role}
-                      onChange={(e) => setNewUser({ ...newUser, role: e.target.value as "super_admin" | "admin" | "driver" | "user" })}
+                      onChange={(e) => setNewUser({ ...newUser, role: e.target.value as 'super_admin' | 'admin' | 'driver' | 'user' })}
                     >
                       <option value="user">Pengguna</option>
                       <option value="driver">Pengemudi</option>
@@ -165,12 +165,12 @@ export default function AdminPage() {
                           password: newUser.password,
                           role: newUser.role,
                         });
-                        toast.success("Pengguna berhasil ditambahkan!");
+                        toast.success('Pengguna berhasil ditambahkan!');
                         setIsAddUserOpen(false);
-                        setNewUser({ username: "", password: "", role: "user" });
+                        setNewUser({ username: '', password: '', role: 'user' });
                       } catch (error) {
-                        console.error("Failed to add user:", error);
-                        toast.error("Gagal menambah pengguna: " + (error as Error).message);
+                        console.error('Failed to add user:', error);
+                        toast.error('Gagal menambah pengguna: ' + (error as Error).message);
                       }
                     }}>Tambah Pengguna</Button>
                   </DialogFooter>
@@ -191,13 +191,13 @@ export default function AdminPage() {
                       variant="destructive"
                       size="sm"
                       onClick={async () => {
-                        if (confirm("Apakah Anda yakin ingin menghapus pengguna ini?")) {
+                        if (confirm('Apakah Anda yakin ingin menghapus pengguna ini?')) {
                           try {
                             await deleteUser({ userId: user._id, currentUserId: user._id });
-                            toast.success("Pengguna berhasil dihapus!");
+                            toast.success('Pengguna berhasil dihapus!');
                           } catch (error) {
-                            console.error("Failed to delete user:", error);
-                            toast.error("Gagal menghapus pengguna: " + (error as Error).message);
+                            console.error('Failed to delete user:', error);
+                            toast.error('Gagal menghapus pengguna: ' + (error as Error).message);
                           }
                         }
                       }}
