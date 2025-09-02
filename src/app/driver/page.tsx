@@ -6,28 +6,22 @@ import { api } from '../../../convex/_generated/api';
 import Layout from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-// Removed Dialog imports; using a toggle button instead
-import { useState, useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { MapPin, Clock, CheckCircle, Truck } from 'lucide-react';
+import { Clock, CheckCircle, Truck } from 'lucide-react';
 import { formatStatus } from '@/lib/status';
 
 export default function DriverPage() {
   const { user } = useAuth();
   const router = useRouter();
-  const [ location, setLocation ] = useState({ lat: 0, lng: 0 });
-  const [ isTracking, setIsTracking ] = useState(false);
-  const watchIdRef = useRef<number | null>(null);
-  const locationRef = useRef<{ lat: number; lng: number }>({ lat: 0, lng: 0 });
-  const [ lastUpdatedAt, setLastUpdatedAt ] = useState<number | null>(null);
 
   // Queries
   const myOrders = useQuery(api.boedor.orders.getOrdersByDriver, user ? { driverId: user._id, currentUserId: user._id } : 'skip');
-  const myPosition = useQuery(api.boedor.driverPositions.getDriverPosition, user ? { driverId: user._id, currentUserId: user._id } : 'skip');
+  // Location tracking moved to driver order detail page
 
   // Mutations
   const updateOrderStatus = useMutation(api.boedor.orders.updateOrderStatus);
-  const updatePosition = useMutation(api.boedor.driverPositions.updateDriverPosition);
+  // Position update mutation moved to order detail page
 
   // Redirect to home page if user is not logged in
   useEffect(() => {
@@ -45,91 +39,6 @@ export default function DriverPage() {
     await updateOrderStatus({ orderId: orderId as any, status, currentUserId: user!._id });
   };
 
-  // Removed manual handleUpdateLocation; tracking toggle handles updates
-
-  // Restore tracking state from localStorage on mount
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const saved = localStorage.getItem('driverTracking');
-    if (saved === 'true') {
-      setIsTracking(true);
-    }
-  }, []);
-
-  // Start/stop geolocation watcher based on isTracking
-  useEffect(() => {
-    if (!user) return;
-
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('driverTracking', isTracking ? 'true' : 'false');
-    }
-
-    if (!isTracking) {
-      if (watchIdRef.current !== null && navigator.geolocation) {
-        navigator.geolocation.clearWatch(watchIdRef.current);
-      }
-      watchIdRef.current = null;
-      return;
-    }
-
-    if (!navigator.geolocation) return;
-
-    const watchId = navigator.geolocation.watchPosition(
-      async (position) => {
-        try {
-          const lat = position.coords.latitude;
-          const lng = position.coords.longitude;
-          await updatePosition({
-            driverId: user._id,
-            lat,
-            lng,
-            currentUserId: user._id,
-          });
-          setLocation({ lat, lng });
-          setLastUpdatedAt(Date.now());
-        } catch (_) {
-          // ignore background errors
-        }
-      },
-      () => {
-        // error ignored for background watcher
-      },
-      { enableHighAccuracy: true, maximumAge: 2000, timeout: 5000 },
-    );
-    watchIdRef.current = watchId as unknown as number;
-
-    return () => {
-      if (watchIdRef.current !== null) {
-        navigator.geolocation.clearWatch(watchIdRef.current);
-        watchIdRef.current = null;
-      }
-    };
-  }, [user, isTracking, updatePosition]);
-
-  // Keep a ref of latest location for polling
-  useEffect(() => {
-    locationRef.current = location;
-  }, [location]);
-
-  // Fallback: poll every 3s to refresh updatedAt even if device doesn't move
-  useEffect(() => {
-    if (!user || !isTracking) return;
-    const interval = setInterval(async () => {
-      try {
-        const { lat, lng } = locationRef.current;
-        await updatePosition({
-          driverId: user._id,
-          lat,
-          lng,
-          currentUserId: user._id,
-        });
-        setLastUpdatedAt(Date.now());
-      } catch (_) {
-        // ignore background errors
-      }
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [user, isTracking, updatePosition]);
 
   return (
     <Layout>
@@ -181,42 +90,7 @@ export default function DriverPage() {
           </Card>
         </div>
 
-        {/* Location Update */}
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <div>
-                <CardTitle>Status Lokasi</CardTitle>
-                <CardDescription>Perbarui lokasi Anda saat ini untuk pelanggan</CardDescription>
-              </div>
-              <Button
-                onClick={() => setIsTracking((prev) => !prev)}
-                variant={isTracking ? 'default' : 'outline'}
-              >
-                <MapPin className="h-4 w-4 mr-2" />
-                {isTracking ? 'Matikan Pelacakan' : 'Nyalakan Pelacakan'}
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {myPosition ? (
-              <p className="text-sm text-gray-600">
-                Posisi saat ini: {(location.lat || myPosition.lat).toFixed(6)}, {(location.lng || myPosition.lng).toFixed(6)}
-                <br />
-                {(() => {
-                  const ts = lastUpdatedAt ?? myPosition.updatedAt;
-                  return (
-                    <>
-                      Terakhir diperbarui: {new Date(ts).toLocaleString('id-ID')}
-                    </>
-                  );
-                })()}
-              </p>
-            ) : (
-              <p className="text-sm text-gray-600">Belum ada data posisi.</p>
-            )}
-          </CardContent>
-        </Card>
+        {/* Status Lokasi dipindahkan ke halaman detail pesanan driver */}
 
         {/* Order Management */}
         <Card>

@@ -1,16 +1,15 @@
 'use client';
 
 import { useAuth } from '@/contexts/AuthContext';
-import { useQuery } from 'convex/react';
+import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../../../convex/_generated/api';
 import { Id } from '../../../../../convex/_generated/dataModel';
 import Layout from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { ArrowLeft, User, ShoppingCart } from 'lucide-react';
-import { toast } from 'sonner';
+import { ArrowLeft, User, ShoppingCart, MapPin } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { getStatusIcon, getStatusColor, formatStatus } from '@/lib/status';
 
@@ -20,62 +19,137 @@ export default function OrderDetailPage() {
   const params = useParams();
   const orderId = params.orderId as string;
 
-  // Redirect to home page if user is not logged in
+  // Mutations (declare before effects to avoid TDZ)
+  const updatePosition = useMutation(api.boedor.driverPositions.updateDriverPosition);
+
+  // Local state for location tracking (driver only)
+  const [ location, setLocation ] = useState<{ lat: number; lng: number }>({ lat: 0, lng: 0 });
+  const [ isTracking, setIsTracking ] = useState(false);
+  const watchIdRef = useRef<number | null>(null);
+  const locationRef = useRef<{ lat: number; lng: number }>({ lat: 0, lng: 0 });
+  const [ lastUpdatedAt, setLastUpdatedAt ] = useState<number | null>(null);
+
+  // Restore tracking toggle from localStorage on mount (driver only)
   useEffect(() => {
-    if (user === null) {
-      router.push('/');
+    if (user?.role !== 'driver') return;
+    if (typeof window === 'undefined') return;
+    const saved = localStorage.getItem('driverTracking');
+    if (saved === 'true') setIsTracking(true);
+  }, [ user?.role ]);
+
+  // Start/stop geolocation watcher based on isTracking
+  useEffect(() => {
+    if (user?.role !== 'driver') return;
+
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('driverTracking', isTracking ? 'true' : 'false');
     }
+
+    if (!isTracking) {
+      if (watchIdRef.current !== null && navigator.geolocation) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+      }
+      watchIdRef.current = null;
+      return;
+    }
+
+    if (!navigator.geolocation) return;
+
+    const watchId = navigator.geolocation.watchPosition(
+      async (pos) => {
+        try {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          await updatePosition({ driverId: user!._id, lat, lng, currentUserId: user!._id });
+          setLocation({ lat, lng });
+          setLastUpdatedAt(Date.now());
+        } catch {
+          // ignore
+        }
+      },
+      () => {
+        // ignore errors for background watcher
+      },
+      { enableHighAccuracy: true, maximumAge: 2000, timeout: 5000 },
+    );
+    watchIdRef.current = watchId as unknown as number;
+
+    return () => {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+        watchIdRef.current = null;
+      }
+    };
+  }, [ user, isTracking, updatePosition ]);
+
+  // Keep latest location in ref
+  useEffect(() => {
+    locationRef.current = location;
+  }, [ location ]);
+
+  // Fallback polling every 3s to refresh timestamp
+  useEffect(() => {
+    if (user?.role !== 'driver' || !isTracking) return;
+    const interval = setInterval(async () => {
+      try {
+        const { lat, lng } = locationRef.current;
+        await updatePosition({ driverId: user!._id, lat, lng, currentUserId: user!._id });
+        setLastUpdatedAt(Date.now());
+      } catch {
+        // ignore
+      }
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [ user, user?.role, isTracking, updatePosition ]);
+
+  // Redirect to home page if user is explicitly unauthenticated
+  useEffect(() => {
+    if (user === null) router.push('/');
   }, [ user, router ]);
 
-  if (!user) {
-    return null; // Don't render anything while redirecting
-  }
-
-  if (user.role !== 'driver') {
-    return (
-      <Layout>
-        <div className="flex items-center justify-center h-64">
-          <p className="text-red-500">Akses ditolak. Khusus driver.</p>
-        </div>
-      </Layout>
-    );
-  }
+  const canView = !!user && user.role === 'driver';
 
   // Queries
-  const order = useQuery(api.boedor.orders.getOrderById, {
-    orderId: orderId as Id<'boedor_orders'>,
-    currentUserId: user._id,
-  });
-  const orderItems = useQuery(api.boedor.orderItems.getOrderItemsByOrder, {
-    orderId: orderId as Id<'boedor_orders'>,
-    currentUserId: user._id,
-  });
+  const order = useQuery(
+    api.boedor.orders.getOrderById,
+    canView && user ? { orderId: orderId as Id<'boedor_orders'>, currentUserId: user._id } : 'skip',
+  );
+  const orderItems = useQuery(
+    api.boedor.orderItems.getOrderItemsByOrder,
+    canView && user ? { orderId: orderId as Id<'boedor_orders'>, currentUserId: user._id } : 'skip',
+  );
 
   // Get all payments for this order
-  const orderPayments = useQuery(api.boedor.payment.getPaymentsByOrder, {
-    orderId: orderId as Id<'boedor_orders'>,
-    currentUserId: user._id,
-  });
-  const menuItems = useQuery(api.boedor.menu.getAllMenuItems, { currentUserId: user._id });
+  const orderPayments = useQuery(
+    api.boedor.payment.getPaymentsByOrder,
+    canView && user ? { orderId: orderId as Id<'boedor_orders'>, currentUserId: user._id } : 'skip',
+  );
+  const menuItems = useQuery(
+    api.boedor.menu.getAllMenuItems,
+    canView && user ? { currentUserId: user._id } : 'skip',
+  );
+
+  // Driver own position for display
+  const myPosition = useQuery(
+    api.boedor.driverPositions.getDriverPosition,
+    canView && user ? { driverId: user._id, currentUserId: user._id } : 'skip',
+  );
+
+  // Mutations
+  // (already declared above)
 
   // Get unique participant IDs from order items
-  const participantIds = orderItems ? [ ...new Set(orderItems.map((item) => item.userId)) ] : [];
+  const participantIds = orderItems ? [ ...new Set(orderItems.map((item) => item.userId)) ] : [ ];
 
   // Get usernames for participants
   const participants = useQuery(
     api.boedor.users.getUsernamesByIds,
-    participantIds.length > 0 ? { userIds: participantIds, currentUserId: user._id } : 'skip',
+    canView && user && participantIds.length > 0 ?
+      { userIds: participantIds, currentUserId: user._id } :
+      'skip',
   );
 
-  if (!order) {
-    return (
-      <Layout>
-        <div className="flex items-center justify-center h-64">
-          <p className="text-gray-500">Memuat detail pesanan...</p>
-        </div>
-      </Layout>
-    );
-  }
+  const loading = canView && !order;
 
 
   // Group order items by user
@@ -120,6 +194,15 @@ export default function OrderDetailPage() {
 
   return (
     <Layout>
+      {!canView ? (
+        <div className="flex items-center justify-center h-64">
+          <p className="text-red-500">Akses ditolak. Khusus driver.</p>
+        </div>
+      ) : loading ? (
+        <div className="flex items-center justify-center h-64">
+          <p className="text-gray-500">Memuat detail pesanan...</p>
+        </div>
+      ) : (
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center space-x-4">
@@ -143,15 +226,15 @@ export default function OrderDetailPage() {
             <div className="flex justify-between items-start">
               <div>
                 <CardTitle className="flex items-center space-x-2">
-                  {getStatusIcon(order.status)}
+                  {getStatusIcon(order!.status)}
                   <span>Pesanan #{orderId.slice(-8)}</span>
                 </CardTitle>
                 <CardDescription>
-                  Dibuat: {new Date(order.createdAt).toLocaleString('id-ID')}
+                  Dibuat: {new Date(order!.createdAt).toLocaleString('id-ID')}
                 </CardDescription>
               </div>
-              <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
-                {formatStatus(order.status)}
+              <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order!.status)}`}>
+                {formatStatus(order!.status)}
               </span>
             </div>
           </CardHeader>
@@ -172,6 +255,38 @@ export default function OrderDetailPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Status Lokasi (driver only) */}
+        {canView && (
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle>Status Lokasi</CardTitle>
+                  <CardDescription>Perbarui lokasi Anda saat ini untuk pelanggan</CardDescription>
+                </div>
+                <Button onClick={() => setIsTracking((v) => !v)} variant={isTracking ? 'default' : 'outline'}>
+                  <MapPin className="h-4 w-4 mr-2" />
+                  {isTracking ? 'Matikan Pelacakan' : 'Nyalakan Pelacakan'}
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {myPosition ? (
+                <p className="text-sm text-gray-600">
+                  Posisi saat ini: {(location.lat || myPosition.lat).toFixed(6)}, {(location.lng || myPosition.lng).toFixed(6)}
+                  <br />
+                  {(() => {
+                    const ts = lastUpdatedAt ?? myPosition.updatedAt;
+                    return <>Terakhir diperbarui: {new Date(ts).toLocaleString('id-ID')}</>;
+                  })()}
+                </p>
+              ) : (
+                <p className="text-sm text-gray-600">Belum ada data posisi.</p>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Peserta dan Item */}
         <div className="space-y-4">
@@ -334,6 +449,7 @@ export default function OrderDetailPage() {
           </Card>
         )}
       </div>
+      )}
     </Layout>
   );
 }
