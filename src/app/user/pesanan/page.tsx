@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { Id } from '../../../../convex/_generated/dataModel';
@@ -18,6 +19,7 @@ import { Wallet, CreditCard, Smartphone } from 'lucide-react';
 
 export default function UserPesananPage() {
   const { user } = useAuth();
+  const router = useRouter();
   const availableOrders = useQuery(api.boedor.orders.getOrdersByStatus,
     user?._id ? { status: 'open', currentUserId: user._id } : 'skip',
   );
@@ -26,6 +28,13 @@ export default function UserPesananPage() {
   );
   const addOrderItem = useMutation(api.boedor.orderItems.addOrderItem);
   const upsertPayment = useMutation(api.boedor.payment.upsertPayment);
+
+  // Fetch all order items for current user to know which orders are already joined
+  const myOrderItems = useQuery(
+    api.boedor.orderItems.getOrderItemsByUser,
+    user?._id ? { userId: user._id, currentUserId: user._id } : 'skip',
+  );
+  const joinedOrderIds = new Set((myOrderItems ?? []).map((it: any) => it.orderId));
 
   const [isJoinOrderOpen, setIsJoinOrderOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
@@ -294,17 +303,25 @@ export default function UserPesananPage() {
                         Dibuat: {new Date(order.createdAt).toLocaleString('id-ID')}
                       </p>
                     </div>
-                    <Button
-                      onClick={() => {
-                        setSelectedOrder(order);
-                        // Reset form when opening dialog
-                        setSelectedMenuItems([]);
-                        setMenuFilter('');
-                        setIsJoinOrderOpen(true);
-                      }}
-                    >
-                      Gabung Pesanan
-                    </Button>
+                    {joinedOrderIds.has(order._id) ? (
+                      <Button
+                        onClick={() => router.push(`/user/orders/${order._id}`)}
+                      >
+                        Lihat Detail
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={() => {
+                          setSelectedOrder(order);
+                          // Reset form when opening dialog
+                          setSelectedMenuItems([]);
+                          setMenuFilter('');
+                          setIsJoinOrderOpen(true);
+                        }}
+                      >
+                        Gabung Pesanan
+                      </Button>
+                    )}
                   </div>
                 ))}
               {(!availableOrders || availableOrders.filter((order) => order.status === 'open').length === 0) && (
