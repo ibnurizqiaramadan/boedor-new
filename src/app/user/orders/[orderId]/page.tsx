@@ -18,7 +18,7 @@ import { formatCurrency } from '@/lib/utils';
 import { getStatusIcon, getStatusColor, formatStatus } from '@/lib/status';
 
 export default function UserOrderDetailPage() {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const router = useRouter();
   const params = useParams();
   const orderId = params.orderId as string;
@@ -32,37 +32,21 @@ export default function UserOrderDetailPage() {
   const [payErrors, setPayErrors] = useState<{ amount?: string }>([] as any as { amount?: string });
   const [errors, setErrors] = useState<{ amount?: string }>({});
 
-  // Redirect to home page if user is not logged in
-  useEffect(() => {
-    if (user === null) {
-      router.push('/');
-    }
-  }, [user, router]);
+  // (moved redirect effect below after queries and myItems)
 
-  if (!user) {
-    return null; // Don't render anything while redirecting
-  }
-
-  if (user.role !== 'user') {
-    return (
-      <Layout>
-        <div className="flex items-center justify-center h-64">
-          <p className="text-red-500">Akses ditolak. Khusus pengguna.</p>
-        </div>
-      </Layout>
-    );
-  }
-
-  // Queries
-  const order = useQuery(api.boedor.orders.getOrderById, {
-    orderId: orderId as Id<'boedor_orders'>,
-    currentUserId: user._id,
-  });
-  const orderItems = useQuery(api.boedor.orderItems.getOrderItemsByOrder, {
-    orderId: orderId as Id<'boedor_orders'>,
-    currentUserId: user._id,
-  });
-  const menuItems = useQuery(api.boedor.menu.getAllMenuItems, { currentUserId: user._id });
+  // Queries (always call hooks; guard with 'skip' when auth not ready)
+  const order = useQuery(
+    api.boedor.orders.getOrderById,
+    !isLoading && user ? { orderId: orderId as Id<'boedor_orders'>, currentUserId: user._id } : 'skip',
+  );
+  const orderItems = useQuery(
+    api.boedor.orderItems.getOrderItemsByOrder,
+    !isLoading && user ? { orderId: orderId as Id<'boedor_orders'>, currentUserId: user._id } : 'skip',
+  );
+  const menuItems = useQuery(
+    api.boedor.menu.getAllMenuItems,
+    !isLoading && user ? { currentUserId: user._id } : 'skip',
+  );
 
   // Get unique participant IDs from order items
   const participantIds = orderItems ? [...new Set(orderItems.map((item) => item.userId))] : [];
@@ -70,13 +54,13 @@ export default function UserOrderDetailPage() {
   // Get usernames for participants
   const participants = useQuery(
     api.boedor.users.getUsernamesByIds,
-    participantIds.length > 0 ? { userIds: participantIds, currentUserId: user._id } : 'skip',
+    !isLoading && user && participantIds.length > 0 ? { userIds: participantIds, currentUserId: user._id } : 'skip',
   );
 
   // Query existing payment for this order
   const existingPayment = useQuery(
     api.boedor.payment.getPaymentByOrderUser,
-    user ? {
+    !isLoading && user ? {
       orderId: orderId as Id<'boedor_orders'>,
       userId: user._id,
       currentUserId: user._id,
@@ -99,6 +83,45 @@ export default function UserOrderDetailPage() {
       setAmount('');
     }
   }, [existingPayment]);
+
+  // Compute membership quickly for redirect effect
+  const myItemsCount = orderItems ? orderItems.filter((item) => item.userId === (user?._id as any)).length : 0;
+
+  // Redirect handling placed before any early returns to keep hook order stable
+  useEffect(() => {
+    if (!isLoading && user === null) {
+      router.push('/');
+      return;
+    }
+    if (!isLoading && user && order && orderItems && myItemsCount === 0) {
+      router.replace(`/user/orders/${orderId}/gabung`);
+    }
+  }, [isLoading, user, order, orderItems, myItemsCount, router, orderId]);
+
+  // After all hooks, handle early-return rendering
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center h-64">
+          <p className="text-gray-500">Memuat...</p>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (!user) {
+    return null; // Don't render anything while redirecting
+  }
+
+  if (user.role !== 'user') {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center h-64">
+          <p className="text-red-500">Akses ditolak. Khusus pengguna.</p>
+        </div>
+      </Layout>
+    );
+  }
 
   if (!order) {
     return (
@@ -123,6 +146,10 @@ export default function UserOrderDetailPage() {
 
   // Get user's own items
   const myItems = orderItems ? orderItems.filter((item) => item.userId === user._id) : [];
+
+  // (redirect effect defined above using myItemsCount)
+
+  
 
 
 
