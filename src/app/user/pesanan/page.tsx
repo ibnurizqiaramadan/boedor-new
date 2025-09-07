@@ -26,6 +26,12 @@ export default function UserPesananPage() {
   const menuItems = useQuery(api.boedor.menu.getAllMenuItems,
     user?._id ? { currentUserId: user._id } : 'skip',
   );
+  // Collect driver IDs from available orders and fetch their usernames
+  const driverIds = availableOrders ? Array.from(new Set(availableOrders.map((o: any) => o.driverId))) : [];
+  const drivers = useQuery(
+    api.boedor.users.getUsernamesByIds,
+    user && driverIds.length > 0 ? { userIds: driverIds, currentUserId: user._id } : 'skip',
+  );
   const addOrderItem = useMutation(api.boedor.orderItems.addOrderItem);
   const upsertPayment = useMutation(api.boedor.payment.upsertPayment);
 
@@ -299,6 +305,9 @@ export default function UserPesananPage() {
                     <div>
                       <p className="font-medium">Pesanan #{order._id.slice(-6)}</p>
                       <p className="text-sm text-gray-500">Status: {formatStatus(order.status)}</p>
+                      <p className="text-sm text-gray-500">
+                        Driver: {drivers?.find((u: any) => u && u._id === order.driverId)?.username ?? 'Memuat...'}
+                      </p>
                       <p className="text-sm text-gray-500">
                         Dibuat: {new Date(order.createdAt).toLocaleString('id-ID')}
                       </p>
