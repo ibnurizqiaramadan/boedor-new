@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, Truck, Clock, CheckCircle, Eye } from 'lucide-react';
+import { Plus, Truck, Clock, CheckCircle, Eye, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { getStatusIcon, getStatusColor, formatStatus } from '@/lib/status';
 
@@ -50,6 +50,34 @@ export default function DriverOrdersPage() {
   }
 
   // Handlers
+  const handleShareOrder = async (orderId: string) => {
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    const joinUrl = `${origin}/user/orders/${orderId}/gabung`;
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: 'Gabung Pesanan',
+          text: `Ayo gabung ke pesanan #${orderId.slice(-8)}`,
+          url: joinUrl,
+        });
+      } else if (navigator.clipboard) {
+        await navigator.clipboard.writeText(joinUrl);
+        toast.success('Link gabung telah disalin');
+      } else {
+        // Fallback: create temporary input
+        const el = document.createElement('input');
+        el.value = joinUrl;
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+        toast.success('Link gabung telah disalin');
+      }
+    } catch (err) {
+      console.error('Failed to share link', err);
+      toast.error('Gagal membagikan link');
+    }
+  };
   const handleCreateOrder = async () => {
     try {
       await createOrder({
@@ -191,6 +219,12 @@ export default function DriverOrdersPage() {
                             Detail
                           </Button>
                           {order.status === 'open' && (
+                            <Button size="sm" variant="outline" onClick={() => handleShareOrder(order._id)}>
+                              <Share2 className="h-4 w-4 mr-1" />
+                              Bagikan
+                            </Button>
+                          )}
+                          {order.status === 'open' && (
                             <Button size="sm" variant="outline" onClick={() => handleUpdateOrderStatus(order._id, 'closed')}>
                               Tutup
                             </Button>
@@ -261,6 +295,12 @@ export default function DriverOrdersPage() {
                                   <Eye className="h-4 w-4 mr-1" />
                                   Detail
                                 </Button>
+                                {order.status === 'open' && (
+                                  <Button size="sm" variant="outline" onClick={() => handleShareOrder(order._id)}>
+                                    <Share2 className="h-4 w-4 mr-1" />
+                                    Bagikan
+                                  </Button>
+                                )}
                                 {order.status === 'open' && (
                                   <Button size="sm" variant="outline" onClick={() => handleUpdateOrderStatus(order._id, 'closed')}>
                                     Tutup
