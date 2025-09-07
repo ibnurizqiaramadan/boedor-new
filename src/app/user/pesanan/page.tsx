@@ -312,11 +312,7 @@ export default function UserPesananPage() {
                     ) : (
                       <Button
                         onClick={() => {
-                          setSelectedOrder(order);
-                          // Reset form when opening dialog
-                          setSelectedMenuItems([]);
-                          setMenuFilter('');
-                          setIsJoinOrderOpen(true);
+                          router.push(`/user/orders/${order._id}/gabung`);
                         }}
                       >
                         Gabung Pesanan
