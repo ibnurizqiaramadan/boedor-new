@@ -414,7 +414,12 @@ export default function UserOrderDetailPage() {
               <Wallet className="h-5 w-5 text-gray-500" />
               Pembayaran Saya
             </CardTitle>
-            <CardDescription>Atur metode dan jumlah pembayaran Anda untuk pesanan ini</CardDescription>
+            <CardDescription>
+              {order.status === 'completed' 
+                ? 'Informasi pembayaran untuk pesanan yang telah selesai (tidak dapat diubah)'
+                : 'Atur metode dan jumlah pembayaran Anda untuk pesanan ini'
+              }
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -422,13 +427,46 @@ export default function UserOrderDetailPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Metode Pembayaran</label>
                 <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
                   <div className="flex gap-2 w-full sm:w-auto">
-                    <button type="button" onClick={() => setPaymentMethod('cash')} className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition ${paymentMethod === 'cash' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white hover:bg-gray-50'}`}>
+                    <button 
+                      type="button" 
+                      onClick={() => order.status !== 'completed' && setPaymentMethod('cash')} 
+                      disabled={order.status === 'completed'}
+                      className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition ${
+                        order.status === 'completed' 
+                          ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed' 
+                          : paymentMethod === 'cash' 
+                            ? 'bg-gray-900 text-white border-gray-900' 
+                            : 'bg-white hover:bg-gray-50'
+                      }`}
+                    >
                       <Wallet className="h-4 w-4" /> Tunai
                     </button>
-                    <button type="button" onClick={() => setPaymentMethod('cardless')} className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition ${paymentMethod === 'cardless' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white hover:bg-gray-50'}`}>
+                    <button 
+                      type="button" 
+                      onClick={() => order.status !== 'completed' && setPaymentMethod('cardless')} 
+                      disabled={order.status === 'completed'}
+                      className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition ${
+                        order.status === 'completed' 
+                          ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed' 
+                          : paymentMethod === 'cardless' 
+                            ? 'bg-gray-900 text-white border-gray-900' 
+                            : 'bg-white hover:bg-gray-50'
+                      }`}
+                    >
                       <CreditCard className="h-4 w-4" /> Tanpa Kartu
                     </button>
-                    <button type="button" onClick={() => setPaymentMethod('dana')} className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition ${paymentMethod === 'dana' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white hover:bg-gray-50'}`}>
+                    <button 
+                      type="button" 
+                      onClick={() => order.status !== 'completed' && setPaymentMethod('dana')} 
+                      disabled={order.status === 'completed'}
+                      className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition ${
+                        order.status === 'completed' 
+                          ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed' 
+                          : paymentMethod === 'dana' 
+                            ? 'bg-gray-900 text-white border-gray-900' 
+                            : 'bg-white hover:bg-gray-50'
+                      }`}
+                    >
                       <Smartphone className="h-4 w-4" /> DANA
                     </button>
                   </div>
@@ -444,6 +482,7 @@ export default function UserOrderDetailPage() {
                           onChange={(e) => {
                             setAmount(e.target.value); if (payErrors.amount) setPayErrors({});
                           }}
+                          disabled={order.status === 'completed'}
                           className="border-0 focus-visible:ring-0 text-center py-2"
                         />
                       </div>
@@ -452,7 +491,7 @@ export default function UserOrderDetailPage() {
                       <label className="block text-xs text-transparent mb-1">.</label>
                       <Button
                         onClick={handleSavePayment}
-                        disabled={(() => {
+                        disabled={order.status === 'completed' || (() => {
                           const amt = parseFloat(amount); const myTotal = getMyTotal(); return isNaN(amt) || amt <= 0 || amt < myTotal;
                         })()}
                         className="py-2"
