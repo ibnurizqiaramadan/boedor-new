@@ -20,6 +20,7 @@ export default function UserMenuPage() {
   const [ isAddMenuOpen, setIsAddMenuOpen ] = useState(false);
   const [ newMenuItem, setNewMenuItem ] = useState({ name: '', price: 0 });
   const [ errors, setErrors ] = useState<{ name?: string; price?: string }>({});
+  const [ searchTerm, setSearchTerm ] = useState('');
 
   // Format currency
   const formatCurrency = (amount: number) => {
@@ -29,6 +30,11 @@ export default function UserMenuPage() {
       minimumFractionDigits: 0,
     }).format(amount);
   };
+
+  // Filter menu items based on search term
+  const filteredMenuItems = menuItems?.filter(item =>
+    item.name.toLowerCase().includes(searchTerm.toLowerCase())
+  ) || [];
 
   const schema = z.object({
     name: z.string().trim().min(1, 'Nama item wajib diisi'),
@@ -128,14 +134,28 @@ export default function UserMenuPage() {
               </Dialog>
             </div>
           </CardHeader>
+          <div className="px-6 pb-4">
+            <Input
+              placeholder="Cari menu..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="max-w-sm"
+            />
+          </div>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {menuItems?.map((item) => (
-                <div key={item._id} className="p-4 border rounded-lg">
-                  <h3 className="font-medium">{item.name}</h3>
-                  <p className="text-lg font-bold text-green-600">{formatCurrency(item.price)}</p>
+              {filteredMenuItems.length > 0 ? (
+                filteredMenuItems.map((item) => (
+                  <div key={item._id} className="p-4 border rounded-lg">
+                    <h3 className="font-medium">{item.name}</h3>
+                    <p className="text-lg font-bold text-green-600">{formatCurrency(item.price)}</p>
+                  </div>
+                ))
+              ) : (
+                <div className="col-span-full text-center py-8 text-gray-500">
+                  {searchTerm ? 'Tidak ada menu yang ditemukan' : 'Belum ada menu tersedia'}
                 </div>
-              ))}
+              )}
             </div>
           </CardContent>
         </Card>
