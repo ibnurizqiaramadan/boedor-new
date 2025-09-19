@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, ShoppingCart, Clock, CheckCircle } from 'lucide-react';
+import { Plus, ShoppingCart, Clock, CheckCircle, TrendingUp, Star, BarChart3 } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/utils';
 import { getStatusIcon, getStatusColor, formatStatus } from '@/lib/status';
@@ -33,6 +33,7 @@ export default function UserPage() {
   const availableOrders = useQuery(api.boedor.orders.getAllOrders, user ? { currentUserId: user._id } : 'skip');
   const menuItems = useQuery(api.boedor.menu.getAllMenuItems, user ? { currentUserId: user._id } : 'skip');
   const myOrderItems = useQuery(api.boedor.orderItems.getOrderItemsByUser, user ? { userId: user._id, currentUserId: user._id } : 'skip');
+  const myPayments = useQuery(api.boedor.payment.getPaymentsByUser, user ? { userId: user._id, currentUserId: user._id } : 'skip');
 
   // Query existing payment for selected order
   const existingPayment = useQuery(
@@ -151,6 +152,64 @@ export default function UserPage() {
     return selectedMenuItems.find((item) => item.menuId === menuId)?.qty || 0;
   };
 
+  // Report calculations
+  const calculateReports = () => {
+    if (!myPayments || !myOrderItems || !menuItems) {
+      return {
+        averageSpending: 0,
+        totalSpending: 0,
+        totalOrders: 0,
+        frequentlyOrdered: [],
+        recommendations: []
+      };
+    }
+
+    // Calculate average spending
+    const totalSpending = myPayments.reduce((sum, payment) => sum + payment.amount, 0);
+    const totalOrders = myPayments.length;
+    const averageSpending = totalOrders > 0 ? totalSpending / totalOrders : 0;
+
+    // Calculate frequently ordered items
+    const itemCounts = myOrderItems.reduce((acc, orderItem) => {
+      const menuItem = menuItems.find(item => item._id === orderItem.menuId);
+      if (menuItem) {
+        const key = menuItem._id;
+        if (!acc[key]) {
+          acc[key] = {
+            name: menuItem.name,
+            price: menuItem.price,
+            count: 0,
+            totalQty: 0
+          };
+        }
+        acc[key].count += 1;
+        acc[key].totalQty += orderItem.qty;
+      }
+      return acc;
+    }, {} as Record<string, { name: string; price: number; count: number; totalQty: number }>);
+
+    const frequentlyOrdered = Object.values(itemCounts)
+      .sort((a, b) => b.totalQty - a.totalQty)
+      .slice(0, 5);
+
+    // Generate recommendations (items not ordered yet or ordered less frequently)
+    const orderedItemIds = new Set(Object.keys(itemCounts));
+    const recommendations = menuItems
+      .filter(item => !orderedItemIds.has(item._id) || (itemCounts[item._id]?.totalQty || 0) < 3)
+      .sort(() => Math.random() - 0.5) // Random shuffle
+      .slice(0, 3);
+
+    return {
+      averageSpending,
+      totalSpending,
+      totalOrders,
+      frequentlyOrdered,
+      recommendations
+    };
+  };
+
+  const reports = calculateReports();
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -194,6 +253,66 @@ export default function UserPage() {
           </Card>
         </div>
 
+        {/* Reports Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Average Spending */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Rata-rata Pengeluaran</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{formatCurrency(reports.averageSpending)}</div>
+              <p className="text-xs text-muted-foreground">
+                Total: {formatCurrency(reports.totalSpending)} dari {reports.totalOrders} pesanan
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Frequently Ordered */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Makanan Favorit</CardTitle>
+              <Star className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {reports.frequentlyOrdered.length > 0 ? (
+                  reports.frequentlyOrdered.slice(0, 3).map((item, index) => (
+                    <div key={index} className="flex items-center justify-between text-sm">
+                      <span className="truncate">{item.name}</span>
+                      <span className="text-muted-foreground">{item.totalQty}x</span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-muted-foreground">Belum ada data</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Recommendations */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Rekomendasi Menu</CardTitle>
+              <BarChart3 className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {reports.recommendations.length > 0 ? (
+                  reports.recommendations.map((item, index) => (
+                    <div key={index} className="flex items-center justify-between text-sm">
+                      <span className="truncate">{item.name}</span>
+                      <span className="text-green-600 font-medium">{formatCurrency(item.price)}</span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-muted-foreground">Belum ada rekomendasi</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* My Order Items */}
         <Card>
