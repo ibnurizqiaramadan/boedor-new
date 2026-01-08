@@ -56,6 +56,8 @@ export default function JoinOrderPage() {
 
   // State
   const [ menuFilter, setMenuFilter ] = useState('');
+  const [ minPrice, setMinPrice ] = useState<string>('');
+  const [ maxPrice, setMaxPrice ] = useState<string>('');
   const [ selectedMenuItems, setSelectedMenuItems ] = useState<Array<{ menuId: string; qty: number }>>([]);
   const [ itemNotes, setItemNotes ] = useState<Record<string, string>>({});
   const [ paymentMethod, setPaymentMethod ] = useState<'cash' | 'cardless' | 'dana'>('cash');
@@ -74,9 +76,24 @@ export default function JoinOrderPage() {
 
   const filteredMenuItems = useMemo(() => {
     return (menuItems ?? [])
-      .filter((m) => m.name.toLowerCase().includes(menuFilter.toLowerCase()))
+      .filter((m) => {
+        const nameMatch = m.name.toLowerCase().includes(menuFilter.toLowerCase());
+
+        // Handle price filtering
+        const hasMinPrice = minPrice.trim() !== '';
+        const hasMaxPrice = maxPrice.trim() !== '';
+
+        const minPriceNum = hasMinPrice ? parseFloat(minPrice.trim()) : 0;
+        const maxPriceNum = hasMaxPrice ? parseFloat(maxPrice.trim()) : Infinity;
+
+        const minPriceMatch = !hasMinPrice || (!isNaN(minPriceNum) && m.price >= minPriceNum);
+        const maxPriceMatch = !hasMaxPrice || (!isNaN(maxPriceNum) && m.price <= maxPriceNum);
+
+
+        return nameMatch && minPriceMatch && maxPriceMatch;
+      })
       .sort((a, b) => a.name.localeCompare(b.name, 'id-ID'));
-  }, [ menuItems, menuFilter ]);
+  }, [ menuItems, menuFilter, minPrice, maxPrice ]);
 
   const getMenuItemQuantity = (menuId: string) => selectedMenuItems.find((i) => i.menuId === menuId)?.qty || 0;
 
@@ -205,7 +222,11 @@ export default function JoinOrderPage() {
         <JoinOrderInfo
           orderId={orderId}
           menuFilter={menuFilter}
+          minPrice={minPrice}
+          maxPrice={maxPrice}
           onMenuFilterChange={setMenuFilter}
+          onMinPriceChange={setMinPrice}
+          onMaxPriceChange={setMaxPrice}
         />
 
         <MenuSelection

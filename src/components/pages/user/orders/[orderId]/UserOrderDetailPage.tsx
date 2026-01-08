@@ -5,11 +5,10 @@ import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../../../../convex/_generated/api';
 import { Id } from '../../../../../../convex/_generated/dataModel';
 import Layout from '@/components/layout/Layout';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/utils';
-import { getStatusIcon, getStatusColor, formatStatus } from '@/lib/status';
 import { OrderDetailHeader } from './OrderDetailHeader';
 import { OrderDetailStats } from './OrderDetailStats';
 import { PaymentSection } from './PaymentSection';
@@ -32,6 +31,9 @@ export default function UserOrderDetailPage() {
   const [ paymentMethod, setPaymentMethod ] = useState<'cash' | 'cardless' | 'dana'>('cash');
   const [ amount, setAmount ] = useState<string>('');
   const [ payErrors, setPayErrors ] = useState<{ amount?: string }>({});
+  const [ menuFilter, setMenuFilter ] = useState('');
+  const [ minPrice, setMinPrice ] = useState<string>('');
+  const [ maxPrice, setMaxPrice ] = useState<string>('');
 
   // Queries
   const order = useQuery(
@@ -65,6 +67,27 @@ export default function UserOrderDetailPage() {
       currentUserId: user._id,
     } : 'skip',
   );
+
+  // Filter menu items for add more dialog
+  const filteredMenuItems = useMemo(() => {
+    return (menuItems ?? [])
+      .filter((m) => {
+        const nameMatch = m.name.toLowerCase().includes(menuFilter.toLowerCase());
+
+        // Handle price filtering
+        const hasMinPrice = minPrice.trim() !== '';
+        const hasMaxPrice = maxPrice.trim() !== '';
+
+        const minPriceNum = hasMinPrice ? parseFloat(minPrice.trim()) : 0;
+        const maxPriceNum = hasMaxPrice ? parseFloat(maxPrice.trim()) : Infinity;
+
+        const minPriceMatch = !hasMinPrice || (!isNaN(minPriceNum) && m.price >= minPriceNum);
+        const maxPriceMatch = !hasMaxPrice || (!isNaN(maxPriceNum) && m.price <= maxPriceNum);
+
+        return nameMatch && minPriceMatch && maxPriceMatch;
+      })
+      .sort((a, b) => a.name.localeCompare(b.name, 'id-ID'));
+  }, [ menuItems, menuFilter, minPrice, maxPrice ]);
 
   // Mutations
   const updateOrderItem = useMutation(api.boedor.orderItems.updateOrderItem);
@@ -391,12 +414,18 @@ export default function UserOrderDetailPage() {
         <AddMoreItemsDialog
           open={isAddItemOpen}
           onOpenChange={setIsAddItemOpen}
-          menuItems={menuItems}
+          menuItems={filteredMenuItems}
+          menuFilter={menuFilter}
+          minPrice={minPrice}
+          maxPrice={maxPrice}
           selectedMenuItems={selectedMenuItems}
           itemNotes={itemNotes}
           existingPayment={existingPayment}
           getMyTotal={getMyTotal}
           getMenuItemQuantity={getMenuItemQuantity}
+          onMenuFilterChange={setMenuFilter}
+          onMinPriceChange={setMinPrice}
+          onMaxPriceChange={setMaxPrice}
           onMenuItemQuantityChange={updateMenuItemQuantity}
           onMenuItemNoteChange={setMenuItemNote}
           onAddItems={handleAddMoreItems}

@@ -1,7 +1,8 @@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ShoppingCart } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { ShoppingCart, Search } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 
 interface MenuItem {
@@ -14,11 +15,17 @@ interface AddMoreItemsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   menuItems: MenuItem[] | undefined;
+  menuFilter: string;
+  minPrice: string;
+  maxPrice: string;
   selectedMenuItems: Array<{ menuId: string; qty: number }>;
   itemNotes: Record<string, string>;
   existingPayment: any;
   getMyTotal: () => number;
   getMenuItemQuantity: (menuId: string) => number;
+  onMenuFilterChange: (filter: string) => void;
+  onMinPriceChange: (price: string) => void;
+  onMaxPriceChange: (price: string) => void;
   onMenuItemQuantityChange: (menuId: string, qty: number) => void;
   onMenuItemNoteChange: (menuId: string, note: string) => void;
   onAddItems: () => void;
@@ -28,11 +35,17 @@ export function AddMoreItemsDialog({
   open,
   onOpenChange,
   menuItems,
+  menuFilter,
+  minPrice,
+  maxPrice,
   selectedMenuItems,
   itemNotes,
   existingPayment,
   getMyTotal,
   getMenuItemQuantity,
+  onMenuFilterChange,
+  onMinPriceChange,
+  onMaxPriceChange,
   onMenuItemQuantityChange,
   onMenuItemNoteChange,
   onAddItems,
@@ -56,6 +69,47 @@ export function AddMoreItemsDialog({
           <DialogTitle>Tambah Item Lagi ke Pesanan</DialogTitle>
           <DialogDescription>Pilih item menu dan jumlah untuk ditambahkan ke pesanan ini</DialogDescription>
         </DialogHeader>
+
+        {/* Search Filter */}
+        <div className="space-y-4">
+          <div className="relative">
+            <Input
+              placeholder="Cari menu..."
+              value={menuFilter}
+              onChange={(e) => onMenuFilterChange(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+
+          {/* Price Range Filter */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="minPrice" className="text-sm font-medium">Harga Min (Rp)</Label>
+              <Input
+                id="minPrice"
+                type="number"
+                placeholder="0"
+                value={minPrice}
+                onChange={(e) => onMinPriceChange(e.target.value)}
+                className="mt-1"
+                min="0"
+              />
+            </div>
+            <div>
+              <Label htmlFor="maxPrice" className="text-sm font-medium">Harga Max (Rp)</Label>
+              <Input
+                id="maxPrice"
+                type="number"
+                placeholder="Tidak terbatas"
+                value={maxPrice}
+                onChange={(e) => onMaxPriceChange(e.target.value)}
+                className="mt-1"
+                min="0"
+              />
+            </div>
+          </div>
+        </div>
+
         <div className="space-y-4 max-h-96 overflow-y-auto">
           {menuItems?.map((item) => (
             <div key={item._id} className="p-3 border rounded">
@@ -96,7 +150,9 @@ export function AddMoreItemsDialog({
           {(!menuItems || menuItems.length === 0) && (
             <div className="text-center py-8">
               <ShoppingCart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500">Tidak ada item menu tersedia.</p>
+              <p className="text-gray-500">
+                {menuFilter ? 'Tidak ada menu yang cocok dengan pencarian.' : 'Tidak ada item menu tersedia.'}
+              </p>
             </div>
           )}
         </div>
