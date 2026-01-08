@@ -5,7 +5,8 @@ import { api } from '../../../../../convex/_generated/api';
 import { useAuth } from '@/contexts/AuthContext';
 import Layout from '@/components/layout/Layout';
 import { Card, CardContent } from '@/components/ui/card';
-import { useState } from 'react';
+import { Pagination, PaginationInfo } from '@/components/ui/pagination';
+import React, { useState } from 'react';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { MenuHeader, MenuSearch, MenuGrid } from './index';
@@ -16,6 +17,8 @@ interface MenuItem {
   price: number;
 }
 
+const ITEMS_PER_PAGE = 9; // 3x3 grid
+
 export default function UserMenuPage() {
   const { user } = useAuth();
   const menuItems = useQuery(api.boedor.menu.getAllMenuItems, user?._id ? { currentUserId: user._id } : 'skip');
@@ -25,11 +28,30 @@ export default function UserMenuPage() {
   const [newMenuItem, setNewMenuItem] = useState<{ name: string; price: number }>({ name: '', price: 0 });
   const [errors, setErrors] = useState<{ name?: string; price?: string }>({});
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Filter menu items based on search term
   const filteredMenuItems = menuItems?.filter((item) =>
     item.name.toLowerCase().includes(searchTerm.toLowerCase()),
   ) || [];
+
+  // Pagination calculations
+  const totalItems = filteredMenuItems.length;
+  const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedItems = filteredMenuItems.slice(startIndex, endIndex);
+
+  // Reset to first page when search changes
+  const handleSearchChange = (newSearchTerm: string) => {
+    setSearchTerm(newSearchTerm);
+    setCurrentPage(1); // Reset to first page when searching
+  };
+
+  // Reset to first page when items change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [filteredMenuItems.length]);
 
   const schema = z.object({
     name: z.string().trim().min(1, 'Nama item wajib diisi'),
@@ -105,15 +127,33 @@ export default function UserMenuPage() {
 
           <MenuSearch
             searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
+            onSearchChange={handleSearchChange}
           />
 
           <CardContent>
             <MenuGrid
-              items={filteredMenuItems}
+              items={paginatedItems}
               searchTerm={searchTerm}
               isLoading={!menuItems}
+              totalItems={totalItems}
             />
+
+            {/* Pagination */}
+            {totalItems > 0 && (
+              <div className="mt-6 space-y-4">
+                <PaginationInfo
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  totalItems={totalItems}
+                  itemsPerPage={ITEMS_PER_PAGE}
+                />
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

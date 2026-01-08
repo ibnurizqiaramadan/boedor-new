@@ -12,9 +12,10 @@ interface MenuGridProps {
   items: MenuItem[];
   searchTerm: string;
   isLoading?: boolean;
+  totalItems?: number;
 }
 
-export default function MenuGrid({ items, searchTerm, isLoading = false }: MenuGridProps) {
+export default function MenuGrid({ items, searchTerm, isLoading = false, totalItems = 0 }: MenuGridProps) {
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -31,7 +32,7 @@ export default function MenuGrid({ items, searchTerm, isLoading = false }: MenuG
   if (items.length === 0) {
     return (
       <div className="col-span-full text-center py-8 text-gray-500">
-        {searchTerm ? 'Tidak ada menu yang ditemukan' : 'Belum ada menu tersedia'}
+        {searchTerm ? 'Tidak ada menu yang ditemukan' : totalItems === 0 ? 'Belum ada menu tersedia' : 'Tidak ada item di halaman ini'}
       </div>
     );
   }

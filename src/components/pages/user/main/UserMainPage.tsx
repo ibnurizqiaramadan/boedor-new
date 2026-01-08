@@ -5,7 +5,7 @@ import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../../../convex/_generated/api';
 import { Id } from '../../../../../convex/_generated/dataModel';
 import Layout from '@/components/layout/Layout';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/utils';
@@ -14,6 +14,7 @@ import { UserStatsCards } from './UserStatsCards';
 import { UserReportsSection } from './UserReportsSection';
 import { UserOrderItems } from './UserOrderItems';
 import { JoinOrderDialog } from './JoinOrderDialog';
+import { Pagination, PaginationInfo } from '@/components/ui/pagination';
 
 export default function UserMainPage() {
   const { user } = useAuth();
@@ -26,6 +27,9 @@ export default function UserMainPage() {
   const [ paymentMethod, setPaymentMethod ] = useState<string>('cash');
   const [ amount, setAmount ] = useState<string>('');
   const [ note, setNote ] = useState<string>('');
+  const [ currentPage, setCurrentPage ] = useState(1);
+
+  const ORDERS_PER_PAGE = 5; // Show 5 orders per page
 
   // Queries
   const availableOrders = useQuery(api.boedor.orders.getAllOrders, user ? { currentUserId: user._id } : 'skip');
@@ -42,6 +46,35 @@ export default function UserMainPage() {
       currentUserId: user._id,
     } : 'skip',
   );
+
+  // Group and paginate order items
+  const groupedOrders = myOrderItems?.reduce((acc, item) => {
+    const orderId = item.orderId;
+    if (!acc[orderId]) {
+      acc[orderId] = {
+        orderId,
+        totalItems: 0,
+        items: [],
+        latestTime: 0,
+      };
+    }
+    acc[orderId].totalItems += item.qty;
+    acc[orderId].items.push(item);
+    acc[orderId].latestTime = Math.max(acc[orderId].latestTime, item._creationTime);
+    return acc;
+  }, {} as Record<string, { orderId: string; totalItems: number; items: any[]; latestTime: number }>) || {};
+
+  const sortedOrders = Object.values(groupedOrders).sort((a, b) => b.latestTime - a.latestTime);
+  const totalOrders = sortedOrders.length;
+  const totalPages = Math.ceil(totalOrders / ORDERS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ORDERS_PER_PAGE;
+  const endIndex = startIndex + ORDERS_PER_PAGE;
+  const paginatedOrders = sortedOrders.slice(startIndex, endIndex);
+
+  // Reset to first page when orders change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [totalOrders]);
 
   // Mutations
   const addMenuItem = useMutation(api.boedor.menu.createMenuItem);
@@ -223,7 +256,7 @@ export default function UserMainPage() {
         <UserReportsSection reports={reports} />
 
         <UserOrderItems
-          myOrderItems={myOrderItems || []}
+          paginatedOrders={paginatedOrders}
           availableOrders={availableOrders || []}
           onOrderClick={(orderId) => router.push(`/user/orders/${orderId}`)}
           onJoinOrder={(order) => {
@@ -231,6 +264,23 @@ export default function UserMainPage() {
             setIsJoinOrderOpen(true);
           }}
         />
+
+        {/* Pagination for User Order Items */}
+        {totalOrders > 0 && (
+          <div className="mt-4 flex flex-col items-center space-y-2">
+            <PaginationInfo
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalOrders}
+              itemsPerPage={ORDERS_PER_PAGE}
+            />
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+          </div>
+        )}
 
         <JoinOrderDialog
           open={isJoinOrderOpen}
