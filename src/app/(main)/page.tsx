@@ -4,9 +4,24 @@ import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import Layout from '@/components/layout/Layout';
 import { LoginButton } from '@/components/auth/LoginButton';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, Suspense } from 'react';
 
-export default function HomePage() {
+function HomeContent() {
   const { user, isLoading } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const isDriver = searchParams.get('driver') === 'true';
+
+  // Handle driver registration completion
+  useEffect(() => {
+    if (user && isDriver && user.role === 'driver') {
+      // Clear the driver parameter
+      router.replace('/');
+      // Show success message or redirect to driver dashboard
+      console.log('Driver registration successful!');
+    }
+  }, [user, isDriver, router]);
 
   if (isLoading) {
     return (
@@ -102,5 +117,17 @@ export default function HomePage() {
         </div>
       </div>
     </Layout>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-lg">Loading...</div>
+      </div>
+    }>
+      <HomeContent />
+    </Suspense>
   );
 }

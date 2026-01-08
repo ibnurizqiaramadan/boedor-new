@@ -19,11 +19,12 @@ function LoginContent() {
   }, [isDriver]);
 
   const handleLogin = (asDriver = false) => {
-    const callbackUrl = asDriver ? '/auth/login?driver=true' : '/';
+    // For driver registration, we still need to pass driver=true through the flow
+    // but redirect to home after successful login
+    const callbackUrl = asDriver ? '/?driver=true' : '/';
+    
     signIn('google', { 
       callbackUrl,
-      // Add driver parameter to the authorization URL
-      authorizationParams: asDriver ? { driver: 'true' } : undefined
     });
   };
 

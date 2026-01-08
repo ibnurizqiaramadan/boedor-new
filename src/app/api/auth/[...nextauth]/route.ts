@@ -10,7 +10,8 @@ const handler = async (req: NextRequest, context: any) => {
   // Check for driver parameter in various places
   const driverFromQuery = url.searchParams.get('driver') === 'true';
   const driverFromCallback = url.searchParams.get('callbackUrl')?.includes('driver=true');
-  const isDriver = driverFromQuery || driverFromCallback;
+  const driverFromCallbackUrl = url.searchParams.get('callbackUrl')?.includes('%3Fdriver%3Dtrue');
+  const isDriver = driverFromQuery || driverFromCallback || driverFromCallbackUrl;
   
   // Store the driver flag in a cookie for the adapter to use
   if (isDriver) {
