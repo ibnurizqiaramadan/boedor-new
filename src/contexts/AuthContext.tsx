@@ -74,11 +74,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setUser(null);
       setIsLoading(false);
-      // Use NextAuth signOut with redirect
-      await signOut({ callbackUrl: '/auth/login' });
+      // Clear all NextAuth session data
+      await signOut({ 
+        callbackUrl: '/auth/login',
+        redirect: true
+      });
     } catch (error) {
       console.error('Logout error:', error);
-      // Force redirect even if signOut fails
+      // Force clear all cookies and redirect
+      document.cookie.split(";").forEach(function(c) { 
+        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+      });
       window.location.href = '/auth/login';
     }
   };
