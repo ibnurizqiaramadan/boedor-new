@@ -96,16 +96,80 @@ export const deleteMenuItem = mutation({
   handler: async (ctx, args) => {
     const user = await ctx.db.get(args.currentUserId);
     if (!user) throw new Error("Unauthorized");
-    
+
     const menuItem = await ctx.db.get(args.menuId);
     if (!menuItem) throw new Error("Menu item not found");
-    
+
     // Admin, super_admin, and drivers can delete any item, users can only delete their own
     if (user.role !== "admin" && user.role !== "super_admin" && user.role !== "driver" && menuItem.createdBy !== args.currentUserId) {
       throw new Error("Unauthorized");
     }
-    
+
     await ctx.db.delete(args.menuId);
     return { success: true };
+  },
+});
+
+// Bulk import menu items (admin only)
+export const bulkImportMenuItems = mutation({
+  args: {
+    menuItems: v.array(v.object({
+      name: v.string(),
+      price: v.number(),
+    })),
+    currentUserId: v.id("boedor_users"),
+  },
+  handler: async (ctx, args) => {
+    await requireRole(ctx, args.currentUserId, ["super_admin", "admin"]);
+
+    const results = [];
+    const errors = [];
+
+    for (let i = 0; i < args.menuItems.length; i++) {
+      const item = args.menuItems[i];
+      try {
+        // Validate item data
+        if (!item.name || item.name.trim().length === 0) {
+          errors.push({ index: i, error: "Nama item tidak boleh kosong" });
+          continue;
+        }
+        if (item.price <= 0) {
+          errors.push({ index: i, error: "Harga harus lebih dari 0" });
+          continue;
+        }
+
+        const menuId = await ctx.db.insert("boedor_menu", {
+          name: item.name.trim(),
+          price: item.price,
+          createdBy: args.currentUserId,
+        });
+
+        results.push(await ctx.db.get(menuId));
+      } catch (error) {
+        errors.push({ index: i, error: (error as Error).message });
+      }
+    }
+
+    return { success: results.length, errors };
+  },
+});
+
+// Delete all menu items (admin only) - for replace import
+export const deleteAllMenuItems = mutation({
+  args: {
+    currentUserId: v.id("boedor_users"),
+  },
+  handler: async (ctx, args) => {
+    await requireRole(ctx, args.currentUserId, ["super_admin", "admin"]);
+
+    const allItems = await ctx.db.query("boedor_menu").collect();
+    let deletedCount = 0;
+
+    for (const item of allItems) {
+      await ctx.db.delete(item._id);
+      deletedCount++;
+    }
+
+    return { deletedCount };
   },
 });

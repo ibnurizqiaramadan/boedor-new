@@ -23,7 +23,7 @@ const navigationItems = {
     { name: 'Pesanan', href: '/admin/orders', icon: ShoppingBag },
   ],
   admin: [
-    { name: 'Dasbor', href: '/admin', icon: Gauge },  
+    { name: 'Dasbor', href: '/admin', icon: Gauge },
     { name: 'Menu', href: '/admin/menu', icon: SquareMenu },
     { name: 'Pesanan', href: '/admin/orders', icon: ShoppingBag },
   ],
