@@ -13,6 +13,14 @@ const handler = async (req: NextRequest, context: any) => {
   const driverFromCallbackUrl = url.searchParams.get('callbackUrl')?.includes('%3Fdriver%3Dtrue');
   const isDriver = driverFromQuery || driverFromCallback || driverFromCallbackUrl;
   
+  console.log('NextAuth route - Driver detected:', {
+    driverFromQuery,
+    driverFromCallback,
+    driverFromCallbackUrl,
+    isDriver,
+    url: req.url
+  });
+  
   // Store the driver flag in a cookie for the adapter to use
   if (isDriver) {
     const cookieStore = await cookies();
@@ -23,6 +31,7 @@ const handler = async (req: NextRequest, context: any) => {
       path: '/',
       maxAge: 60 * 5, // 5 minutes
     });
+    console.log('Driver registration cookie set');
   }
   
   return NextAuth(authOptions)(req, context);

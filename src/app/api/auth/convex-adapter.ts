@@ -14,7 +14,10 @@ export function ConvexAdapter(): Adapter {
       
       // Check if this is a driver registration
       const cookieStore = await cookies();
-      const isDriver = cookieStore.get('driver-registration')?.value === 'true';
+      const driverCookie = cookieStore.get('driver-registration');
+      const isDriver = driverCookie?.value === 'true';
+      
+      console.log('Creating user - Driver cookie:', driverCookie?.value, 'Is driver:', isDriver);
       
       // Clear the cookie after use
       if (isDriver) {
@@ -28,6 +31,8 @@ export function ConvexAdapter(): Adapter {
         emailVerified: user.emailVerified?.toISOString() || undefined,
         role: isDriver ? 'driver' : 'user',
       });
+
+      console.log('User created with ID:', userId, 'Role:', isDriver ? 'driver' : 'user');
 
       return {
         id: userId,
