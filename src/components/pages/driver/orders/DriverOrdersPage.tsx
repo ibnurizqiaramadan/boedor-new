@@ -4,9 +4,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../../../convex/_generated/api';
 import Layout from '@/components/layout/Layout';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { Pagination, PaginationInfo } from '@/components/ui/pagination';
 import { DriverOrdersStats } from './DriverOrdersStats';
 import { DriverOrdersList } from './DriverOrdersList';
 import { CreateOrderDialog } from './CreateOrderDialog';
@@ -15,12 +16,32 @@ export default function DriverOrdersPage() {
   const { user } = useAuth();
   const router = useRouter();
   const [ isCreateOrderOpen, setIsCreateOrderOpen ] = useState(false);
+  const [ currentPage, setCurrentPage ] = useState(1);
 
   // Queries (moved above conditional returns; use "skip" when user is not ready)
   const myOrders = useQuery(
     api.boedor.orders.getOrdersByDriver,
     user ? { driverId: user._id, currentUserId: user._id } : 'skip',
   );
+
+  const ORDERS_PER_PAGE = 8; // Show 8 orders per page for driver orders
+
+  // Sort orders by creation date (newest first)
+  const sortedOrders = useMemo(() => {
+    return (myOrders || []).slice().sort((a, b) => b.createdAt - a.createdAt);
+  }, [myOrders]);
+
+  // Pagination calculations
+  const totalOrders = sortedOrders.length;
+  const totalPages = Math.ceil(totalOrders / ORDERS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ORDERS_PER_PAGE;
+  const endIndex = startIndex + ORDERS_PER_PAGE;
+  const paginatedOrders = sortedOrders.slice(startIndex, endIndex);
+
+  // Reset to first page when orders change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [totalOrders]);
 
   // Mutations
   const createOrder = useMutation(api.boedor.orders.createOrder);
@@ -116,12 +137,30 @@ export default function DriverOrdersPage() {
         <DriverOrdersStats orders={myOrders || []} />
 
         <DriverOrdersList
-          orders={myOrders || []}
+          orders={paginatedOrders}
+          totalOrders={totalOrders}
           onCreateOrder={() => setIsCreateOrderOpen(true)}
           onUpdateStatus={handleUpdateOrderStatus}
           onShareOrder={handleShareOrder}
           onViewDetail={(orderId) => router.push(`/driver/orders/${orderId}`)}
         />
+
+        {/* Pagination */}
+        {totalOrders > 0 && (
+          <div className="mt-6 flex flex-col items-center space-y-4">
+            <PaginationInfo
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalOrders}
+              itemsPerPage={ORDERS_PER_PAGE}
+            />
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+          </div>
+        )}
 
         <CreateOrderDialog
           open={isCreateOrderOpen}

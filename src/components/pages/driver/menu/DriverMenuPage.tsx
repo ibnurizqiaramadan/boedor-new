@@ -4,9 +4,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../../../convex/_generated/api';
 import Layout from '@/components/layout/Layout';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { Pagination, PaginationInfo } from '@/components/ui/pagination';
 import { MenuHeader, MenuList, AddMenuDialog, EditMenuDialog } from './index';
 
 // Local type to avoid explicit any
@@ -20,6 +21,12 @@ export default function DriverMenuPage() {
   const [ isEditMenuOpen, setIsEditMenuOpen ] = useState(false);
   const [ newMenuItem, setNewMenuItem ] = useState({ name: '', price: 0 });
   const [ selectedMenuItem, setSelectedMenuItem ] = useState<MenuItemLite | null>(null);
+
+  // Filter and pagination state
+  const [ menuFilter, setMenuFilter ] = useState('');
+  const [ minPrice, setMinPrice ] = useState<string>('');
+  const [ maxPrice, setMaxPrice ] = useState<string>('');
+  const [ currentPage, setCurrentPage ] = useState(1);
 
   useEffect(() => {
     if (user === null) {
@@ -41,6 +48,41 @@ export default function DriverMenuPage() {
 
   // Queries
   const menuItems = useQuery(api.boedor.menu.getAllMenuItems, { currentUserId: user._id });
+
+  const ITEMS_PER_PAGE = 10; // Show 10 items per page for driver menu
+
+  // Filter and paginate menu items
+  const filteredMenuItems = useMemo(() => {
+    if (!menuItems) return [];
+
+    return menuItems.filter((item) => {
+      const nameMatch = item.name.toLowerCase().includes(menuFilter.toLowerCase());
+
+      // Handle price filtering
+      const hasMinPrice = minPrice.trim() !== '';
+      const hasMaxPrice = maxPrice.trim() !== '';
+
+      const minPriceNum = hasMinPrice ? parseFloat(minPrice.trim()) : 0;
+      const maxPriceNum = hasMaxPrice ? parseFloat(maxPrice.trim()) : Infinity;
+
+      const minPriceMatch = !hasMinPrice || (!isNaN(minPriceNum) && item.price >= minPriceNum);
+      const maxPriceMatch = !hasMaxPrice || (!isNaN(maxPriceNum) && item.price <= maxPriceNum);
+
+      return nameMatch && minPriceMatch && maxPriceMatch;
+    });
+  }, [ menuItems, menuFilter, minPrice, maxPrice ]);
+
+  // Pagination calculations
+  const totalItems = filteredMenuItems.length;
+  const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedItems = filteredMenuItems.slice(startIndex, endIndex);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filteredMenuItems.length]);
 
   // Mutations
   const addMenuItem = useMutation(api.boedor.menu.createMenuItem);
@@ -104,16 +146,40 @@ export default function DriverMenuPage() {
       <div className="space-y-6">
         <MenuHeader
           onAddMenuClick={() => setIsAddMenuOpen(true)}
+          menuFilter={menuFilter}
+          minPrice={minPrice}
+          maxPrice={maxPrice}
+          onMenuFilterChange={setMenuFilter}
+          onMinPriceChange={setMinPrice}
+          onMaxPriceChange={setMaxPrice}
         />
 
         <MenuList
-          items={menuItems || []}
+          items={paginatedItems}
+          totalItems={totalItems}
           onEdit={(item) => {
             setSelectedMenuItem({ _id: item._id as any, name: item.name, price: item.price });
             setIsEditMenuOpen(true);
           }}
           onDelete={handleDeleteMenuItem}
         />
+
+        {/* Pagination */}
+        {totalItems > 0 && (
+          <div className="mt-6 flex flex-col items-center space-y-4">
+            <PaginationInfo
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              itemsPerPage={ITEMS_PER_PAGE}
+            />
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+          </div>
+        )}
 
         <AddMenuDialog
           isOpen={isAddMenuOpen}

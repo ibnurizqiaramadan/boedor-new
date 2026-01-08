@@ -13,14 +13,22 @@ interface MenuListProps {
   items: MenuItem[];
   onEdit: (item: MenuItem) => void;
   onDelete: (menuId: string) => void;
+  totalItems?: number;
 }
 
-export function MenuList({ items, onEdit, onDelete }: MenuListProps) {
+export function MenuList({ items, onEdit, onDelete, totalItems = 0 }: MenuListProps) {
   return (
     <Card>
       <CardHeader>
         <CardTitle>Daftar Item</CardTitle>
-        <CardDescription>Kelola item menu Anda</CardDescription>
+        <CardDescription>
+          Kelola item menu Anda
+          {totalItems > 0 && (
+            <span className="block text-sm text-gray-600 mt-1">
+              Menampilkan {items.length} dari {totalItems} item
+            </span>
+          )}
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-2">
@@ -48,9 +56,12 @@ export function MenuList({ items, onEdit, onDelete }: MenuListProps) {
               </div>
             </div>
           ))}
-          {(!items || items.length === 0) && (
+          {items.length === 0 && (
             <p className="text-sm text-gray-500 text-center py-4">
-              Belum ada item menu. Tambahkan item pertama Anda!
+              {totalItems === 0
+                ? 'Belum ada item menu. Tambahkan item pertama Anda!'
+                : 'Tidak ada item menu yang sesuai dengan filter.'
+              }
             </p>
           )}
         </div>

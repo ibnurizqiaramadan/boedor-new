@@ -10,21 +10,28 @@ interface Order {
 
 interface OrderManagementProps {
   orders: Order[];
+  totalOrders?: number;
   onUpdateStatus: (orderId: string, status: 'open' | 'closed' | 'completed') => void;
 }
 
-export function OrderManagement({ orders, onUpdateStatus }: OrderManagementProps) {
-  const sortedOrders = orders.slice().sort((a, b) => b.createdAt - a.createdAt);
+export function OrderManagement({ orders, totalOrders = 0, onUpdateStatus }: OrderManagementProps) {
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Pesanan Saya</CardTitle>
-        <CardDescription>Kelola pesanan pengiriman yang ditugaskan kepada Anda</CardDescription>
+        <CardDescription>
+          Kelola pesanan pengiriman yang ditugaskan kepada Anda
+          {totalOrders > 0 && (
+            <span className="block text-sm text-gray-600 mt-1">
+              Menampilkan {orders.length} dari {totalOrders} pesanan
+            </span>
+          )}
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {sortedOrders.map((order) => (
+          {orders.map((order) => (
             <div key={order._id} className="flex items-center justify-between p-4 border rounded-lg">
               <div>
                 <p className="font-medium">Pesanan #{order._id.slice(-6)}</p>
@@ -53,7 +60,7 @@ export function OrderManagement({ orders, onUpdateStatus }: OrderManagementProps
               </div>
             </div>
           ))}
-          {orders.length === 0 && (
+          {orders.length === 0 && totalOrders === 0 && (
             <p className="text-gray-500 text-center py-8">Belum ada pesanan yang ditugaskan</p>
           )}
         </div>

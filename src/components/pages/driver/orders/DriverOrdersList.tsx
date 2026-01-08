@@ -13,6 +13,7 @@ interface Order {
 
 interface DriverOrdersListProps {
   orders: Order[];
+  totalOrders?: number;
   onCreateOrder: () => void;
   onUpdateStatus: (orderId: string, status: 'open' | 'closed' | 'completed') => void;
   onShareOrder: (orderId: string) => void;
@@ -21,12 +22,12 @@ interface DriverOrdersListProps {
 
 export function DriverOrdersList({
   orders,
+  totalOrders = 0,
   onCreateOrder,
   onUpdateStatus,
   onShareOrder,
   onViewDetail,
 }: DriverOrdersListProps) {
-  const sortedOrders = orders.slice().sort((a, b) => b.createdAt - a.createdAt);
 
   const OrderActions = ({ order }: { order: Order }) => (
     <div className="flex flex-wrap gap-2 justify-end">
@@ -69,7 +70,14 @@ export function DriverOrdersList({
         <div className="flex justify-between items-center">
           <div>
             <CardTitle>Pesanan Saya</CardTitle>
-            <CardDescription>Kelola pesanan antar Anda</CardDescription>
+            <CardDescription>
+              Kelola pesanan antar Anda
+              {totalOrders > 0 && (
+                <span className="block text-sm text-gray-600 mt-1">
+                  Menampilkan {orders.length} dari {totalOrders} pesanan
+                </span>
+              )}
+            </CardDescription>
           </div>
           <Dialog>
             <DialogTrigger asChild>
@@ -102,9 +110,9 @@ export function DriverOrdersList({
       <CardContent>
         {/* Mobile: stacked list without boxes */}
         <div className="md:hidden">
-          {sortedOrders.length > 0 ? (
+          {orders.length > 0 ? (
             <div className="divide-y divide-gray-200">
-              {sortedOrders.map((order) => (
+              {orders.map((order) => (
                 <div key={order._id} className="py-3">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center space-x-3">
@@ -136,7 +144,7 @@ export function DriverOrdersList({
 
         {/* Desktop: table */}
         <div className="hidden md:block">
-          {sortedOrders.length > 0 ? (
+          {orders.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="min-w-full text-sm">
                 <thead className="bg-gray-50 border-b border-gray-200">
@@ -148,7 +156,7 @@ export function DriverOrdersList({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {sortedOrders.map((order) => (
+                  {orders.map((order) => (
                     <tr key={order._id} className="hover:bg-gray-50">
                       <td className="px-4 py-3">
                         <div className="flex items-center space-x-3">

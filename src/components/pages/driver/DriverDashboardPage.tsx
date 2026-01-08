@@ -4,16 +4,37 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../../convex/_generated/api';
 import Layout from '@/components/layout/Layout';
-import { useEffect } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { Pagination, PaginationInfo } from '@/components/ui/pagination';
 import { StatsCards, OrderManagement } from './index';
 
 export default function DriverDashboardPage() {
   const { user } = useAuth();
   const router = useRouter();
+  const [ currentPage, setCurrentPage ] = useState(1);
 
   // Queries
   const myOrders = useQuery(api.boedor.orders.getOrdersByDriver, user ? { driverId: user._id, currentUserId: user._id } : 'skip');
+
+  const ORDERS_PER_PAGE = 6; // Show 6 orders per page on dashboard
+
+  // Sort orders by creation date (newest first)
+  const sortedOrders = useMemo(() => {
+    return (myOrders || []).slice().sort((a, b) => b.createdAt - a.createdAt);
+  }, [myOrders]);
+
+  // Pagination calculations
+  const totalOrders = sortedOrders.length;
+  const totalPages = Math.ceil(totalOrders / ORDERS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ORDERS_PER_PAGE;
+  const endIndex = startIndex + ORDERS_PER_PAGE;
+  const paginatedOrders = sortedOrders.slice(startIndex, endIndex);
+
+  // Reset to first page when orders change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [totalOrders]);
 
   // Mutations
   const updateOrderStatus = useMutation(api.boedor.orders.updateOrderStatus);
@@ -48,9 +69,27 @@ export default function DriverDashboardPage() {
         <StatsCards orders={myOrders || []} />
 
         <OrderManagement
-          orders={myOrders || []}
+          orders={paginatedOrders}
+          totalOrders={totalOrders}
           onUpdateStatus={handleUpdateOrderStatus}
         />
+
+        {/* Pagination */}
+        {totalOrders > 0 && (
+          <div className="mt-6 flex flex-col items-center space-y-4">
+            <PaginationInfo
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalOrders}
+              itemsPerPage={ORDERS_PER_PAGE}
+            />
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+          </div>
+        )}
       </div>
       )}
     </Layout>
