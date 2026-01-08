@@ -18,15 +18,14 @@ function LoginContent() {
     }
   }, [isDriver]);
 
-  const handleLogin = (asDriver = false) => {
-    // For driver registration, set a cookie BEFORE starting OAuth
-    if (asDriver) {
+  const handleLogin = () => {
+    // Check if this is driver registration from URL
+    if (isDriver) {
       document.cookie = 'driver-registration=true; path=/; max-age=300; SameSite=Lax';
     }
     
-    // For driver registration, we still need to pass driver=true through the flow
-    // but redirect to home after successful login
-    const callbackUrl = asDriver ? '/?driver=true' : '/';
+    // Redirect based on whether it's driver registration or normal login
+    const callbackUrl = isDriver ? '/?driver=true' : '/';
     
     signIn('google', { 
       callbackUrl,
@@ -46,17 +45,8 @@ function LoginContent() {
         </div>
         <div className="mt-8 space-y-4">
           <div className="flex justify-center">
-            <Button onClick={() => handleLogin(false)} className="w-full">
-              Masuk sebagai User
-            </Button>
-          </div>
-          <div className="flex justify-center">
-            <Button 
-              onClick={() => handleLogin(true)} 
-              variant="outline"
-              className="w-full"
-            >
-              Daftar sebagai Driver
+            <Button onClick={() => handleLogin()} className="w-full">
+              Masuk Menggunakan Google
             </Button>
           </div>
           {isDriver && (
