@@ -10,7 +10,7 @@ export function ConvexAdapter(): Adapter {
   return {
     async createUser(user: Omit<AdapterUser, "id">) {
       const convex = api;
-      const userId = await convexClient.mutation(convex.boedor.nextauth.createNextAuthUser, {
+      const userId = await convexClient.mutation(convex.boedor.auth.createNextAuthUser, {
         email: user.email,
         name: user.name || undefined,
         image: user.image || undefined,
@@ -25,7 +25,7 @@ export function ConvexAdapter(): Adapter {
 
     async getUser(id) {
       const convex = api;
-      const user = await convexClient.query(convex.boedor.nextauth.getNextAuthUser, { id: id as Id<"users"> });
+      const user = await convexClient.query(convex.boedor.auth.getNextAuthUser, { id: id as Id<"users"> });
       if (!user) return null;
 
       return {
@@ -39,7 +39,7 @@ export function ConvexAdapter(): Adapter {
 
     async getUserByEmail(email) {
       const convex = api;
-      const user = await convexClient.query(convex.boedor.nextauth.getNextAuthUserByEmail, { email });
+      const user = await convexClient.query(convex.boedor.auth.getNextAuthUserByEmail, { email });
       if (!user) return null;
 
       return {
@@ -53,13 +53,13 @@ export function ConvexAdapter(): Adapter {
 
     async getUserByAccount({ providerAccountId, provider }) {
       const convex = api;
-      const account = await convexClient.query(convex.boedor.nextauth.getNextAuthAccountByProviderAccount, {
+      const account = await convexClient.query(convex.boedor.auth.getNextAuthAccountByProviderAccount, {
         provider,
         providerAccountId,
       });
       if (!account) return null;
 
-      const user = await convexClient.query(convex.boedor.nextauth.getNextAuthUser, { id: account.userId });
+      const user = await convexClient.query(convex.boedor.auth.getNextAuthUser, { id: account.userId });
       if (!user) return null;
 
       return {
@@ -79,7 +79,7 @@ export function ConvexAdapter(): Adapter {
         throw new Error("Email is required to update user");
       }
       
-      const updatedUser = await convexClient.mutation(convex.boedor.nextauth.updateNextAuthUser, {
+      const updatedUser = await convexClient.mutation(convex.boedor.auth.updateNextAuthUser, {
         id: user.id as Id<"users">,
         data: {
           name: user.name || undefined,
@@ -100,12 +100,12 @@ export function ConvexAdapter(): Adapter {
 
     async deleteUser(userId) {
       const convex = api;
-      await convexClient.mutation(convex.boedor.nextauth.deleteNextAuthUser, { id: userId as Id<"users"> });
+      await convexClient.mutation(convex.boedor.auth.deleteNextAuthUser, { id: userId as Id<"users"> });
     },
 
     async linkAccount(account: AdapterAccount) {
       const convex = api;
-      await convexClient.mutation(convex.boedor.nextauth.createNextAuthAccount, {
+      await convexClient.mutation(convex.boedor.auth.createNextAuthAccount, {
         userId: account.userId as Id<"users">,
         provider: account.provider,
         providerAccountId: account.providerAccountId,
@@ -122,7 +122,7 @@ export function ConvexAdapter(): Adapter {
 
     async unlinkAccount({ providerAccountId, provider }) {
       const convex = api;
-      await convexClient.mutation(convex.boedor.nextauth.deleteNextAuthAccount, {
+      await convexClient.mutation(convex.boedor.auth.deleteNextAuthAccount, {
         provider,
         providerAccountId,
       });
@@ -130,7 +130,7 @@ export function ConvexAdapter(): Adapter {
 
     async createSession({ sessionToken, userId, expires }) {
       const convex = api;
-      await convexClient.mutation(convex.boedor.nextauth.createNextAuthSession, {
+      await convexClient.mutation(convex.boedor.auth.createNextAuthSession, {
         sessionToken,
         userId: userId as Id<"users">,
         expires: expires.toISOString(),
@@ -145,12 +145,12 @@ export function ConvexAdapter(): Adapter {
 
     async getSessionAndUser(sessionToken) {
       const convex = api;
-      const session = await convexClient.query(convex.boedor.nextauth.getNextAuthSessionByToken, {
+      const session = await convexClient.query(convex.boedor.auth.getNextAuthSessionByToken, {
         sessionToken,
       });
       if (!session) return null;
 
-      const user = await convexClient.query(convex.boedor.nextauth.getNextAuthUser, { id: session.userId });
+      const user = await convexClient.query(convex.boedor.auth.getNextAuthUser, { id: session.userId });
       if (!user) return null;
 
       return {
@@ -171,7 +171,7 @@ export function ConvexAdapter(): Adapter {
 
     async updateSession({ sessionToken, userId, expires }) {
       const convex = api;
-      const updatedSession = await convexClient.mutation(convex.boedor.nextauth.updateNextAuthSession, {
+      const updatedSession = await convexClient.mutation(convex.boedor.auth.updateNextAuthSession, {
         sessionToken,
         data: {
           expires: expires?.toISOString(),
@@ -190,7 +190,7 @@ export function ConvexAdapter(): Adapter {
 
     async deleteSession(sessionToken) {
       const convex = api;
-      await convexClient.mutation(convex.boedor.nextauth.deleteNextAuthSession, { sessionToken });
+      await convexClient.mutation(convex.boedor.auth.deleteNextAuthSession, { sessionToken });
     },
   };
 }
