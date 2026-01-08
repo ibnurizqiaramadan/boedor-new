@@ -19,6 +19,11 @@ function LoginContent() {
   }, [isDriver]);
 
   const handleLogin = (asDriver = false) => {
+    // For driver registration, set a cookie BEFORE starting OAuth
+    if (asDriver) {
+      document.cookie = 'driver-registration=true; path=/; max-age=300; SameSite=Lax';
+    }
+    
     // For driver registration, we still need to pass driver=true through the flow
     // but redirect to home after successful login
     const callbackUrl = asDriver ? '/?driver=true' : '/';

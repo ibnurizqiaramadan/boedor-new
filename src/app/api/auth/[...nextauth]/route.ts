@@ -11,7 +11,19 @@ const handler = async (req: NextRequest, context: any) => {
   const driverFromQuery = url.searchParams.get('driver') === 'true';
   const driverFromCallback = url.searchParams.get('callbackUrl')?.includes('driver=true');
   const driverFromCallbackUrl = url.searchParams.get('callbackUrl')?.includes('%3Fdriver%3Dtrue');
-  const isDriver = driverFromQuery || driverFromCallback || driverFromCallbackUrl;
+  
+  // Also check if this is the callback from Google OAuth
+  // We need to detect driver registration from the state parameter or session
+  let isDriver = driverFromQuery || driverFromCallback || driverFromCallbackUrl;
+  
+  // For Google callback, check if we have a driver registration in progress
+  if (url.pathname.includes('/callback/google') && !isDriver) {
+    // We can't access session storage here, so we'll use a different approach
+    // Check the state parameter or use a custom cookie that was set before OAuth
+    const cookies = await req.cookies;
+    const driverCookie = cookies.get('driver-registration');
+    isDriver = driverCookie?.value === 'true';
+  }
   
   console.log('NextAuth route - Driver detected:', {
     driverFromQuery,
