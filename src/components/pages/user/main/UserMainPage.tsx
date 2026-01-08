@@ -193,9 +193,29 @@ export default function UserMainPage() {
       };
     }
 
-    // Calculate average spending
-    const totalSpending = myPayments.reduce((sum, payment) => sum + payment.amount, 0);
-    const totalOrders = myPayments.length;
+    // Calculate average spending based on actual food orders (qty * price)
+    const orderSpending = myOrderItems.reduce((sum, orderItem) => {
+      const menuItem = menuItems.find((item) => item._id === orderItem.menuId);
+      if (menuItem) {
+        return sum + (menuItem.price * orderItem.qty);
+      }
+      return sum;
+    }, 0);
+
+    // Group spending by order to get per-order totals
+    const spendingByOrder = myOrderItems.reduce((acc, orderItem) => {
+      const menuItem = menuItems.find((item) => item._id === orderItem.menuId);
+      if (menuItem) {
+        if (!acc[orderItem.orderId]) {
+          acc[orderItem.orderId] = 0;
+        }
+        acc[orderItem.orderId] += menuItem.price * orderItem.qty;
+      }
+      return acc;
+    }, {} as Record<string, number>);
+
+    const totalSpending = orderSpending;
+    const totalOrders = Object.keys(spendingByOrder).length;
     const averageSpending = totalOrders > 0 ? totalSpending / totalOrders : 0;
 
     // Calculate frequently ordered items
