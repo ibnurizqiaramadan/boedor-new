@@ -139,3 +139,6 @@ export const getUserById = query({
     };
   },
 });
+
+// Export nextauth functions
+export * from "./nextauth";
