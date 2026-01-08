@@ -6,7 +6,7 @@ import type { Id } from "../_generated/dataModel";
 
 // Helper function to get current user
 export const getCurrentUser = query({
-  args: { userId: v.optional(v.id("boedor_users")) },
+  args: { userId: v.optional(v.id("users")) },
   handler: async (ctx, args) => {
     if (!args.userId) return null;
     return await ctx.db.get(args.userId);
@@ -29,7 +29,7 @@ export const createUserInternal = internalMutation({
 
     // Check if username already exists
     const existingUser = await ctx.db
-      .query("boedor_users")
+      .query("users")
       .withIndex("by_username", (q) => q.eq("username", cleanUsername))
       .first();
 
@@ -38,7 +38,7 @@ export const createUserInternal = internalMutation({
     }
 
     // Create user
-    const userId = await ctx.db.insert("boedor_users", {
+    const userId = await ctx.db.insert("users", {
       username: cleanUsername,
       passwordHash: args.passwordHash,
       role: args.role,
@@ -55,7 +55,7 @@ export const getUserByUsernameInternal = internalMutation({
   },
   handler: async (ctx, args) => {
     return await ctx.db
-      .query("boedor_users")
+      .query("users")
       .withIndex("by_username", (q) => q.eq("username", args.username))
       .first();
   },
@@ -68,7 +68,7 @@ export const register = action({
     password: v.string(),
     role: v.union(v.literal("super_admin"), v.literal("admin"), v.literal("driver"), v.literal("user")),
   },
-  handler: async (ctx, args): Promise<{ userId: Id<"boedor_users">; username: string; role: "super_admin" | "admin" | "driver" | "user" }> => {
+  handler: async (ctx, args): Promise<{ userId: Id<"users">; username: string; role: "super_admin" | "admin" | "driver" | "user" }> => {
     // Normalize & validate username on action layer as well
     const cleanUsername = args.username.trim();
     if (!/^\S+$/.test(cleanUsername)) {
@@ -93,7 +93,7 @@ export const login = action({
     username: v.string(),
     password: v.string(),
   },
-  handler: async (ctx, args): Promise<{ userId: Id<"boedor_users">; username: string; role: "super_admin" | "admin" | "driver" | "user" }> => {
+  handler: async (ctx, args): Promise<{ userId: Id<"users">; username: string; role: "super_admin" | "admin" | "driver" | "user" }> => {
     // Find user by username
     const user = await ctx.runMutation(internal.boedor.auth.getUserByUsernameInternal, {
       username: args.username,
@@ -101,6 +101,10 @@ export const login = action({
 
     if (!user) {
       throw new Error("Invalid username or password");
+    }
+
+    if (!user.passwordHash) {
+      throw new Error("This account uses OAuth login");
     }
 
     // Verify password
@@ -112,15 +116,15 @@ export const login = action({
 
     return {
       userId: user._id,
-      username: user.username,
-      role: user.role,
+      username: user.username || "",
+      role: user.role || "user",
     };
   },
 });
 
 // Get user by ID (for session management)
 export const getUserById = query({
-  args: { userId: v.id("boedor_users") },
+  args: { userId: v.id("users") },
   handler: async (ctx, args) => {
     const user = await ctx.db.get(args.userId);
     if (!user) return null;
@@ -128,7 +132,10 @@ export const getUserById = query({
     return {
       _id: user._id,
       username: user.username,
-      role: user.role,
+      email: user.email,
+      name: user.name,
+      image: user.image,
+      role: user.role || "user",
     };
   },
 });

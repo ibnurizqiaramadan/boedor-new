@@ -4,7 +4,7 @@ import { v } from "convex/values";
 // Helper function to verify user role
 async function requireRole(ctx: any, userId: string, allowedRoles: string[]) {
   const user = await ctx.db.get(userId);
-  if (!user || !allowedRoles.includes(user.role)) {
+  if (!user || !allowedRoles.includes(user.role || 'user')) {
     throw new Error("Unauthorized");
   }
   return user;
@@ -12,7 +12,7 @@ async function requireRole(ctx: any, userId: string, allowedRoles: string[]) {
 
 // Realtime query - get all driver positions (admin and drivers can view)
 export const getAllDriverPositions = query({
-  args: { currentUserId: v.id("boedor_users") },
+  args: { currentUserId: v.id("users") },
   handler: async (ctx, args) => {
     await requireRole(ctx, args.currentUserId, ["super_admin", "admin", "driver", "user"]);
     
@@ -23,8 +23,8 @@ export const getAllDriverPositions = query({
 // Get driver position by driver ID
 export const getDriverPosition = query({
   args: { 
-    driverId: v.id("boedor_users"),
-    currentUserId: v.id("boedor_users") 
+    driverId: v.id("users"),
+    currentUserId: v.id("users") 
   },
   handler: async (ctx, args) => {
     await requireRole(ctx, args.currentUserId, ["super_admin", "admin", "driver", "user"]);
@@ -39,10 +39,10 @@ export const getDriverPosition = query({
 // Update driver position (drivers can update their own position, admin can update any)
 export const updateDriverPosition = mutation({
   args: {
-    driverId: v.id("boedor_users"),
+    driverId: v.id("users"),
     lat: v.number(),
     lng: v.number(),
-    currentUserId: v.id("boedor_users"),
+    currentUserId: v.id("users"),
   },
   handler: async (ctx, args) => {
     const user = await ctx.db.get(args.currentUserId);
@@ -89,8 +89,8 @@ export const updateDriverPosition = mutation({
 // Delete driver position (admin only)
 export const deleteDriverPosition = mutation({
   args: {
-    driverId: v.id("boedor_users"),
-    currentUserId: v.id("boedor_users"),
+    driverId: v.id("users"),
+    currentUserId: v.id("users"),
   },
   handler: async (ctx, args) => {
     await requireRole(ctx, args.currentUserId, ["super_admin", "admin"]);

@@ -4,7 +4,7 @@ import { v } from "convex/values";
 // Helper function to verify user role
 async function requireRole(ctx: any, userId: string, allowedRoles: string[]) {
   const user = await ctx.db.get(userId);
-  if (!user || !allowedRoles.includes(user.role)) {
+  if (!user || !allowedRoles.includes(user.role || 'user')) {
     throw new Error("Unauthorized");
   }
   return user;
@@ -12,7 +12,7 @@ async function requireRole(ctx: any, userId: string, allowedRoles: string[]) {
 
 // Realtime query - get all orders
 export const getAllOrders = query({
-  args: { currentUserId: v.id("boedor_users") },
+  args: { currentUserId: v.id("users") },
   handler: async (ctx, args) => {
     await requireRole(ctx, args.currentUserId, ["super_admin", "admin", "driver", "user"]);
     
@@ -24,7 +24,7 @@ export const getAllOrders = query({
 export const getOrdersByStatus = query({
   args: { 
     status: v.union(v.literal("open"), v.literal("closed"), v.literal("completed")),
-    currentUserId: v.id("boedor_users") 
+    currentUserId: v.id("users") 
   },
   handler: async (ctx, args) => {
     await requireRole(ctx, args.currentUserId, ["super_admin", "admin", "driver", "user"]);
@@ -39,8 +39,8 @@ export const getOrdersByStatus = query({
 // Get orders by driver
 export const getOrdersByDriver = query({
   args: { 
-    driverId: v.id("boedor_users"),
-    currentUserId: v.id("boedor_users") 
+    driverId: v.id("users"),
+    currentUserId: v.id("users") 
   },
   handler: async (ctx, args) => {
     const user = await ctx.db.get(args.currentUserId);
@@ -62,7 +62,7 @@ export const getOrdersByDriver = query({
 export const getOrderById = query({
   args: { 
     orderId: v.id("boedor_orders"),
-    currentUserId: v.id("boedor_users") 
+    currentUserId: v.id("users") 
   },
   handler: async (ctx, args) => {
     await requireRole(ctx, args.currentUserId, ["super_admin", "admin", "driver", "user"]);
@@ -74,8 +74,8 @@ export const getOrderById = query({
 // Create order (admin and driver only)
 export const createOrder = mutation({
   args: {
-    driverId: v.id("boedor_users"),
-    currentUserId: v.id("boedor_users"),
+    driverId: v.id("users"),
+    currentUserId: v.id("users"),
   },
   handler: async (ctx, args) => {
     await requireRole(ctx, args.currentUserId, ["admin", "driver"]);
@@ -101,7 +101,7 @@ export const updateOrderStatus = mutation({
   args: {
     orderId: v.id("boedor_orders"),
     status: v.union(v.literal("open"), v.literal("closed"), v.literal("completed")),
-    currentUserId: v.id("boedor_users"),
+    currentUserId: v.id("users"),
   },
   handler: async (ctx, args) => {
     const user = await ctx.db.get(args.currentUserId);
@@ -124,7 +124,7 @@ export const updateOrderStatus = mutation({
 export const deleteOrder = mutation({
   args: {
     orderId: v.id("boedor_orders"),
-    currentUserId: v.id("boedor_users"),
+    currentUserId: v.id("users"),
   },
   handler: async (ctx, args) => {
     await requireRole(ctx, args.currentUserId, ["super_admin", "admin"]);

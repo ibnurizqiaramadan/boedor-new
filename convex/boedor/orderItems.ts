@@ -4,7 +4,7 @@ import { v } from "convex/values";
 // Helper function to verify user role
 async function requireRole(ctx: any, userId: string, allowedRoles: string[]) {
   const user = await ctx.db.get(userId);
-  if (!user || !allowedRoles.includes(user.role)) {
+  if (!user || !allowedRoles.includes(user.role || 'user')) {
     throw new Error("Unauthorized");
   }
   return user;
@@ -14,7 +14,7 @@ async function requireRole(ctx: any, userId: string, allowedRoles: string[]) {
 export const getOrderItemsByOrder = query({
   args: { 
     orderId: v.id("boedor_orders"),
-    currentUserId: v.id("boedor_users") 
+    currentUserId: v.id("users") 
   },
   handler: async (ctx, args) => {
     await requireRole(ctx, args.currentUserId, ["super_admin", "admin", "driver", "user"]);
@@ -29,8 +29,8 @@ export const getOrderItemsByOrder = query({
 // Get order items by user
 export const getOrderItemsByUser = query({
   args: { 
-    userId: v.id("boedor_users"),
-    currentUserId: v.id("boedor_users") 
+    userId: v.id("users"),
+    currentUserId: v.id("users") 
   },
   handler: async (ctx, args) => {
     const user = await ctx.db.get(args.currentUserId);
@@ -55,7 +55,7 @@ export const addOrderItem = mutation({
     menuId: v.id("boedor_menu"),
     qty: v.number(),
     note: v.optional(v.string()),
-    currentUserId: v.id("boedor_users"),
+    currentUserId: v.id("users"),
   },
   handler: async (ctx, args) => {
     await requireRole(ctx, args.currentUserId, ["super_admin", "admin", "driver", "user"]);
@@ -106,7 +106,7 @@ export const updateOrderItem = mutation({
     orderItemId: v.id("boedor_order_items"),
     qty: v.number(),
     note: v.optional(v.string()),
-    currentUserId: v.id("boedor_users"),
+    currentUserId: v.id("users"),
   },
   handler: async (ctx, args) => {
     const user = await ctx.db.get(args.currentUserId);
@@ -143,7 +143,7 @@ export const updateOrderItem = mutation({
 export const removeOrderItem = mutation({
   args: {
     orderItemId: v.id("boedor_order_items"),
-    currentUserId: v.id("boedor_users"),
+    currentUserId: v.id("users"),
   },
   handler: async (ctx, args) => {
     const user = await ctx.db.get(args.currentUserId);

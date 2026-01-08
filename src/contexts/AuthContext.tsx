@@ -1,20 +1,22 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useQuery, useMutation, useAction } from 'convex/react';
+import { useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
+import { useSession, signOut } from 'next-auth/react';
 
 type User = {
-  _id: Id<'boedor_users'>;
-  username: string;
+  _id: Id<'users'>;
+  username?: string;
+  email?: string;
+  name?: string;
+  image?: string;
   role: 'super_admin' | 'admin' | 'driver' | 'user';
 };
 
 type AuthContextType = {
   user: User | null;
-  login: (username: string, password: string) => Promise<void>;
-  register: (username: string, password: string, role: 'admin' | 'driver' | 'user') => Promise<void>;
   logout: () => void;
   isLoading: boolean;
 };
@@ -23,27 +25,29 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [ user, setUser ] = useState<User | null>(null);
-  const [ userId, setUserId ] = useState<Id<'boedor_users'> | null>(null);
   const [ isLoading, setIsLoading ] = useState(true);
+  const { data: session, status: sessionStatus } = useSession();
 
-  const loginAction = useAction(api.boedor.auth.login);
-  const registerAction = useAction(api.boedor.auth.register);
+  
+  // Use only NextAuth session
+  const effectiveUserId = session?.user?.id as Id<'users'> | null;
 
-  // Get user data if userId exists
+  // Get user data from users table
   const userData = useQuery(
     api.boedor.auth.getUserById,
-    userId ? { userId } : 'skip',
+    effectiveUserId ? { userId: effectiveUserId } : 'skip',
   );
 
-  // Load user from localStorage on mount
+  // Handle loading state based on session status
   useEffect(() => {
-    const storedUserId = localStorage.getItem('boedor_user_id');
-    if (storedUserId) {
-      setUserId(storedUserId as Id<'boedor_users'>);
-    } else {
+    if (sessionStatus === 'loading') return;
+    
+    // If no session, set loading to false
+    if (!session?.user) {
+      setUser(null);
       setIsLoading(false);
     }
-  }, []);
+  }, [session, sessionStatus]);
 
   // Update user state when userData changes
   useEffect(() => {
@@ -51,50 +55,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser({
         _id: userData._id,
         username: userData.username,
-        role: userData.role,
+        email: userData.email,
+        name: userData.name,
+        image: userData.image,
+        role: (userData.role || 'user') as User['role'],
       });
       setIsLoading(false);
-    } else if (userId && userData === null) {
-      // User not found, clear localStorage
-      localStorage.removeItem('boedor_user_id');
-      setUserId(null);
+    } else if (effectiveUserId && userData === null) {
+      // User not found, sign out and redirect to login
       setUser(null);
       setIsLoading(false);
+      signOut({ callbackUrl: '/auth/login' });
     }
-  }, [ userData, userId ]);
+  }, [userData, effectiveUserId]);
 
-  const login = async (username: string, password: string) => {
-    try {
-      const result = await loginAction({ username: username.trim(), password });
-      setUserId(result.userId as Id<'boedor_users'>);
-      localStorage.setItem('boedor_user_id', result.userId);
-    } catch (error) {
-      // Mask raw Convex/server errors with a friendly message
-      throw new Error('Nama pengguna atau kata sandi salah');
-    }
-  };
 
-  const register = async (username: string, password: string, role: 'admin' | 'driver' | 'user') => {
+  const logout = async () => {
     try {
-      setIsLoading(true);
-      const result = await registerAction({ username, password, role });
-      localStorage.setItem('boedor_user_id', result.userId);
-      setUser({ _id: result.userId, username: result.username, role: result.role });
-    } catch (err: any) {
-      throw err;
-    } finally {
+      setUser(null);
       setIsLoading(false);
+      // Use NextAuth signOut with redirect
+      await signOut({ callbackUrl: '/auth/login' });
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Force redirect even if signOut fails
+      window.location.href = '/auth/login';
     }
-  };
-
-  const logout = () => {
-    localStorage.removeItem('boedor_user_id');
-    setUserId(null);
-    setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, logout, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

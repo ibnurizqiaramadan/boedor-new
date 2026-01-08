@@ -4,7 +4,7 @@ import { v } from "convex/values";
 // Helper function to verify user role
 async function requireRole(ctx: any, userId: string, allowedRoles: string[]) {
   const user = await ctx.db.get(userId);
-  if (!user || !allowedRoles.includes(user.role)) {
+  if (!user || !allowedRoles.includes(user.role || 'user')) {
     throw new Error("Unauthorized");
   }
   return user;
@@ -14,8 +14,8 @@ async function requireRole(ctx: any, userId: string, allowedRoles: string[]) {
 export const getPaymentByOrderUser = query({
   args: { 
     orderId: v.id("boedor_orders"),
-    userId: v.id("boedor_users"),
-    currentUserId: v.id("boedor_users") 
+    userId: v.id("users"),
+    currentUserId: v.id("users") 
   },
   handler: async (ctx, args) => {
     await requireRole(ctx, args.currentUserId, ["super_admin", "admin", "driver", "user"]);
@@ -31,7 +31,7 @@ export const getPaymentByOrderUser = query({
 export const getPaymentsByOrder = query({
   args: { 
     orderId: v.id("boedor_orders"),
-    currentUserId: v.id("boedor_users") 
+    currentUserId: v.id("users") 
   },
   handler: async (ctx, args) => {
     await requireRole(ctx, args.currentUserId, ["super_admin", "admin", "driver", "user"]);
@@ -46,8 +46,8 @@ export const getPaymentsByOrder = query({
 // Get payments by user
 export const getPaymentsByUser = query({
   args: { 
-    userId: v.id("boedor_users"),
-    currentUserId: v.id("boedor_users") 
+    userId: v.id("users"),
+    currentUserId: v.id("users") 
   },
   handler: async (ctx, args) => {
     const user = await ctx.db.get(args.currentUserId);
@@ -71,7 +71,7 @@ export const upsertPayment = mutation({
     orderId: v.id("boedor_orders"),
     paymentMethod: v.union(v.literal("cash"), v.literal("cardless"), v.literal("dana")),
     amount: v.number(),
-    currentUserId: v.id("boedor_users"),
+    currentUserId: v.id("users"),
   },
   handler: async (ctx, args) => {
     await requireRole(ctx, args.currentUserId, ["super_admin", "admin", "driver", "user"]);
@@ -112,7 +112,7 @@ export const upsertPayment = mutation({
 export const deletePayment = mutation({
   args: {
     paymentId: v.id("boedor_payment"),
-    currentUserId: v.id("boedor_users"),
+    currentUserId: v.id("users"),
   },
   handler: async (ctx, args) => {
     const user = await ctx.db.get(args.currentUserId);

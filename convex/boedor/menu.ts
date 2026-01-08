@@ -4,7 +4,7 @@ import { v } from "convex/values";
 // Helper function to verify user role
 async function requireRole(ctx: any, userId: string, allowedRoles: string[]) {
   const user = await ctx.db.get(userId);
-  if (!user || !allowedRoles.includes(user.role)) {
+  if (!user || !allowedRoles.includes(user.role || 'user')) {
     throw new Error("Unauthorized");
   }
   return user;
@@ -12,7 +12,7 @@ async function requireRole(ctx: any, userId: string, allowedRoles: string[]) {
 
 // Realtime query - get all menu items
 export const getAllMenuItems = query({
-  args: { currentUserId: v.id("boedor_users") },
+  args: { currentUserId: v.id("users") },
   handler: async (ctx, args) => {
     // All authenticated users can view menu items
     const user = await ctx.db.get(args.currentUserId);
@@ -28,7 +28,7 @@ export const getAllMenuItems = query({
 export const getMenuItemById = query({
   args: { 
     menuId: v.id("boedor_menu"),
-    currentUserId: v.id("boedor_users") 
+    currentUserId: v.id("users") 
   },
   handler: async (ctx, args) => {
     const user = await ctx.db.get(args.currentUserId);
@@ -43,7 +43,7 @@ export const createMenuItem = mutation({
   args: {
     name: v.string(),
     price: v.number(),
-    currentUserId: v.id("boedor_users"),
+    currentUserId: v.id("users"),
   },
   handler: async (ctx, args) => {
     await requireRole(ctx, args.currentUserId, ["super_admin", "admin", "driver", "user"]);
@@ -62,7 +62,7 @@ export const createMenuItem = mutation({
 export const updateMenuItem = mutation({
   args: {
     menuId: v.id("boedor_menu"),
-    currentUserId: v.id("boedor_users"),
+    currentUserId: v.id("users"),
     name: v.optional(v.string()),
     price: v.optional(v.number()),
   },
@@ -91,20 +91,20 @@ export const updateMenuItem = mutation({
 export const deleteMenuItem = mutation({
   args: {
     menuId: v.id("boedor_menu"),
-    currentUserId: v.id("boedor_users"),
+    currentUserId: v.id("users"),
   },
   handler: async (ctx, args) => {
     const user = await ctx.db.get(args.currentUserId);
     if (!user) throw new Error("Unauthorized");
-
+    
     const menuItem = await ctx.db.get(args.menuId);
     if (!menuItem) throw new Error("Menu item not found");
-
+    
     // Admin, super_admin, and drivers can delete any item, users can only delete their own
     if (user.role !== "admin" && user.role !== "super_admin" && user.role !== "driver" && menuItem.createdBy !== args.currentUserId) {
       throw new Error("Unauthorized");
     }
-
+    
     await ctx.db.delete(args.menuId);
     return { success: true };
   },
@@ -117,7 +117,7 @@ export const bulkImportMenuItems = mutation({
       name: v.string(),
       price: v.number(),
     })),
-    currentUserId: v.id("boedor_users"),
+    currentUserId: v.id("users"),
   },
   handler: async (ctx, args) => {
     await requireRole(ctx, args.currentUserId, ["super_admin", "admin"]);
@@ -157,7 +157,7 @@ export const bulkImportMenuItems = mutation({
 // Delete all menu items (admin only) - for replace import
 export const deleteAllMenuItems = mutation({
   args: {
-    currentUserId: v.id("boedor_users"),
+    currentUserId: v.id("users"),
   },
   handler: async (ctx, args) => {
     await requireRole(ctx, args.currentUserId, ["super_admin", "admin"]);

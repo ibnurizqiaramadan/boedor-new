@@ -1,9 +1,6 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Geist } from 'next/font/google';
 import './globals.css';
-import { ConvexClientProvider } from '@/components/providers/ConvexClientProvider';
-import { AuthProvider } from '@/contexts/AuthContext';
-import { ToastProvider } from '@/components/providers/ToastProvider';
 
 const geist = Geist({ subsets: [ 'latin' ] });
 
@@ -20,12 +17,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={geist.className}>
-        <ConvexClientProvider>
-          <AuthProvider>
-            {children}
-            <ToastProvider />
-          </AuthProvider>
-        </ConvexClientProvider>
+        {children}
       </body>
     </html>
   );

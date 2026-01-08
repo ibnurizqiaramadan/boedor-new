@@ -85,7 +85,7 @@ export function Sidebar() {
 
           <div className="flex-shrink-0 px-2 pb-4">
             <div className="px-2 py-2 text-sm text-gray-500">
-              Masuk sebagai: <span className="font-medium">{user.username}</span>
+              Masuk sebagai: <span className="font-medium">{user.username || user.name || user.email}</span>
               <br />
               Peran: <span className="font-medium capitalize">{user.role}</span>
             </div>

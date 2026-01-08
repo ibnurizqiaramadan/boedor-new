@@ -1,7 +1,7 @@
 'use client';
 
 import { ConvexProvider } from 'convex/react';
-import { AuthProvider } from '@/contexts/AuthContext';
+import { AuthProvider } from './AuthProvider';
 import convex from '@/lib/convex';
 
 export function ConvexClientProvider({

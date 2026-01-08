@@ -18,8 +18,10 @@ interface MenuItem {
 
 interface Participant {
   _id: string;
-  username: string;
-  role: string;
+  username?: string;
+  email?: string;
+  name?: string;
+  role?: string;
 }
 
 interface AllParticipantsProps {
@@ -55,7 +57,7 @@ export function AllParticipants({
                     <User className="h-5 w-5 text-gray-400" />
                     <div>
                       <CardTitle className="text-lg">
-                        {participant.username}
+                        {participant.name || participant.email || participant.username || 'Unknown'}
                         {participant._id === currentUserId && ' (Anda)'}
                       </CardTitle>
                       <CardDescription>

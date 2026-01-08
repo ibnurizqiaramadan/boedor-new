@@ -4,7 +4,7 @@ import { v } from "convex/values";
 // Helper function to verify user role
 async function requireRole(ctx: any, userId: string, allowedRoles: string[]) {
   const user = await ctx.db.get(userId);
-  if (!user || !allowedRoles.includes(user.role)) {
+  if (!user || !allowedRoles.includes(user.role || 'user')) {
     throw new Error("Unauthorized");
   }
   return user;
@@ -12,25 +12,25 @@ async function requireRole(ctx: any, userId: string, allowedRoles: string[]) {
 
 // Realtime query - get all users (admin only)
 export const getAllUsers = query({
-  args: { currentUserId: v.id("boedor_users") },
+  args: { currentUserId: v.id("users") },
   handler: async (ctx, args) => {
     const currentUser = await ctx.db.get(args.currentUserId);
     
-    if (!currentUser || (currentUser.role !== "admin" && currentUser.role !== "super_admin")) {
+    if (!currentUser || ((currentUser.role || 'user') !== "admin" && (currentUser.role || 'user') !== "super_admin")) {
       throw new Error("Unauthorized");
     }
 
     // Filter out super_admin users from the list
-    const allUsers = await ctx.db.query("boedor_users").collect();
-    return allUsers.filter(user => user.role !== "super_admin");
+    const allUsers = await ctx.db.query("users").collect();
+    return allUsers.filter(user => (user.role || 'user') !== "super_admin");
   },
 });
 
 // Get usernames by IDs (for drivers to see participant names)
 export const getUsernamesByIds = query({
   args: { 
-    userIds: v.array(v.id("boedor_users")),
-    currentUserId: v.id("boedor_users") 
+    userIds: v.array(v.id("users")),
+    currentUserId: v.id("users") 
   },
   handler: async (ctx, args) => {
     await requireRole(ctx, args.currentUserId, ["super_admin", "admin", "driver", "user"]);
@@ -38,7 +38,7 @@ export const getUsernamesByIds = query({
     const users = await Promise.all(
       args.userIds.map(async (userId) => {
         const user = await ctx.db.get(userId);
-        return user ? { _id: user._id, username: user.username, role: user.role } : null;
+        return user ? { _id: user._id, username: user.username, name: user.name, email: user.email, role: user.role || 'user' } : null;
       })
     );
     
@@ -49,15 +49,15 @@ export const getUsernamesByIds = query({
 // Get user by ID
 export const getUserById = query({
   args: { 
-    userId: v.id("boedor_users"),
-    currentUserId: v.id("boedor_users") 
+    userId: v.id("users"),
+    currentUserId: v.id("users") 
   },
   handler: async (ctx, args) => {
     const currentUser = await ctx.db.get(args.currentUserId);
     if (!currentUser) throw new Error("Unauthorized");
     
     // Users can view their own profile, admins can view any profile
-    if (args.userId !== args.currentUserId && currentUser.role !== "admin") {
+    if (args.userId !== args.currentUserId && (currentUser.role || 'user') !== "admin") {
       throw new Error("Unauthorized");
     }
     
@@ -68,8 +68,8 @@ export const getUserById = query({
 // Update user (admin only)
 export const updateUser = mutation({
   args: {
-    userId: v.id("boedor_users"),
-    currentUserId: v.id("boedor_users"),
+    userId: v.id("users"),
+    currentUserId: v.id("users"),
     username: v.optional(v.string()),
     role: v.optional(v.union(v.literal("admin"), v.literal("driver"), v.literal("user"))),
   },
@@ -84,7 +84,7 @@ export const updateUser = mutation({
       }
       // Ensure username is unique (excluding current user)
       const existing = await ctx.db
-        .query("boedor_users")
+        .query("users")
         .withIndex("by_username", (q: any) => q.eq("username", cleanUsername))
         .first();
       if (existing && existing._id !== args.userId) {
@@ -102,8 +102,8 @@ export const updateUser = mutation({
 // Delete user (admin only)
 export const deleteUser = mutation({
   args: {
-    userId: v.id("boedor_users"),
-    currentUserId: v.id("boedor_users"),
+    userId: v.id("users"),
+    currentUserId: v.id("users"),
   },
   handler: async (ctx, args) => {
     await requireRole(ctx, args.currentUserId, ["super_admin", "admin"]);

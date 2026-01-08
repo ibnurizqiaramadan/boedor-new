@@ -54,7 +54,7 @@ export default function AddUserDialog({ onAddUser }: AddUserDialogProps) {
           <DialogDescription>Buat akun pengguna baru</DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
-          <Input
+          {/* <Input
             placeholder="Nama Pengguna"
             value={newUser.username}
             onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
@@ -66,7 +66,7 @@ export default function AddUserDialog({ onAddUser }: AddUserDialogProps) {
             value={newUser.password}
             onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
             disabled={isSubmitting}
-          />
+          /> */}
           <select
             className="w-full p-2 border rounded"
             value={newUser.role}

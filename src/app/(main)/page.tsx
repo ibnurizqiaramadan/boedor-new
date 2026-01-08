@@ -1,15 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import Layout from '@/components/layout/Layout';
-import { LoginForm } from '@/components/auth/LoginForm';
-import { RegisterForm } from '@/components/auth/RegisterForm';
-import { Button } from '@/components/ui/button';
+import { LoginButton } from '@/components/auth/LoginButton';
 
 export default function HomePage() {
   const { user, isLoading } = useAuth();
-  const [ showRegister, setShowRegister ] = useState(false);
 
   if (isLoading) {
     return (
@@ -22,18 +19,21 @@ export default function HomePage() {
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="w-full max-w-md space-y-4">
-          {showRegister ? <RegisterForm /> : <LoginForm />}
-          <div className="text-center">
-            <Button
-              variant="link"
-              onClick={() => setShowRegister(!showRegister)}
-            >
-              {showRegister ?
-                'Sudah punya akun? Masuk' :
-                'Belum punya akun? Daftar'
-              }
-            </Button>
+        <div className="w-full max-w-md space-y-8 p-8">
+          <div>
+            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+              Selamat Datang di Boedor
+            </h2>
+            <p className="mt-2 text-center text-sm text-gray-600">
+              Silakan masuk menggunakan akun Google Anda
+            </p>
+          </div>
+          <div className="mt-8 space-y-6">
+            <div className="rounded-md shadow-sm -space-y-px">
+              <div className="flex justify-center">
+                <LoginButton />
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -45,7 +45,7 @@ export default function HomePage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">
-            Selamat datang di Boedor, {user.username}!
+            Selamat datang di Boedor, {user.username || user.name || user.email}!
           </h1>
           <p className="mt-2 text-gray-600">
             Anda masuk sebagai <span className="font-medium capitalize">{user.role}</span>

@@ -6,8 +6,10 @@ import AddUserDialog from './AddUserDialog';
 
 interface User {
   _id: string;
-  username: string;
-  role: 'super_admin' | 'admin' | 'driver' | 'user';
+  username?: string;
+  email?: string;
+  name?: string;
+  role?: 'super_admin' | 'admin' | 'driver' | 'user';
 }
 
 interface UserManagementProps {

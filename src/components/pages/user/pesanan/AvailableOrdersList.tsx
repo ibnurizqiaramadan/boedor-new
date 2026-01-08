@@ -11,7 +11,9 @@ interface Order {
 
 interface Driver {
   _id: string;
-  username: string;
+  username?: string;
+  email?: string;
+  name?: string;
 }
 
 interface AvailableOrdersListProps {
