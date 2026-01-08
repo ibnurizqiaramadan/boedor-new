@@ -2,6 +2,7 @@ import { type Adapter, type AdapterUser, type AdapterAccount, type AdapterSessio
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
+import { cookies } from "next/headers";
 
 const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL!;
 const convexClient = new ConvexHttpClient(convexUrl);
@@ -10,11 +11,22 @@ export function ConvexAdapter(): Adapter {
   return {
     async createUser(user: Omit<AdapterUser, "id">) {
       const convex = api;
+      
+      // Check if this is a driver registration
+      const cookieStore = await cookies();
+      const isDriver = cookieStore.get('driver-registration')?.value === 'true';
+      
+      // Clear the cookie after use
+      if (isDriver) {
+        cookieStore.delete('driver-registration');
+      }
+      
       const userId = await convexClient.mutation(convex.boedor.auth.createNextAuthUser, {
         email: user.email,
         name: user.name || undefined,
         image: user.image || undefined,
         emailVerified: user.emailVerified?.toISOString() || undefined,
+        role: isDriver ? 'driver' : 'user',
       });
 
       return {

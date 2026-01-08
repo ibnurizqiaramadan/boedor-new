@@ -8,11 +8,15 @@ export const createNextAuthUser = mutation({
     name: v.optional(v.string()),
     image: v.optional(v.string()),
     emailVerified: v.optional(v.string()),
+    role: v.optional(v.union(v.literal("user"), v.literal("driver"))),
   },
   handler: async (ctx, args) => {
     const userId = await ctx.db.insert("users", {
-      ...args,
-      role: "user", // Default role for new users
+      email: args.email,
+      name: args.name,
+      image: args.image,
+      emailVerified: args.emailVerified,
+      role: args.role || "user", // Default role for new users
     });
     return userId;
   },
