@@ -42,17 +42,31 @@ export default function UserOrdersPage() {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <p className="text-red-500">Memuat...</p>
+          <p className="text-gray-500">Memuat...</p>
         </div>
       </Layout>
     );
   }
 
-  if (user.role !== 'user') {
+  if (user.role === 'driver') {
+    // Redirect driver to their orders page
+    router.replace('/driver/orders');
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <p className="text-red-500">Akses ditolak. Khusus pengguna.</p>
+          <p className="text-gray-500">Mengarahkan ke halaman driver...</p>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (user.role === 'admin' || user.role === 'super_admin') {
+    // Redirect admin to admin orders page
+    router.replace('/admin/orders');
+    return (
+      <Layout>
+        <div className="flex items-center justify-center h-64">
+          <p className="text-gray-500">Mengarahkan ke halaman admin...</p>
         </div>
       </Layout>
     );
