@@ -44,7 +44,15 @@ export function AvailableOrdersList({
                   <p className="font-medium">Pesanan #{order._id.slice(-6)}</p>
                   <p className="text-sm text-gray-500">Status: {formatStatus(order.status)}</p>
                   <p className="text-sm text-gray-500">
-                    Driver: {drivers?.find((u: any) => u && u._id === order.driverId)?.username ?? 'Memuat...'}
+                    Driver: {(() => {
+                      // If drivers is still loading (undefined), show loading
+                      if (drivers === undefined) {
+                        return 'Memuat...';
+                      }
+                      // If drivers loaded, find the driver
+                      const driver = drivers.find((u: any) => u && String(u._id) === String(order.driverId));
+                      return driver ? (driver.username || driver.name || 'Unknown Driver') : 'Driver tidak ditemukan';
+                    })()}
                   </p>
                   <p className="text-sm text-gray-500">
                     Dibuat: {new Date(order.createdAt).toLocaleString('id-ID')}

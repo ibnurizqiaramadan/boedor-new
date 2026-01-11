@@ -19,7 +19,7 @@ export default function UserOrdersPage() {
   );
 
   // Collect driver IDs from available orders and fetch their usernames
-  const driverIds = availableOrders ? Array.from(new Set(availableOrders.map((o: any) => o.driverId))) : [];
+  const driverIds = availableOrders ? Array.from(new Set(availableOrders.map((o: any) => o.driverId).filter(id => id))) : [];
   const drivers = useQuery(
     api.boedor.users.getUsernamesByIds,
     user && driverIds.length > 0 ? { userIds: driverIds, currentUserId: user._id } : 'skip',
