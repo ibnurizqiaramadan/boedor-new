@@ -2,7 +2,7 @@ import { mutation, query } from "../_generated/server";
 import { v } from "convex/values";
 
 // Helper function to verify user role
-async function requireRole(ctx: any, userId: string, allowedRoles: string[]) {
+async function requireRole(ctx: { db: any; auth: any }, userId: string, allowedRoles: string[]) {
   const user = await ctx.db.get(userId);
   if (!user || !allowedRoles.includes(user.role || 'user')) {
     throw new Error("Unauthorized");
@@ -76,7 +76,7 @@ export const updateUser = mutation({
   handler: async (ctx, args) => {
     await requireRole(ctx, args.currentUserId, ["super_admin", "admin"]);
     
-    const updateData: any = {};
+    const updateData: Partial<{ username: string; role: "super_admin" | "admin" | "driver" | "user" }> = {};
     if (args.username !== undefined) {
       const cleanUsername = args.username.trim();
       if (!/^\S+$/.test(cleanUsername)) {
@@ -85,7 +85,7 @@ export const updateUser = mutation({
       // Ensure username is unique (excluding current user)
       const existing = await ctx.db
         .query("users")
-        .withIndex("by_username", (q: any) => q.eq("username", cleanUsername))
+        .withIndex("by_username", (q) => q.eq("username", cleanUsername))
         .first();
       if (existing && existing._id !== args.userId) {
         throw new Error("Username already exists");

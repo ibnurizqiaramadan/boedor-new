@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { CreditCard, Smartphone, Wallet } from 'lucide-react';
 import { ShoppingCart } from 'lucide-react';
+import type { Order, Payment } from '@/lib/types';
 
 interface MenuItem {
   _id: string;
@@ -13,7 +14,7 @@ interface MenuItem {
 interface JoinOrderDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  selectedOrder: any;
+  selectedOrder: Order | null;
   menuItems: MenuItem[];
   selectedMenuItems: Array<{ menuId: string; qty: number }>;
   itemNotes: Record<string, string>;
@@ -21,7 +22,7 @@ interface JoinOrderDialogProps {
   menuFilter: string;
   paymentMethod: 'cash' | 'cardless' | 'dana';
   amount: string;
-  existingPayment: any;
+  existingPayment: Payment | null;
   calcSubtotal: () => number;
   getMyCurrentTotal: () => number;
   getMenuItemQuantity: (menuId: string) => number;

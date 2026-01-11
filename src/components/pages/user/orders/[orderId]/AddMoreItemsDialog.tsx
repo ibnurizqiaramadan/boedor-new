@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ShoppingCart, Search } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
+import type { Payment } from '@/lib/types';
 
 interface MenuItem {
   _id: string;
@@ -20,7 +21,7 @@ interface AddMoreItemsDialogProps {
   maxPrice: string;
   selectedMenuItems: Array<{ menuId: string; qty: number }>;
   itemNotes: Record<string, string>;
-  existingPayment: any;
+  existingPayment: Payment | null;
   getMyTotal: () => number;
   getMenuItemQuantity: (menuId: string) => number;
   onMenuFilterChange: (filter: string) => void;

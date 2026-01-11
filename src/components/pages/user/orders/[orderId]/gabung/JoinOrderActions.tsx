@@ -1,8 +1,9 @@
 import { Button } from '@/components/ui/button';
+import type { Payment } from '@/lib/types';
 
 interface JoinOrderActionsProps {
   selectedMenuItems: Array<{ menuId: string; qty: number }>;
-  existingPayment: any;
+  existingPayment: Payment | null;
   getMyCurrentTotal: () => number;
   calcSubtotal: () => number;
   onJoinOrder: () => void;

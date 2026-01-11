@@ -2,7 +2,7 @@ import { mutation, query } from "../_generated/server";
 import { v } from "convex/values";
 
 // Helper function to verify user role
-async function requireRole(ctx: any, userId: string, allowedRoles: string[]) {
+async function requireRole(ctx: { db: any; auth: any }, userId: string, allowedRoles: string[]) {
   const user = await ctx.db.get(userId);
   if (!user || !allowedRoles.includes(user.role || 'user')) {
     throw new Error("Unauthorized");
@@ -78,7 +78,7 @@ export const updateMenuItem = mutation({
       throw new Error("Unauthorized");
     }
     
-    const updateData: any = {};
+    const updateData: Partial<{ name: string; price: number }> = {};
     if (args.name !== undefined) updateData.name = args.name;
     if (args.price !== undefined) updateData.price = args.price;
     

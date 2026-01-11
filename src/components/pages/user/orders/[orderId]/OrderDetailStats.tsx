@@ -1,6 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { getStatusIcon, getStatusColor, formatStatus } from '@/lib/status';
 import { formatCurrency } from '@/lib/utils';
+import type { Payment } from '@/lib/types';
 
 interface Order {
   _id: string;
@@ -13,7 +14,7 @@ interface OrderDetailStatsProps {
   participantsCount: number;
   myItemsCount: number;
   myTotal: number;
-  existingPayment: any;
+  existingPayment: Payment | null;
   myChange: number;
 }
 

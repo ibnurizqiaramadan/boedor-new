@@ -355,7 +355,7 @@ export default function UserOrderDetailPage() {
           participantsCount={participants?.length || 0}
           myItemsCount={myItems.length}
           myTotal={getMyTotal()}
-          existingPayment={existingPayment}
+          existingPayment={existingPayment || null}
           myChange={getMyChange()}
         />
 
@@ -364,7 +364,7 @@ export default function UserOrderDetailPage() {
           paymentMethod={paymentMethod}
           amount={amount}
           payErrors={payErrors}
-          existingPayment={existingPayment}
+          existingPayment={existingPayment || null}
           myTotal={getMyTotal()}
           onPaymentMethodChange={setPaymentMethod}
           onAmountChange={(value) => {
@@ -420,7 +420,7 @@ export default function UserOrderDetailPage() {
           maxPrice={maxPrice}
           selectedMenuItems={selectedMenuItems}
           itemNotes={itemNotes}
-          existingPayment={existingPayment}
+          existingPayment={existingPayment || null}
           getMyTotal={getMyTotal}
           getMenuItemQuantity={getMenuItemQuantity}
           onMenuFilterChange={setMenuFilter}

@@ -7,6 +7,7 @@ import Layout from '@/components/layout/Layout';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AvailableOrdersList } from './AvailableOrdersList';
+import type { Order, OrderItem, User } from '@/lib/types';
 
 export default function UserOrdersPage() {
   const { user } = useAuth();
@@ -19,7 +20,7 @@ export default function UserOrdersPage() {
   );
 
   // Collect driver IDs from available orders and fetch their usernames
-  const driverIds = availableOrders ? Array.from(new Set(availableOrders.map((o: any) => o.driverId).filter(id => id))) : [];
+  const driverIds = availableOrders ? Array.from(new Set(availableOrders.map((o: Order) => o.driverId).filter(id => id))) : [];
   const drivers = useQuery(
     api.boedor.users.getUsernamesByIds,
     user && driverIds.length > 0 ? { userIds: driverIds, currentUserId: user._id } : 'skip',
@@ -31,7 +32,7 @@ export default function UserOrdersPage() {
     api.boedor.orderItems.getOrderItemsByUser,
     user?._id ? { userId: user._id, currentUserId: user._id } : 'skip',
   );
-  const joinedOrderIds = new Set((myOrderItems ?? []).map((it: any) => it.orderId));
+  const joinedOrderIds = new Set((myOrderItems ?? []).map((it: OrderItem) => it.orderId));
 
 
 
@@ -82,7 +83,7 @@ export default function UserOrdersPage() {
 
         <AvailableOrdersList
           availableOrders={availableOrders || []}
-          drivers={drivers || []}
+          drivers={(drivers || []) as User[]}
           joinedOrderIds={joinedOrderIds}
           onJoinOrder={(order) => {
             // Redirect langsung ke halaman gabung pesanan

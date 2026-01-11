@@ -1,19 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { getStatusIcon, getStatusColor, formatStatus } from '@/lib/status';
-
-interface OrderItem {
-  _id: string;
-  orderId: string;
-  menuId: string;
-  qty: number;
-  _creationTime: number;
-}
-
-interface Order {
-  _id: string;
-  status: string;
-}
+import type { Order, OrderItem } from '@/lib/types';
 
 interface GroupedOrder {
   orderId: string;
@@ -44,7 +32,7 @@ export function UserOrderItems({
       <CardContent>
         <div className="space-y-4">
           {paginatedOrders.map((group) => {
-            const status = availableOrders?.find((o: any) => o._id === group.orderId)?.status || '';
+            const status = availableOrders?.find((o: Order) => o._id === group.orderId)?.status || '';
             return (
               <div
                 key={group.orderId}

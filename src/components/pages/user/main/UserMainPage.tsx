@@ -13,6 +13,7 @@ import { getStatusIcon, getStatusColor, formatStatus } from '@/lib/status';
 import { UserStatsCards } from './UserStatsCards';
 import { UserReportsSection } from './UserReportsSection';
 import { UserOrderItems } from './UserOrderItems';
+import type { OrderItem } from '@/lib/types';
 import { JoinOrderDialog } from './JoinOrderDialog';
 import { Pagination, PaginationInfo } from '@/components/ui/pagination';
 
@@ -62,7 +63,7 @@ export default function UserMainPage() {
     acc[orderId].items.push(item);
     acc[orderId].latestTime = Math.max(acc[orderId].latestTime, item._creationTime);
     return acc;
-  }, {} as Record<string, { orderId: string; totalItems: number; items: any[]; latestTime: number }>) || {};
+  }, {} as Record<string, { orderId: string; totalItems: number; items: OrderItem[]; latestTime: number }>) || {};
 
   const sortedOrders = Object.values(groupedOrders).sort((a, b) => b.latestTime - a.latestTime);
   const totalOrders = sortedOrders.length;
@@ -311,7 +312,7 @@ export default function UserMainPage() {
           paymentMethod={paymentMethod}
           amount={amount}
           note={note}
-          existingPayment={existingPayment}
+          existingPayment={existingPayment || null}
           onPaymentMethodChange={setPaymentMethod}
           onAmountChange={setAmount}
           onNoteChange={setNote}

@@ -8,6 +8,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useQuery } from 'convex/react';
 import { api } from '../../../../../../../convex/_generated/api';
 import { Id } from '../../../../../../../convex/_generated/dataModel';
+import type { User } from '@/lib/types';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { MapRef } from 'react-map-gl/maplibre';
 import { TrackDriverHeader } from './TrackDriverHeader';
@@ -76,7 +77,7 @@ export default function TrackDriverPage() {
         <div className="space-y-4">
           <TrackDriverHeader
             orderId={orderId}
-            driverPosition={driverPosition}
+            driverPosition={driverPosition || null}
             followDriver={followDriver}
             onBack={() => router.back()}
             onToggleFollow={() => setFollowDriver((v) => !v)}
@@ -84,8 +85,8 @@ export default function TrackDriverPage() {
 
           <TrackDriverMap
             center={center}
-            driverPosition={driverPosition}
-            driverUser={driverUser?.[0]}
+            driverPosition={driverPosition || null}
+            driverUser={(driverUser?.[0] as User) || null}
             mapRef={mapRef}
           />
         </div>

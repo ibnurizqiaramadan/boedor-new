@@ -1,9 +1,10 @@
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, LocateFixed } from 'lucide-react';
+import type { DriverPosition } from '@/lib/types';
 
 interface TrackDriverHeaderProps {
   orderId: string;
-  driverPosition: any;
+  driverPosition: DriverPosition | null;
   followDriver: boolean;
   onBack: () => void;
   onToggleFollow: () => void;

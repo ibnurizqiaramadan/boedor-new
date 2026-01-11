@@ -1,24 +1,11 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { formatStatus } from '@/lib/status';
-
-interface Order {
-  _id: string;
-  driverId: string;
-  status: string;
-  createdAt: number;
-}
-
-interface Driver {
-  _id: string;
-  username?: string;
-  email?: string;
-  name?: string;
-}
+import type { Order, User } from '@/lib/types';
 
 interface AvailableOrdersListProps {
   availableOrders: Order[];
-  drivers: (Driver | null)[] | undefined;
+  drivers: (User | null)[] | undefined;
   joinedOrderIds: Set<string>;
   onJoinOrder: (order: Order) => void;
   onViewOrder: (orderId: string) => void;
@@ -50,7 +37,7 @@ export function AvailableOrdersList({
                         return 'Memuat...';
                       }
                       // If drivers loaded, find the driver
-                      const driver = drivers.find((u: any) => u && String(u._id) === String(order.driverId));
+                      const driver = drivers.find((u) => u && String(u._id) === String(order.driverId));
                       return driver ? (driver.username || driver.name || 'Unknown Driver') : 'Driver tidak ditemukan';
                     })()}
                   </p>

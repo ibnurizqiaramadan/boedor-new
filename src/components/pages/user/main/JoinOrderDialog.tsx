@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import type { Order, Payment } from '@/lib/types';
 
 interface MenuItem {
   _id: string;
@@ -12,13 +13,13 @@ interface MenuItem {
 interface JoinOrderDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  selectedOrder: any;
+  selectedOrder: Order | null;
   menuItems: MenuItem[];
   selectedMenuItems: { menuId: string; qty: number }[];
   paymentMethod: string;
   amount: string;
   note: string;
-  existingPayment: any;
+  existingPayment: Payment | null;
   onPaymentMethodChange: (method: string) => void;
   onAmountChange: (amount: string) => void;
   onNoteChange: (note: string) => void;

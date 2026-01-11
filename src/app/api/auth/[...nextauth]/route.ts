@@ -3,7 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from 'next/headers';
 
-const handler = async (req: NextRequest, context: any) => {
+const handler = async (req: NextRequest, context: { params: Promise<{ nextauth: string[] }> }) => {
   // Check if the request is for driver registration
   const url = new URL(req.url);
   

@@ -5,11 +5,12 @@ import { useMemo } from 'react';
 import { MapPin } from 'lucide-react';
 import type { StyleSpecification } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import type { DriverPosition, User } from '@/lib/types';
 
 interface TrackDriverMapProps {
   center: { longitude: number; latitude: number; zoom: number };
-  driverPosition: any;
-  driverUser: any;
+  driverPosition: DriverPosition | null;
+  driverUser: User | null;
   mapRef: React.RefObject<MapRef | null>;
 }
 

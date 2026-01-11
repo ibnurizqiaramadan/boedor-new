@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Wallet, CreditCard, Smartphone } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
+import type { Payment } from '@/lib/types';
 
 interface Order {
   _id: string;
@@ -15,7 +16,7 @@ interface PaymentSectionProps {
   paymentMethod: 'cash' | 'cardless' | 'dana';
   amount: string;
   payErrors: { amount?: string };
-  existingPayment: any;
+  existingPayment: Payment | null;
   myTotal: number;
   onPaymentMethodChange: (method: 'cash' | 'cardless' | 'dana') => void;
   onAmountChange: (amount: string) => void;

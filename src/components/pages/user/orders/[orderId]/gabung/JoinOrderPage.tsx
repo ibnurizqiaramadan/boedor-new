@@ -13,6 +13,7 @@ import { JoinOrderInfo } from './JoinOrderInfo';
 import { MenuSelection } from './MenuSelection';
 import { PaymentForm } from './PaymentForm';
 import { JoinOrderActions } from './JoinOrderActions';
+import type { OrderItem } from '@/lib/types';
 
 export default function JoinOrderPage() {
   const { user, isLoading } = useAuth();
@@ -117,8 +118,8 @@ export default function JoinOrderPage() {
 
   const getMyCurrentTotal = () => {
     if (!orderItems || !menuItems || !user) return 0;
-    const myItems = orderItems.filter((it: any) => it.userId === user._id);
-    return myItems.reduce((sum: number, it: any) => {
+    const myItems = orderItems.filter((it: OrderItem) => it.userId === user._id);
+    return myItems.reduce((sum: number, it: OrderItem) => {
       const m = menuItems.find((mm) => mm._id === it.menuId);
       return sum + (m ? m.price * it.qty : 0);
     }, 0);
@@ -257,7 +258,7 @@ export default function JoinOrderPage() {
 
         <JoinOrderActions
           selectedMenuItems={selectedMenuItems}
-          existingPayment={existingPayment}
+          existingPayment={existingPayment || null}
           getMyCurrentTotal={getMyCurrentTotal}
           calcSubtotal={calcSubtotal}
           onJoinOrder={handleJoinOrder}
