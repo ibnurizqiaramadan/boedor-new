@@ -139,7 +139,7 @@ export default function OrderDetailPage() {
   // (already declared above)
 
   // Get unique participant IDs from order items
-  const participantIds = orderItems ? [ ...new Set(orderItems.map((item) => item.userId)) ] : [ ];
+  const participantIds = orderItems ? [ ...new Set(orderItems.map((item) => item.userId).filter(id => id)) ] : [ ];
 
   // Get usernames for participants
   const participants = useQuery(
@@ -293,10 +293,10 @@ export default function OrderDetailPage() {
           <h2 className="text-xl font-semibold text-gray-900">Peserta & Item</h2>
 
           {participants && participants.length > 0 ? (
-            participants.map((participant) => {
-              if (!participant) return null;
+            (participants.filter(p => p) as NonNullable<typeof participants[0]>[]).map((participant) => {
               const userItems = itemsByUser[participant._id] || [];
               const userTotal = getUserTotal(participant._id);
+              const participantName = participant.username || participant.name || 'Pengguna Tidak Dikenal';
 
               return (
                 <Card key={participant._id}>
@@ -305,7 +305,7 @@ export default function OrderDetailPage() {
                       <div className="flex items-center space-x-3">
                         <User className="h-5 w-5 text-gray-400" />
                         <div>
-                          <CardTitle className="text-lg">{participant.username}{participant._id === user._id && ' (Anda)'}</CardTitle>
+                          <CardTitle className="text-lg">{participantName}{String(participant._id) === String(user._id) && ' (Anda)'}</CardTitle>
                           <CardDescription>
                             {userItems.length} item • Total: {formatCurrency(userTotal)}
                           </CardDescription>
@@ -376,7 +376,7 @@ export default function OrderDetailPage() {
             <CardContent>
               <div className="space-y-3">
                 {orderPayments.map((payment) => {
-                  const participant = participants?.find((p) => p?._id === payment.userId);
+                  const participant = participants?.find((p) => p && String(p._id) === String(payment.userId));
                   const userTotal = getUserTotal(payment.userId);
                   const change = payment.amount - userTotal;
 
@@ -385,7 +385,7 @@ export default function OrderDetailPage() {
                       <div className="flex items-center space-x-3">
                         <User className="h-4 w-4 text-gray-400" />
                         <div>
-                          <p className="font-medium">{participant?.username || 'Pengguna Tidak Dikenal'}</p>
+                          <p className="font-medium">{participant ? (participant.username || participant.name || 'Pengguna Tidak Dikenal') : 'Pengguna Tidak Dikenal'}</p>
                           <p className="text-sm text-gray-500">
                             Metode: {payment.paymentMethod} • Total Item: {formatCurrency(userTotal)}
                           </p>
