@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation } from 'convex/react';
-import { api } from '../../../../../convex/_generated/api';
+import { api } from '@/convex/_generated/api';
 import Layout from '@/components/layout/Layout';
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';

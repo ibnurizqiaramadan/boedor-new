@@ -1,4 +1,4 @@
-import type { Id, Doc } from '../../convex/_generated/dataModel';
+import type { Id, Doc } from '@/convex/_generated/dataModel';
 
 // User types
 export type User = Doc<'users'>;

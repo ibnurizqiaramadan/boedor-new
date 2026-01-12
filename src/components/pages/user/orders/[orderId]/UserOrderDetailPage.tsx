@@ -2,8 +2,8 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation } from 'convex/react';
-import { api } from '../../../../../../convex/_generated/api';
-import { Id } from '../../../../../../convex/_generated/dataModel';
+import { api } from '@/convex/_generated/api';
+import { Id } from '@/convex/_generated/dataModel';
 import Layout from '@/components/layout/Layout';
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';

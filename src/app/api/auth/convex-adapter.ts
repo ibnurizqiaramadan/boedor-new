@@ -1,7 +1,7 @@
 import { type Adapter, type AdapterUser, type AdapterAccount, type AdapterSession } from "next-auth/adapters";
 import { ConvexHttpClient } from "convex/browser";
-import { api } from "../../../../convex/_generated/api";
-import type { Id } from "../../../../convex/_generated/dataModel";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
 import { cookies } from "next/headers";
 
 const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL!;
