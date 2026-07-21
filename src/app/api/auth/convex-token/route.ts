@@ -19,7 +19,9 @@ export async function GET() {
   const token = await new SignJWT({})
     .setProtectedHeader({ alg: "RS256", kid: "convex-nextauth" })
     .setSubject(session.user.id)
-    .setIssuer(process.env.NEXTAUTH_URL!)
+    // NEXT_PUBLIC_CONVEX_URL as issuer: same value in every environment,
+    // so one AUTH_JWT_ISSUER on the deployment covers dev and prod
+    .setIssuer(process.env.NEXT_PUBLIC_CONVEX_URL!)
     .setAudience("convex")
     .setIssuedAt()
     .setExpirationTime("1h")
