@@ -1,8 +1,8 @@
-import { mutation, query } from "../_generated/server";
+import { internalMutation, internalQuery } from "../_generated/server";
 import { v } from "convex/values";
 
 // User functions for NextAuth adapter
-export const createNextAuthUser = mutation({
+export const createNextAuthUser = internalMutation({
   args: {
     email: v.string(),
     name: v.optional(v.string()),
@@ -22,14 +22,14 @@ export const createNextAuthUser = mutation({
   },
 });
 
-export const getNextAuthUser = query({
+export const getNextAuthUser = internalQuery({
   args: { id: v.id("users") },
   handler: async (ctx, args) => {
     return await ctx.db.get(args.id);
   },
 });
 
-export const getNextAuthUserByEmail = query({
+export const getNextAuthUserByEmail = internalQuery({
   args: { email: v.string() },
   handler: async (ctx, args) => {
     const user = await ctx.db
@@ -40,7 +40,7 @@ export const getNextAuthUserByEmail = query({
   },
 });
 
-export const updateNextAuthUser = mutation({
+export const updateNextAuthUser = internalMutation({
   args: {
     id: v.id("users"),
     data: v.object({
@@ -56,7 +56,7 @@ export const updateNextAuthUser = mutation({
   },
 });
 
-export const deleteNextAuthUser = mutation({
+export const deleteNextAuthUser = internalMutation({
   args: { id: v.id("users") },
   handler: async (ctx, args) => {
     await ctx.db.delete(args.id);
@@ -64,7 +64,7 @@ export const deleteNextAuthUser = mutation({
 });
 
 // Account functions for NextAuth adapter
-export const createNextAuthAccount = mutation({
+export const createNextAuthAccount = internalMutation({
   args: {
     userId: v.id("users"),
     provider: v.string(),
@@ -83,7 +83,7 @@ export const createNextAuthAccount = mutation({
   },
 });
 
-export const getNextAuthAccountByProviderAccount = query({
+export const getNextAuthAccountByProviderAccount = internalQuery({
   args: {
     provider: v.string(),
     providerAccountId: v.string(),
@@ -100,7 +100,7 @@ export const getNextAuthAccountByProviderAccount = query({
   },
 });
 
-export const deleteNextAuthAccount = mutation({
+export const deleteNextAuthAccount = internalMutation({
   args: {
     provider: v.string(),
     providerAccountId: v.string(),
@@ -121,7 +121,7 @@ export const deleteNextAuthAccount = mutation({
 });
 
 // Session functions for NextAuth adapter
-export const createNextAuthSession = mutation({
+export const createNextAuthSession = internalMutation({
   args: {
     sessionToken: v.string(),
     userId: v.id("users"),
@@ -132,7 +132,7 @@ export const createNextAuthSession = mutation({
   },
 });
 
-export const getNextAuthSessionByToken = query({
+export const getNextAuthSessionByToken = internalQuery({
   args: { sessionToken: v.string() },
   handler: async (ctx, args) => {
     const session = await ctx.db
@@ -143,7 +143,7 @@ export const getNextAuthSessionByToken = query({
   },
 });
 
-export const updateNextAuthSession = mutation({
+export const updateNextAuthSession = internalMutation({
   args: {
     sessionToken: v.string(),
     data: v.object({
@@ -165,7 +165,7 @@ export const updateNextAuthSession = mutation({
   },
 });
 
-export const deleteNextAuthSession = mutation({
+export const deleteNextAuthSession = internalMutation({
   args: { sessionToken: v.string() },
   handler: async (ctx, args) => {
     const session = await ctx.db

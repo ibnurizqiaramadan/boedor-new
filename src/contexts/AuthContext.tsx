@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useQuery } from 'convex/react';
+import { useConvexAuth, useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import type { Id } from '@/convex/_generated/dataModel';
 import { useSession, signOut } from 'next-auth/react';
@@ -32,10 +32,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Use only NextAuth session
   const effectiveUserId = session?.user?.id as Id<'users'> | null;
 
-  // Get user data from users table
+  // Wait until the Convex client has an accepted JWT before querying,
+  // otherwise getMe transiently returns null and we'd sign out a valid session
+  const { isAuthenticated: convexAuthed } = useConvexAuth();
   const userData = useQuery(
-    api.boedor.auth.getUserById,
-    effectiveUserId ? { userId: effectiveUserId } : 'skip',
+    api.boedor.auth.getMe,
+    effectiveUserId && convexAuthed ? {} : 'skip',
   );
 
   // Handle loading state based on session status

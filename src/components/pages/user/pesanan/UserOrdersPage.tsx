@@ -13,24 +13,24 @@ export default function UserOrdersPage() {
   const { user } = useAuth();
   const router = useRouter();
   const availableOrders = useQuery(api.boedor.orders.getOrdersByStatus,
-    user?._id ? { status: 'open', currentUserId: user._id } : 'skip',
+    user?._id ? { status: 'open' } : 'skip',
   );
   const menuItems = useQuery(api.boedor.menu.getAllMenuItems,
-    user?._id ? { currentUserId: user._id } : 'skip',
+    user?._id ? {} : 'skip',
   );
 
   // Collect driver IDs from available orders and fetch their usernames
   const driverIds = availableOrders ? Array.from(new Set(availableOrders.map((o: Order) => o.driverId).filter(id => id))) : [];
   const drivers = useQuery(
     api.boedor.users.getUsernamesByIds,
-    user && driverIds.length > 0 ? { userIds: driverIds, currentUserId: user._id } : 'skip',
+    user && driverIds.length > 0 ? { userIds: driverIds } : 'skip',
   );
 
 
   // Fetch all order items for current user to know which orders are already joined
   const myOrderItems = useQuery(
     api.boedor.orderItems.getOrderItemsByUser,
-    user?._id ? { userId: user._id, currentUserId: user._id } : 'skip',
+    user?._id ? { userId: user._id } : 'skip',
   );
   const joinedOrderIds = new Set((myOrderItems ?? []).map((it: OrderItem) => it.orderId));
 

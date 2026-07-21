@@ -15,7 +15,7 @@ export default function DriverDashboardPage() {
   const [ currentPage, setCurrentPage ] = useState(1);
 
   // Queries
-  const myOrders = useQuery(api.boedor.orders.getOrdersByDriver, user ? { driverId: user._id, currentUserId: user._id } : 'skip');
+  const myOrders = useQuery(api.boedor.orders.getOrdersByDriver, user ? { driverId: user._id } : 'skip');
 
   const ORDERS_PER_PAGE = 6; // Show 6 orders per page on dashboard
 
@@ -50,7 +50,7 @@ export default function DriverDashboardPage() {
   const isDriver = user?.role === 'driver';
 
   const handleUpdateOrderStatus = async (orderId: string, status: 'open' | 'closed' | 'completed') => {
-    await updateOrderStatus({ orderId: orderId as any, status, currentUserId: user!._id });
+    await updateOrderStatus({ orderId: orderId as any, status });
   };
 
   return (

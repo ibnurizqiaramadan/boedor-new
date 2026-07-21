@@ -60,7 +60,7 @@ export default function OrderDetailPage() {
         try {
           const lat = pos.coords.latitude;
           const lng = pos.coords.longitude;
-          await updatePosition({ driverId: user!._id, lat, lng, currentUserId: user!._id });
+          await updatePosition({ driverId: user!._id, lat, lng });
           setLocation({ lat, lng });
           setLastUpdatedAt(Date.now());
         } catch {
@@ -93,7 +93,7 @@ export default function OrderDetailPage() {
     const interval = setInterval(async () => {
       try {
         const { lat, lng } = locationRef.current;
-        await updatePosition({ driverId: user!._id, lat, lng, currentUserId: user!._id });
+        await updatePosition({ driverId: user!._id, lat, lng });
         setLastUpdatedAt(Date.now());
       } catch {
         // ignore
@@ -112,27 +112,27 @@ export default function OrderDetailPage() {
   // Queries
   const order = useQuery(
     api.boedor.orders.getOrderById,
-    canView && user ? { orderId: orderId as Id<'boedor_orders'>, currentUserId: user._id } : 'skip',
+    canView && user ? { orderId: orderId as Id<'boedor_orders'> } : 'skip',
   );
   const orderItems = useQuery(
     api.boedor.orderItems.getOrderItemsByOrder,
-    canView && user ? { orderId: orderId as Id<'boedor_orders'>, currentUserId: user._id } : 'skip',
+    canView && user ? { orderId: orderId as Id<'boedor_orders'> } : 'skip',
   );
 
   // Get all payments for this order
   const orderPayments = useQuery(
     api.boedor.payment.getPaymentsByOrder,
-    canView && user ? { orderId: orderId as Id<'boedor_orders'>, currentUserId: user._id } : 'skip',
+    canView && user ? { orderId: orderId as Id<'boedor_orders'> } : 'skip',
   );
   const menuItems = useQuery(
     api.boedor.menu.getAllMenuItems,
-    canView && user ? { currentUserId: user._id } : 'skip',
+    canView && user ? {} : 'skip',
   );
 
   // Driver own position for display
   const myPosition = useQuery(
     api.boedor.driverPositions.getDriverPosition,
-    canView && user ? { driverId: user._id, currentUserId: user._id } : 'skip',
+    canView && user ? { driverId: user._id } : 'skip',
   );
 
   // Mutations
@@ -145,7 +145,7 @@ export default function OrderDetailPage() {
   const participants = useQuery(
     api.boedor.users.getUsernamesByIds,
     canView && user && participantIds.length > 0 ?
-      { userIds: participantIds, currentUserId: user._id } :
+      { userIds: participantIds } :
       'skip',
   );
 

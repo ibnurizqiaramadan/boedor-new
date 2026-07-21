@@ -1,26 +1,25 @@
 import { mutation, query } from "../_generated/server";
 import { v } from "convex/values";
-import { requireRole } from "./utils";
+import { getAuthUser, isAdmin, requireRole } from "./utils";
 
-// Realtime query - get all driver positions (admin and drivers can view)
+// Realtime query - get all driver positions
 export const getAllDriverPositions = query({
-  args: { currentUserId: v.id("users") },
-  handler: async (ctx, args) => {
-    await requireRole(ctx, args.currentUserId, ["super_admin", "admin", "driver", "user"]);
-    
+  args: {},
+  handler: async (ctx) => {
+    await getAuthUser(ctx);
+
     return await ctx.db.query("boedor_driver_positions").collect();
   },
 });
 
 // Get driver position by driver ID
 export const getDriverPosition = query({
-  args: { 
+  args: {
     driverId: v.id("users"),
-    currentUserId: v.id("users") 
   },
   handler: async (ctx, args) => {
-    await requireRole(ctx, args.currentUserId, ["super_admin", "admin", "driver", "user"]);
-    
+    await getAuthUser(ctx);
+
     return await ctx.db
       .query("boedor_driver_positions")
       .withIndex("by_driver", (q) => q.eq("driverId", args.driverId))
@@ -34,29 +33,27 @@ export const updateDriverPosition = mutation({
     driverId: v.id("users"),
     lat: v.number(),
     lng: v.number(),
-    currentUserId: v.id("users"),
   },
   handler: async (ctx, args) => {
-    const user = await ctx.db.get(args.currentUserId);
-    if (!user) throw new Error("Unauthorized");
-    
+    const user = await getAuthUser(ctx);
+
     // Verify target is a driver
     const driver = await ctx.db.get(args.driverId);
     if (!driver || driver.role !== "driver") {
       throw new Error("Target user is not a driver");
     }
-    
+
     // Admin can update any driver's position, drivers can only update their own
-    if (user.role !== "admin" && args.driverId !== args.currentUserId) {
+    if (!isAdmin(user) && args.driverId !== user._id) {
       throw new Error("Unauthorized");
     }
-    
+
     // Check if position record exists
     const existingPosition = await ctx.db
       .query("boedor_driver_positions")
       .withIndex("by_driver", (q) => q.eq("driverId", args.driverId))
       .first();
-    
+
     if (existingPosition) {
       // Update existing position
       await ctx.db.patch(existingPosition._id, {
@@ -82,20 +79,19 @@ export const updateDriverPosition = mutation({
 export const deleteDriverPosition = mutation({
   args: {
     driverId: v.id("users"),
-    currentUserId: v.id("users"),
   },
   handler: async (ctx, args) => {
-    await requireRole(ctx, args.currentUserId, ["super_admin", "admin"]);
-    
+    await requireRole(ctx, ["super_admin", "admin"]);
+
     const position = await ctx.db
       .query("boedor_driver_positions")
       .withIndex("by_driver", (q) => q.eq("driverId", args.driverId))
       .first();
-    
+
     if (position) {
       await ctx.db.delete(position._id);
     }
-    
+
     return { success: true };
   },
 });

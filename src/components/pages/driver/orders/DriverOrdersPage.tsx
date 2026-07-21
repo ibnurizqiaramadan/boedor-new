@@ -21,7 +21,7 @@ export default function DriverOrdersPage() {
   // Queries (moved above conditional returns; use "skip" when user is not ready)
   const myOrders = useQuery(
     api.boedor.orders.getOrdersByDriver,
-    user ? { driverId: user._id, currentUserId: user._id } : 'skip',
+    user ? { driverId: user._id } : 'skip',
   );
 
   const ORDERS_PER_PAGE = 8; // Show 8 orders per page for driver orders
@@ -102,7 +102,6 @@ export default function DriverOrdersPage() {
     try {
       await createOrder({
         driverId: user._id,
-        currentUserId: user._id,
       });
       toast.success('Order created successfully!');
       setIsCreateOrderOpen(false);
@@ -117,7 +116,6 @@ export default function DriverOrdersPage() {
       await updateOrderStatus({
         orderId: orderId as any,
         status,
-        currentUserId: user._id,
       });
       toast.success(`Order status updated to ${status}!`);
     } catch (error) {

@@ -27,21 +27,21 @@ export default function TrackDriverPage() {
   // Fetch order to get driverId
   const order = useQuery(
     api.boedor.orders.getOrderById,
-    canView && user ? { orderId: orderId as Id<'boedor_orders'>, currentUserId: user._id } : 'skip',
+    canView && user ? { orderId: orderId as Id<'boedor_orders'> } : 'skip',
   );
 
   // Fetch driver's username
   const driverUser = useQuery(
     api.boedor.users.getUsernamesByIds,
     canView && order && user ?
-      { userIds: [ order.driverId as Id<'users'> ], currentUserId: user._id } :
+      { userIds: [ order.driverId as Id<'users'> ] } :
       'skip',
   );
 
   // Fetch driver position using driverId from order
   const driverPosition = useQuery(
     api.boedor.driverPositions.getDriverPosition,
-    canView && order && user ? { driverId: order.driverId as Id<'users'>, currentUserId: user._id } : 'skip',
+    canView && order && user ? { driverId: order.driverId as Id<'users'> } : 'skip',
   );
 
   const center = useMemo(() => {

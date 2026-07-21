@@ -33,10 +33,10 @@ export default function UserMainPage() {
   const ORDERS_PER_PAGE = 5; // Show 5 orders per page
 
   // Queries
-  const availableOrders = useQuery(api.boedor.orders.getAllOrders, user ? { currentUserId: user._id } : 'skip');
-  const menuItems = useQuery(api.boedor.menu.getAllMenuItems, user ? { currentUserId: user._id } : 'skip');
-  const myOrderItems = useQuery(api.boedor.orderItems.getOrderItemsByUser, user ? { userId: user._id, currentUserId: user._id } : 'skip');
-  const myPayments = useQuery(api.boedor.payment.getPaymentsByUser, user ? { userId: user._id, currentUserId: user._id } : 'skip');
+  const availableOrders = useQuery(api.boedor.orders.getAllOrders, user ? {} : 'skip');
+  const menuItems = useQuery(api.boedor.menu.getAllMenuItems, user ? {} : 'skip');
+  const myOrderItems = useQuery(api.boedor.orderItems.getOrderItemsByUser, user ? { userId: user._id } : 'skip');
+  const myPayments = useQuery(api.boedor.payment.getPaymentsByUser, user ? { userId: user._id } : 'skip');
 
   // Query existing payment for selected order
   const existingPayment = useQuery(
@@ -44,7 +44,6 @@ export default function UserMainPage() {
     selectedOrder && user ? {
       orderId: selectedOrder._id,
       userId: user._id,
-      currentUserId: user._id,
     } : 'skip',
   );
 
@@ -119,7 +118,6 @@ export default function UserMainPage() {
       await addMenuItem({
         name: newMenuItem.name,
         price: newMenuItem.price,
-        currentUserId: user._id,
       });
       setIsAddMenuOpen(false);
       setNewMenuItem({ name: '', price: 0 });
@@ -137,7 +135,6 @@ export default function UserMainPage() {
               menuId: item.menuId as Id<'boedor_menu'>,
               qty: item.qty,
               note: note?.trim() ? note.trim() : undefined,
-              currentUserId: user._id,
             });
           }
         }
@@ -148,7 +145,6 @@ export default function UserMainPage() {
             orderId: selectedOrder._id,
             paymentMethod: paymentMethod as 'cash' | 'cardless' | 'dana',
             amount: parseFloat(amount),
-            currentUserId: user._id,
           });
         }
 

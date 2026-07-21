@@ -1,17 +1,16 @@
 import { mutation, query } from "../_generated/server";
 import { v } from "convex/values";
-import { requireRole } from "./utils";
+import { getAuthUser, isAdmin } from "./utils";
 
 // Get payment by order and user
 export const getPaymentByOrderUser = query({
-  args: { 
+  args: {
     orderId: v.id("boedor_orders"),
     userId: v.id("users"),
-    currentUserId: v.id("users") 
   },
   handler: async (ctx, args) => {
-    await requireRole(ctx, args.currentUserId, ["super_admin", "admin", "driver", "user"]);
-    
+    await getAuthUser(ctx);
+
     return await ctx.db
       .query("boedor_payment")
       .withIndex("by_order_user", (q) => q.eq("orderId", args.orderId).eq("userId", args.userId))
@@ -21,13 +20,12 @@ export const getPaymentByOrderUser = query({
 
 // Get all payments for an order
 export const getPaymentsByOrder = query({
-  args: { 
+  args: {
     orderId: v.id("boedor_orders"),
-    currentUserId: v.id("users") 
   },
   handler: async (ctx, args) => {
-    await requireRole(ctx, args.currentUserId, ["super_admin", "admin", "driver", "user"]);
-    
+    await getAuthUser(ctx);
+
     return await ctx.db
       .query("boedor_payment")
       .withIndex("by_order", (q) => q.eq("orderId", args.orderId))
@@ -37,19 +35,17 @@ export const getPaymentsByOrder = query({
 
 // Get payments by user
 export const getPaymentsByUser = query({
-  args: { 
+  args: {
     userId: v.id("users"),
-    currentUserId: v.id("users") 
   },
   handler: async (ctx, args) => {
-    const user = await ctx.db.get(args.currentUserId);
-    if (!user) throw new Error("Unauthorized");
-    
+    const user = await getAuthUser(ctx);
+
     // Admin can view any user's payments, users can view their own payments
-    if (user.role !== "admin" && user.role !== "super_admin" && args.userId !== args.currentUserId) {
+    if (!isAdmin(user) && args.userId !== user._id) {
       throw new Error("Unauthorized");
     }
-    
+
     return await ctx.db
       .query("boedor_payment")
       .withIndex("by_user", (q) => q.eq("userId", args.userId))
@@ -63,22 +59,21 @@ export const upsertPayment = mutation({
     orderId: v.id("boedor_orders"),
     paymentMethod: v.union(v.literal("cash"), v.literal("cardless"), v.literal("dana")),
     amount: v.number(),
-    currentUserId: v.id("users"),
   },
   handler: async (ctx, args) => {
-    await requireRole(ctx, args.currentUserId, ["super_admin", "admin", "driver", "user"]);
-    
+    const user = await getAuthUser(ctx);
+
     // Verify order exists and is open
     const order = await ctx.db.get(args.orderId);
     if (!order) throw new Error("Order not found");
     if (order.status !== "open") throw new Error("Order is not open for payment updates");
-    
+
     // Check if payment already exists for this user in this order
     const existingPayment = await ctx.db
       .query("boedor_payment")
-      .withIndex("by_order_user", (q) => q.eq("orderId", args.orderId).eq("userId", args.currentUserId))
+      .withIndex("by_order_user", (q) => q.eq("orderId", args.orderId).eq("userId", user._id))
       .first();
-    
+
     if (existingPayment) {
       // Update existing payment
       await ctx.db.patch(existingPayment._id, {
@@ -90,7 +85,7 @@ export const upsertPayment = mutation({
       // Create new payment
       const paymentId = await ctx.db.insert("boedor_payment", {
         orderId: args.orderId,
-        userId: args.currentUserId,
+        userId: user._id,
         paymentMethod: args.paymentMethod,
         amount: args.amount,
         createdAt: Date.now(),
@@ -104,26 +99,24 @@ export const upsertPayment = mutation({
 export const deletePayment = mutation({
   args: {
     paymentId: v.id("boedor_payment"),
-    currentUserId: v.id("users"),
   },
   handler: async (ctx, args) => {
-    const user = await ctx.db.get(args.currentUserId);
-    if (!user) throw new Error("Unauthorized");
-    
+    const user = await getAuthUser(ctx);
+
     const payment = await ctx.db.get(args.paymentId);
     if (!payment) throw new Error("Payment not found");
-    
+
     // Admin can delete any payment, users can only delete their own payments
-    if (user.role !== "admin" && user.role !== "super_admin" && payment.userId !== args.currentUserId) {
+    if (!isAdmin(user) && payment.userId !== user._id) {
       throw new Error("Unauthorized");
     }
-    
+
     // Verify order is still open
     const order = await ctx.db.get(payment.orderId);
     if (!order || order.status !== "open") {
       throw new Error("Order is not open for payment modifications");
     }
-    
+
     await ctx.db.delete(args.paymentId);
     return { success: true };
   },

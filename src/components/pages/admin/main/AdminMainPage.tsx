@@ -20,9 +20,9 @@ export default function AdminMainPage() {
   const router = useRouter();
 
   // Queries
-  const users = useQuery(api.boedor.users.getAllUsers, user ? { currentUserId: user._id } : 'skip');
-  const menuItems = useQuery(api.boedor.menu.getAllMenuItems, user ? { currentUserId: user._id } : 'skip');
-  const orders = useQuery(api.boedor.orders.getAllOrders, user ? { currentUserId: user._id } : 'skip');
+  const users = useQuery(api.boedor.users.getAllUsers, user ? {} : 'skip');
+  const menuItems = useQuery(api.boedor.menu.getAllMenuItems, user ? {} : 'skip');
+  const orders = useQuery(api.boedor.orders.getAllOrders, user ? {} : 'skip');
 
   // Mutations
   const deleteUser = useMutation(api.boedor.users.deleteUser);
@@ -53,7 +53,7 @@ export default function AdminMainPage() {
   const handleDeleteUser = async (userId: string) => {
     if (confirm('Apakah Anda yakin ingin menghapus pengguna ini?')) {
       try {
-        await deleteUser({ userId: userId as any, currentUserId: user!._id });
+        await deleteUser({ userId: userId as any });
         toast.success('Pengguna berhasil dihapus!');
       } catch (error) {
         console.error('Failed to delete user:', error);

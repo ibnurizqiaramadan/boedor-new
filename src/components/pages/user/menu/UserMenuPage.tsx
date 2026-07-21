@@ -21,7 +21,7 @@ const ITEMS_PER_PAGE = 9; // 3x3 grid
 
 export default function UserMenuPage() {
   const { user } = useAuth();
-  const menuItems = useQuery(api.boedor.menu.getAllMenuItems, user?._id ? { currentUserId: user._id } : 'skip');
+  const menuItems = useQuery(api.boedor.menu.getAllMenuItems, user?._id ? {} : 'skip');
   const addMenuItem = useMutation(api.boedor.menu.createMenuItem);
 
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
@@ -75,7 +75,6 @@ export default function UserMenuPage() {
       await addMenuItem({
         name: newMenuItem.name,
         price: newMenuItem.price,
-        currentUserId: user!._id,
       });
       toast.success('Item menu berhasil diusulkan!');
       setIsAddMenuOpen(false);

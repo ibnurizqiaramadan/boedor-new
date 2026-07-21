@@ -47,7 +47,7 @@ export default function DriverMenuPage() {
   }
 
   // Queries
-  const menuItems = useQuery(api.boedor.menu.getAllMenuItems, { currentUserId: user._id });
+  const menuItems = useQuery(api.boedor.menu.getAllMenuItems, {});
 
   const ITEMS_PER_PAGE = 10; // Show 10 items per page for driver menu
 
@@ -95,7 +95,6 @@ export default function DriverMenuPage() {
         await addMenuItem({
           name: newMenuItem.name,
           price: newMenuItem.price,
-          currentUserId: user._id,
         });
         toast.success('Item menu berhasil ditambahkan!');
         setIsAddMenuOpen(false);
@@ -114,7 +113,6 @@ export default function DriverMenuPage() {
           menuId: selectedMenuItem._id as any,
           name: selectedMenuItem.name,
           price: selectedMenuItem.price,
-          currentUserId: user._id,
         });
         toast.success('Item menu berhasil diperbarui!');
         setIsEditMenuOpen(false);
@@ -131,7 +129,6 @@ export default function DriverMenuPage() {
       if (confirm('Apakah Anda yakin ingin menghapus item menu ini?')) {
         await deleteMenuItem({
           menuId: menuId as any,
-          currentUserId: user._id,
         });
         toast.success('Item menu berhasil dihapus!');
       }

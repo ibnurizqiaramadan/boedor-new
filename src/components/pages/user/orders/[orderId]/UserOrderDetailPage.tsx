@@ -38,15 +38,15 @@ export default function UserOrderDetailPage() {
   // Queries
   const order = useQuery(
     api.boedor.orders.getOrderById,
-    !isLoading && user ? { orderId: orderId as Id<'boedor_orders'>, currentUserId: user._id } : 'skip',
+    !isLoading && user ? { orderId: orderId as Id<'boedor_orders'> } : 'skip',
   );
   const orderItems = useQuery(
     api.boedor.orderItems.getOrderItemsByOrder,
-    !isLoading && user ? { orderId: orderId as Id<'boedor_orders'>, currentUserId: user._id } : 'skip',
+    !isLoading && user ? { orderId: orderId as Id<'boedor_orders'> } : 'skip',
   );
   const menuItems = useQuery(
     api.boedor.menu.getAllMenuItems,
-    !isLoading && user ? { currentUserId: user._id } : 'skip',
+    !isLoading && user ? {} : 'skip',
   );
 
   // Get unique participant IDs from order items
@@ -55,7 +55,7 @@ export default function UserOrderDetailPage() {
   // Get usernames for participants
   const participants = useQuery(
     api.boedor.users.getUsernamesByIds,
-    !isLoading && user && participantIds.length > 0 ? { userIds: participantIds, currentUserId: user._id } : 'skip',
+    !isLoading && user && participantIds.length > 0 ? { userIds: participantIds } : 'skip',
   );
 
   // Query existing payment for this order
@@ -64,7 +64,6 @@ export default function UserOrderDetailPage() {
     !isLoading && user ? {
       orderId: orderId as Id<'boedor_orders'>,
       userId: user._id,
-      currentUserId: user._id,
     } : 'skip',
   );
 
@@ -197,7 +196,6 @@ export default function UserOrderDetailPage() {
         orderId: orderId as Id<'boedor_orders'>,
         paymentMethod,
         amount: amt,
-        currentUserId: user._id,
       });
       toast.success('Pembayaran disimpan');
     } catch (err) {
@@ -248,7 +246,6 @@ export default function UserOrderDetailPage() {
           orderItemId: selectedOrderItem._id,
           qty: selectedOrderItem.qty,
           note: selectedOrderItem.note?.trim() ? selectedOrderItem.note.trim() : undefined,
-          currentUserId: user._id,
         });
         toast.success('Item pesanan berhasil diperbarui!');
         setIsEditItemOpen(false);
@@ -265,7 +262,6 @@ export default function UserOrderDetailPage() {
       if (confirm('Apakah Anda yakin ingin menghapus item ini dari pesanan?')) {
         await removeOrderItem({
           orderItemId: orderItemId as Id<'boedor_order_items'>,
-          currentUserId: user._id,
         });
         toast.success('Item pesanan berhasil dihapus!');
       }
@@ -300,7 +296,6 @@ export default function UserOrderDetailPage() {
               menuId: item.menuId as Id<'boedor_menu'>,
               qty: item.qty,
               note: itemNotes[item.menuId]?.trim() ? itemNotes[item.menuId].trim() : undefined,
-              currentUserId: user._id,
             });
           }
         }

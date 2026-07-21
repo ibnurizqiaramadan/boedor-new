@@ -3,17 +3,31 @@ import { internal } from "../_generated/api";
 import { v } from "convex/values";
 import bcrypt from "bcryptjs";
 import type { Id } from "../_generated/dataModel";
+import { requireRole } from "./utils";
 
-// Helper function to get current user
-export const getCurrentUser = query({
-  args: { userId: v.optional(v.id("users")) },
-  handler: async (ctx, args) => {
-    if (!args.userId) return null;
-    return await ctx.db.get(args.userId);
+// Get the currently authenticated user (from JWT identity)
+export const getMe = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return null;
+    const userId = ctx.db.normalizeId("users", identity.subject);
+    if (!userId) return null;
+    const user = await ctx.db.get(userId);
+    if (!user) return null;
+
+    return {
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+      name: user.name,
+      image: user.image,
+      role: user.role || "user",
+    };
   },
 });
 
-// Internal mutation to create user with hashed password
+// Internal mutation to create user with hashed password (admin only)
 export const createUserInternal = internalMutation({
   args: {
     username: v.string(),
@@ -21,6 +35,12 @@ export const createUserInternal = internalMutation({
     role: v.union(v.literal("super_admin"), v.literal("admin"), v.literal("driver"), v.literal("user")),
   },
   handler: async (ctx, args) => {
+    // Identity propagates from the calling action; only admins may create users
+    const caller = await requireRole(ctx, ["super_admin", "admin"]);
+    if (args.role === "super_admin" && caller.role !== "super_admin") {
+      throw new Error("Unauthorized");
+    }
+
     // Normalize & validate username: no spaces allowed
     const cleanUsername = args.username.trim();
     if (!/^\S+$/.test(cleanUsername)) {
@@ -48,20 +68,7 @@ export const createUserInternal = internalMutation({
   },
 });
 
-// Internal mutation to get user by username
-export const getUserByUsernameInternal = internalMutation({
-  args: {
-    username: v.string(),
-  },
-  handler: async (ctx, args) => {
-    return await ctx.db
-      .query("users")
-      .withIndex("by_username", (q) => q.eq("username", args.username))
-      .first();
-  },
-});
-
-// Register new user (using action for bcrypt)
+// Register new user (using action for bcrypt) — admin only, enforced in createUserInternal
 export const register = action({
   args: {
     username: v.string(),
@@ -84,59 +91,6 @@ export const register = action({
       passwordHash,
       role: args.role,
     });
-  },
-});
-
-// Login user
-export const login = action({
-  args: {
-    username: v.string(),
-    password: v.string(),
-  },
-  handler: async (ctx, args): Promise<{ userId: Id<"users">; username: string; role: "super_admin" | "admin" | "driver" | "user" }> => {
-    // Find user by username
-    const user = await ctx.runMutation(internal.boedor.auth.getUserByUsernameInternal, {
-      username: args.username,
-    });
-
-    if (!user) {
-      throw new Error("Invalid username or password");
-    }
-
-    if (!user.passwordHash) {
-      throw new Error("This account uses OAuth login");
-    }
-
-    // Verify password
-    const isValidPassword = await bcrypt.compare(args.password, user.passwordHash);
-    
-    if (!isValidPassword) {
-      throw new Error("Invalid username or password");
-    }
-
-    return {
-      userId: user._id,
-      username: user.username || "",
-      role: user.role || "user",
-    };
-  },
-});
-
-// Get user by ID (for session management)
-export const getUserById = query({
-  args: { userId: v.id("users") },
-  handler: async (ctx, args) => {
-    const user = await ctx.db.get(args.userId);
-    if (!user) return null;
-    
-    return {
-      _id: user._id,
-      username: user.username,
-      email: user.email,
-      name: user.name,
-      image: user.image,
-      role: user.role || "user",
-    };
   },
 });
 

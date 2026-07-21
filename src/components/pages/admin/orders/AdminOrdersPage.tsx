@@ -23,7 +23,7 @@ export default function AdminOrdersPage() {
   const router = useRouter();
 
   // Queries
-  const orders = useQuery(api.boedor.orders.getAllOrders, user ? { currentUserId: user._id } : 'skip');
+  const orders = useQuery(api.boedor.orders.getAllOrders, user ? {} : 'skip');
 
   // Mutations
   const updateOrderStatus = useMutation(api.boedor.orders.updateOrderStatus);
@@ -56,7 +56,6 @@ export default function AdminOrdersPage() {
       await updateOrderStatus({
         orderId: orderId as any,
         status,
-        currentUserId: user!._id,
       });
       toast.success(`Status pesanan diperbarui menjadi ${status}!`);
     } catch (error) {
@@ -68,7 +67,7 @@ export default function AdminOrdersPage() {
   const handleDeleteOrder = async (orderId: string) => {
     if (confirm('Apakah Anda yakin ingin menghapus pesanan ini?')) {
       try {
-        await deleteOrder({ orderId: orderId as any, currentUserId: user!._id });
+        await deleteOrder({ orderId: orderId as any });
         toast.success('Pesanan berhasil dihapus!');
       } catch (error) {
         console.error('Failed to delete order:', error);

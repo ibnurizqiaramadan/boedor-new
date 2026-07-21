@@ -36,19 +36,19 @@ export default function JoinOrderPage() {
   // Queries (always call hooks; use 'skip' when auth not ready)
   const order = useQuery(
     api.boedor.orders.getOrderById,
-    !isLoading && user && user.role === 'user' ? { orderId: orderId as Id<'boedor_orders'>, currentUserId: user._id } : 'skip',
+    !isLoading && user && user.role === 'user' ? { orderId: orderId as Id<'boedor_orders'> } : 'skip',
   );
   const menuItems = useQuery(
     api.boedor.menu.getAllMenuItems,
-    !isLoading && user && user.role === 'user' ? { currentUserId: user._id } : 'skip',
+    !isLoading && user && user.role === 'user' ? {} : 'skip',
   );
   const existingPayment = useQuery(
     api.boedor.payment.getPaymentByOrderUser,
-    !isLoading && user && user.role === 'user' ? { orderId: orderId as Id<'boedor_orders'>, userId: user._id, currentUserId: user._id } : 'skip',
+    !isLoading && user && user.role === 'user' ? { orderId: orderId as Id<'boedor_orders'>, userId: user._id } : 'skip',
   );
   const orderItems = useQuery(
     api.boedor.orderItems.getOrderItemsByOrder,
-    !isLoading && user && user.role === 'user' ? { orderId: orderId as Id<'boedor_orders'>, currentUserId: user._id } : 'skip',
+    !isLoading && user && user.role === 'user' ? { orderId: orderId as Id<'boedor_orders'> } : 'skip',
   );
 
   // Mutations
@@ -174,7 +174,6 @@ export default function JoinOrderPage() {
             menuId: item.menuId as Id<'boedor_menu'>,
             qty: item.qty,
             note: itemNotes[item.menuId]?.trim() ? itemNotes[item.menuId].trim() : undefined,
-            currentUserId: user._id,
           });
         }
       }
@@ -186,7 +185,6 @@ export default function JoinOrderPage() {
           orderId: orderId as Id<'boedor_orders'>,
           paymentMethod,
           amount: paymentAmount,
-          currentUserId: user._id,
         });
       }
 

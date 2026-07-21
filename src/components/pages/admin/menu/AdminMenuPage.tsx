@@ -26,7 +26,7 @@ export default function AdminMenuPage() {
   const [editErrors, setEditErrors] = useState<{ name?: string; price?: string }>({});
 
   // Queries
-  const menuItems = useQuery(api.boedor.menu.getAllMenuItems, user ? { currentUserId: user._id } : 'skip');
+  const menuItems = useQuery(api.boedor.menu.getAllMenuItems, user ? {} : 'skip');
 
   // Menu mutations
   const createMenuItem = useMutation(api.boedor.menu.createMenuItem);
@@ -61,7 +61,6 @@ export default function AdminMenuPage() {
     await createMenuItem({
       name: item.name,
       price: item.price,
-      currentUserId: user!._id,
     });
     toast.success('Item menu berhasil ditambahkan!');
   };
@@ -85,7 +84,6 @@ export default function AdminMenuPage() {
         menuId: selectedMenuItem._id as any,
         name: item.name,
         price: item.price,
-        currentUserId: user!._id,
       });
       toast.success('Item menu berhasil diperbarui!');
       setIsEditMenuOpen(false);
@@ -99,7 +97,7 @@ export default function AdminMenuPage() {
   const handleDeleteMenuItem = async (menuId: string) => {
     if (confirm('Apakah Anda yakin ingin menghapus item menu ini?')) {
       try {
-        await deleteMenuItem({ menuId: menuId as any, currentUserId: user!._id });
+        await deleteMenuItem({ menuId: menuId as any });
         toast.success('Item menu berhasil dihapus!');
       } catch (error) {
         console.error('Failed to delete menu item:', error);
@@ -111,12 +109,11 @@ export default function AdminMenuPage() {
   const handleImport = async (items: { name: string; price: number }[], mode: 'append' | 'replace') => {
     try {
       if (mode === 'replace') {
-        await deleteAllMenuItems({ currentUserId: user!._id });
+        await deleteAllMenuItems({});
       }
 
       const result = await bulkImportMenuItems({
         menuItems: items,
-        currentUserId: user!._id,
       });
 
       if (result.errors.length > 0) {
