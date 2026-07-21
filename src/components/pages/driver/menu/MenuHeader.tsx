@@ -27,8 +27,8 @@ export function MenuHeader({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Item Menu</h1>
-          <p className="mt-2 text-gray-600">Tambahkan item menu baru ke sistem</p>
+          <h1 className="font-display text-3xl text-foreground">Item Menu</h1>
+          <p className="mt-2 text-muted-foreground">Tambahkan item menu baru ke sistem</p>
         </div>
         <Button onClick={onAddMenuClick}>
           <Plus className="h-4 w-4 mr-2" />
@@ -37,9 +37,9 @@ export function MenuHeader({
       </div>
 
       {/* Filter Section */}
-      <div className="bg-white p-4 rounded-lg border space-y-4">
+      <div className="bg-card p-4 rounded-lg border space-y-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
             placeholder="Cari nama menu..."
             value={menuFilter}

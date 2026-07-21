@@ -196,11 +196,11 @@ export default function OrderDetailPage() {
     <Layout>
       {!canView ? (
         <div className="flex items-center justify-center h-64">
-          <p className="text-red-500">Akses ditolak. Khusus driver.</p>
+          <p className="text-destructive">Akses ditolak. Khusus driver.</p>
         </div>
       ) : loading ? (
         <div className="flex items-center justify-center h-64">
-          <p className="text-gray-500">Memuat detail pesanan...</p>
+          <p className="text-muted-foreground">Memuat detail pesanan...</p>
         </div>
       ) : (
       <div className="space-y-6">
@@ -215,8 +215,8 @@ export default function OrderDetailPage() {
             Kembali
           </Button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Detail Pesanan</h1>
-            <p className="mt-2 text-gray-600">Pesanan #{orderId.slice(-8)}</p>
+            <h1 className="font-display text-3xl text-foreground">Detail Pesanan</h1>
+            <p className="mt-2 text-muted-foreground">Pesanan #{orderId.slice(-8)}</p>
           </div>
         </div>
 
@@ -241,15 +241,15 @@ export default function OrderDetailPage() {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <p className="text-sm font-medium text-gray-500">Total Peserta</p>
+                <p className="text-sm font-medium text-muted-foreground">Total Peserta</p>
                 <p className="text-2xl font-bold">{participants?.length || 0}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-500">Total Item</p>
+                <p className="text-sm font-medium text-muted-foreground">Total Item</p>
                 <p className="text-2xl font-bold">{orderItems?.length || 0}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-500">Total Nilai</p>
+                <p className="text-sm font-medium text-muted-foreground">Total Nilai</p>
                 <p className="text-2xl font-bold">{formatCurrency(getTotalOrderValue())}</p>
               </div>
             </div>
@@ -273,7 +273,7 @@ export default function OrderDetailPage() {
             </CardHeader>
             <CardContent>
               {myPosition ? (
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-muted-foreground">
                   Posisi saat ini: {(location.lat || myPosition.lat).toFixed(6)}, {(location.lng || myPosition.lng).toFixed(6)}
                   <br />
                   {(() => {
@@ -282,7 +282,7 @@ export default function OrderDetailPage() {
                   })()}
                 </p>
               ) : (
-                <p className="text-sm text-gray-600">Belum ada data posisi.</p>
+                <p className="text-sm text-muted-foreground">Belum ada data posisi.</p>
               )}
             </CardContent>
           </Card>
@@ -290,7 +290,7 @@ export default function OrderDetailPage() {
 
         {/* Peserta dan Item */}
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold text-gray-900">Peserta & Item</h2>
+          <h2 className="text-xl font-semibold text-foreground">Peserta & Item</h2>
 
           {participants && participants.length > 0 ? (
             (participants.filter(p => p) as NonNullable<typeof participants[0]>[]).map((participant) => {
@@ -303,7 +303,7 @@ export default function OrderDetailPage() {
                   <CardHeader>
                     <div className="flex justify-between items-center">
                       <div className="flex items-center space-x-3">
-                        <User className="h-5 w-5 text-gray-400" />
+                        <User className="h-5 w-5 text-muted-foreground" />
                         <div>
                           <CardTitle className="text-lg">{participantName}{String(participant._id) === String(user._id) && ' (Anda)'}</CardTitle>
                           <CardDescription>
@@ -314,13 +314,13 @@ export default function OrderDetailPage() {
                       <div className="text-right">
                         {getUserPayment(participant._id) ? (
                           <div className="space-y-1">
-                            <p className="text-sm font-medium text-green-600">Kembalian: {formatCurrency(getUserChange(participant._id))}</p>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-sm font-medium text-green-400">Kembalian: {formatCurrency(getUserChange(participant._id))}</p>
+                            <p className="text-xs text-muted-foreground">
                               Dibayar: {formatCurrency(getUserPayment(participant._id)!.amount)} • Metode: {getUserPayment(participant._id)!.paymentMethod}
                             </p>
                           </div>
                         ) : (
-                          <p className="text-sm font-medium text-red-600">Belum Dibayar</p>
+                          <p className="text-sm font-medium text-destructive">Belum Dibayar</p>
                         )}
                       </div>
                     </div>
@@ -332,16 +332,16 @@ export default function OrderDetailPage() {
                         const itemTotal = menuItem ? menuItem.price * item.qty : 0;
 
                         return (
-                          <div key={item._id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <div key={item._id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
                             <div className="flex items-center space-x-3">
-                              <ShoppingCart className="h-4 w-4 text-gray-400" />
+                              <ShoppingCart className="h-4 w-4 text-muted-foreground" />
                               <div>
                                 <p className="font-medium">{menuItem?.name || 'Item Tidak Dikenal'}</p>
-                                <p className="text-sm text-gray-500">
+                                <p className="text-sm text-muted-foreground">
                                   Jumlah: {item.qty} × {formatCurrency(menuItem?.price || 0)}
                                 </p>
                                 {item.note && (
-                                  <p className="text-sm text-gray-600 italic">Catatan: {item.note}</p>
+                                  <p className="text-sm text-muted-foreground italic">Catatan: {item.note}</p>
                                 )}
                               </div>
                             </div>
@@ -359,8 +359,8 @@ export default function OrderDetailPage() {
           ) : (
             <Card>
               <CardContent className="text-center py-8">
-                <User className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500">Belum ada peserta yang bergabung dengan pesanan ini.</p>
+                <User className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground">Belum ada peserta yang bergabung dengan pesanan ini.</p>
               </CardContent>
             </Card>
           )}
@@ -383,17 +383,17 @@ export default function OrderDetailPage() {
                   return (
                     <div key={payment._id} className="flex items-center justify-between p-3 border rounded-lg">
                       <div className="flex items-center space-x-3">
-                        <User className="h-4 w-4 text-gray-400" />
+                        <User className="h-4 w-4 text-muted-foreground" />
                         <div>
                           <p className="font-medium">{participant ? (participant.username || participant.name || 'Pengguna Tidak Dikenal') : 'Pengguna Tidak Dikenal'}</p>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-muted-foreground">
                             Metode: {payment.paymentMethod} • Total Item: {formatCurrency(userTotal)}
                           </p>
                         </div>
                       </div>
                       <div className="text-right">
                         <p className="font-medium">Dibayar: {formatCurrency(payment.amount)}</p>
-                        <p className={`text-sm font-medium ${change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        <p className={`text-sm font-medium ${change >= 0 ? 'text-green-400' : 'text-destructive'}`}>
                           Kembalian: {formatCurrency(change)}
                         </p>
                       </div>
@@ -404,14 +404,14 @@ export default function OrderDetailPage() {
                 <div className="border-t pt-3 mt-4">
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <p className="text-gray-500">Total Dibayar:</p>
+                      <p className="text-muted-foreground">Total Dibayar:</p>
                       <p className="font-semibold">
                         {formatCurrency(orderPayments.reduce((sum, p) => sum + p.amount, 0))}
                       </p>
                     </div>
                     <div>
-                      <p className="text-gray-500">Total Kembalian:</p>
-                      <p className="font-semibold text-green-600">{formatCurrency(orderPayments.reduce((sum, p) => sum + (p.amount - getUserTotal(p.userId)), 0))}</p>
+                      <p className="text-muted-foreground">Total Kembalian:</p>
+                      <p className="font-semibold text-green-400">{formatCurrency(orderPayments.reduce((sum, p) => sum + (p.amount - getUserTotal(p.userId)), 0))}</p>
                     </div>
                   </div>
                 </div>

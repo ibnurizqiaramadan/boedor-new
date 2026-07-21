@@ -45,7 +45,7 @@ export default function SuggestMenuDialog({
             onChange={(e) => onItemChange({ ...item, name: e.target.value })}
             disabled={isSubmitting}
           />
-          {errors.name && <div className="text-xs text-red-600">{errors.name}</div>}
+          {errors.name && <div className="text-xs text-destructive">{errors.name}</div>}
           <Input
             type="number"
             placeholder="Harga yang disarankan"
@@ -53,7 +53,7 @@ export default function SuggestMenuDialog({
             onChange={(e) => onItemChange({ ...item, price: parseFloat(e.target.value) || 0 })}
             disabled={isSubmitting}
           />
-          {errors.price && <div className="text-xs text-red-600">{errors.price}</div>}
+          {errors.price && <div className="text-xs text-destructive">{errors.price}</div>}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>

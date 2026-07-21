@@ -44,7 +44,7 @@ export default function AdminOrdersPage() {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <p className="text-red-500">Akses ditolak. Khusus admin.</p>
+          <p className="text-destructive">Akses ditolak. Khusus admin.</p>
         </div>
       </Layout>
     );
@@ -80,8 +80,8 @@ export default function AdminOrdersPage() {
     <Layout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Manajemen Pesanan</h1>
-          <p className="mt-2 text-gray-600">Pantau dan kelola semua pesanan</p>
+          <h1 className="font-display text-3xl text-foreground">Manajemen Pesanan</h1>
+          <p className="mt-2 text-muted-foreground">Pantau dan kelola semua pesanan</p>
         </div>
 
         {/* Orders Management */}

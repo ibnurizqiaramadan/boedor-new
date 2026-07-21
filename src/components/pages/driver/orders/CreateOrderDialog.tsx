@@ -18,7 +18,7 @@ export function CreateOrderDialog({ open, onOpenChange, onCreateOrder }: CreateO
           </DialogDescription>
         </DialogHeader>
         <div className="py-4">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-muted-foreground">
             Ini akan membuat pesanan baru yang ditugaskan kepada Anda sebagai driver.
             Pesanan akan dimulai dengan status "terbuka".
           </p>

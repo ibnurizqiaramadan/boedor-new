@@ -65,7 +65,7 @@ export function UserReportsSection({ reports }: UserReportsSectionProps) {
               reports.recommendations.map((item, index) => (
                 <div key={index} className="flex items-center justify-between text-sm">
                   <span className="truncate">{item.name}</span>
-                  <span className="text-green-600 font-medium">{formatCurrency(item.price)}</span>
+                  <span className="text-green-400 font-medium">{formatCurrency(item.price)}</span>
                 </div>
               ))
             ) : (

@@ -40,7 +40,7 @@ export default function DriverMenuPage() {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <p className="text-red-500">Akses ditolak. Khusus driver.</p>
+          <p className="text-destructive">Akses ditolak. Khusus driver.</p>
         </div>
       </Layout>
     );

@@ -41,7 +41,7 @@ export function AllParticipants({
 }: AllParticipantsProps) {
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-semibold text-gray-900">Semua Peserta & Item</h2>
+      <h2 className="text-xl font-semibold text-foreground">Semua Peserta & Item</h2>
 
       {participants && participants.length > 0 ? (
         participants.map((participant) => {
@@ -54,7 +54,7 @@ export function AllParticipants({
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <div className="flex items-center space-x-3">
-                    <User className="h-5 w-5 text-gray-400" />
+                    <User className="h-5 w-5 text-muted-foreground" />
                     <div>
                       <CardTitle className="text-lg">
                         {participant.name || participant.email || participant.username || 'Unknown'}
@@ -65,7 +65,7 @@ export function AllParticipants({
                       </CardDescription>
                     </div>
                   </div>
-                  <span className="text-sm text-gray-500 capitalize">{participant.role}</span>
+                  <span className="text-sm text-muted-foreground capitalize">{participant.role}</span>
                 </div>
               </CardHeader>
               <CardContent>
@@ -75,16 +75,16 @@ export function AllParticipants({
                     const itemTotal = menuItem ? menuItem.price * item.qty : 0;
 
                     return (
-                      <div key={item._id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div key={item._id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
                         <div className="flex items-center space-x-3">
-                          <ShoppingCart className="h-4 w-4 text-gray-400" />
+                          <ShoppingCart className="h-4 w-4 text-muted-foreground" />
                           <div>
                             <p className="font-medium">{menuItem?.name || 'Item Tidak Dikenal'}</p>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-muted-foreground">
                               Jumlah: {item.qty} × {formatCurrency(menuItem?.price || 0)}
                             </p>
                             {item.note && (
-                              <p className="text-sm text-gray-600 italic">Catatan: {item.note}</p>
+                              <p className="text-sm text-muted-foreground italic">Catatan: {item.note}</p>
                             )}
                           </div>
                         </div>
@@ -102,8 +102,8 @@ export function AllParticipants({
       ) : (
         <Card>
           <CardContent className="text-center py-8">
-            <User className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500">Belum ada peserta yang bergabung dengan pesanan ini.</p>
+            <User className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground">Belum ada peserta yang bergabung dengan pesanan ini.</p>
           </CardContent>
         </Card>
       )}

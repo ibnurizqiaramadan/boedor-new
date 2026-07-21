@@ -21,7 +21,7 @@ export default function MenuItemCard({ item, onEdit, onDelete }: MenuItemCardPro
     <div className="flex items-center justify-between p-4 border rounded-lg">
       <div>
         <p className="font-medium">{item.name}</p>
-        <p className="text-sm text-gray-500">{formatCurrency(item.price)}</p>
+        <p className="text-sm text-muted-foreground">{formatCurrency(item.price)}</p>
       </div>
       <div className="flex space-x-2">
         <Button

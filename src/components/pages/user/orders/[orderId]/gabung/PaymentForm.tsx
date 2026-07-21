@@ -21,31 +21,31 @@ export function PaymentForm({
   return (
     <div className="border-t pt-4 space-y-4 mt-4">
       <div>
-        <h4 className="font-medium text-gray-900 mb-3">Pembayaran</h4>
+        <h4 className="font-medium text-foreground mb-3">Pembayaran</h4>
       </div>
 
       <div className="space-y-3">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Metode Pembayaran</label>
+          <label className="block text-sm font-medium text-foreground mb-2">Metode Pembayaran</label>
           <div className="flex gap-2">
             <button
               type="button"
               onClick={() => onPaymentMethodChange('cash')}
-              className={`flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition ${paymentMethod === 'cash' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white hover:bg-gray-50'}`}
+              className={`flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition ${paymentMethod === 'cash' ? 'bg-primary text-primary-foreground border-primary' : 'bg-card hover:bg-muted'}`}
             >
               <Wallet className="h-4 w-4" /> Tunai
             </button>
             <button
               type="button"
               onClick={() => onPaymentMethodChange('cardless')}
-              className={`flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition ${paymentMethod === 'cardless' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white hover:bg-gray-50'}`}
+              className={`flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition ${paymentMethod === 'cardless' ? 'bg-primary text-primary-foreground border-primary' : 'bg-card hover:bg-muted'}`}
             >
               <CreditCard className="h-4 w-4" /> Tanpa Kartu
             </button>
             <button
               type="button"
               onClick={() => onPaymentMethodChange('dana')}
-              className={`flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition ${paymentMethod === 'dana' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white hover:bg-gray-50'}`}
+              className={`flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md border transition ${paymentMethod === 'dana' ? 'bg-primary text-primary-foreground border-primary' : 'bg-card hover:bg-muted'}`}
             >
               <Smartphone className="h-4 w-4" /> DANA
             </button>
@@ -53,9 +53,9 @@ export function PaymentForm({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Jumlah Pembayaran</label>
-          <div className="flex items-center rounded-lg border border-gray-200 bg-white shadow-sm focus-within:ring-2 focus-within:ring-gray-300">
-            <span className="px-3 text-sm text-gray-500">Rp</span>
+          <label className="block text-sm font-medium text-foreground mb-2">Jumlah Pembayaran</label>
+          <div className="flex items-center rounded-lg border border-border bg-card shadow-sm focus-within:ring-2 focus-within:ring-gray-300">
+            <span className="px-3 text-sm text-muted-foreground">Rp</span>
             <Input
               type="number"
               placeholder="0"
@@ -65,7 +65,7 @@ export function PaymentForm({
               className="border-0 focus-visible:ring-0 text-right"
             />
           </div>
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             Minimal: {formatCurrency(subtotal)}
           </p>
         </div>

@@ -64,18 +64,18 @@ export function MyOrderItems({
               const menuItem = menuItems?.find((m) => m._id === item.menuId);
               const itemTotal = menuItem ? menuItem.price * item.qty : 0;
               return (
-                <div key={item._id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div key={item._id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
                   <div className="flex items-center space-x-3">
-                    <ShoppingCart className="h-4 w-4 text-gray-400" />
+                    <ShoppingCart className="h-4 w-4 text-muted-foreground" />
                     <div>
                       <p className="font-medium">{menuItem?.name || 'Item Tidak Dikenal'}</p>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-muted-foreground">
                         Jumlah: {item.qty} × {formatCurrency(menuItem?.price || 0)}
                       </p>
                       {item.note && (
-                        <p className="text-sm text-gray-600 italic">Catatan: {item.note}</p>
+                        <p className="text-sm text-muted-foreground italic">Catatan: {item.note}</p>
                       )}
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-muted-foreground">
                         {new Date(item._creationTime).toLocaleString('id-ID', {
                           year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit',
                         })}
@@ -108,8 +108,8 @@ export function MyOrderItems({
             })
           ) : (
             <div className="text-center py-8">
-              <ShoppingCart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500">Anda belum menambahkan item apapun ke pesanan ini.</p>
+              <ShoppingCart className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">Anda belum menambahkan item apapun ke pesanan ini.</p>
             </div>
           )}
         </div>

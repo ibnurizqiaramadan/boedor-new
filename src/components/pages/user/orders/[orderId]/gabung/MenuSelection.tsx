@@ -34,7 +34,7 @@ export function MenuSelection({
           <div className="flex items-center justify-between">
             <div>
               <p className="font-medium">{item.name}</p>
-              <p className="text-sm text-gray-500">{formatCurrency(item.price)}</p>
+              <p className="text-sm text-muted-foreground">{formatCurrency(item.price)}</p>
             </div>
             <div className="flex items-center space-x-2">
               <Button
@@ -67,8 +67,8 @@ export function MenuSelection({
       ))}
       {(!menuItems || menuItems.length === 0) && (
         <div className="text-center py-8">
-          <ShoppingCart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-500">Tidak ada item menu tersedia.</p>
+          <ShoppingCart className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <p className="text-muted-foreground">Tidak ada item menu tersedia.</p>
         </div>
       )}
     </div>

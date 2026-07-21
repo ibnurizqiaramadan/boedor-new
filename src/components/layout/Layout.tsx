@@ -13,11 +13,11 @@ export default function Layout({ children }: LayoutProps) {
   const { user } = useAuth();
 
   if (!user) {
-    return <div className="min-h-screen bg-gray-50">{children}</div>;
+    return <div className="min-h-dvh bg-background">{children}</div>;
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-dvh bg-background">
       <Sidebar />
       <div className="md:pl-64">
         <main className="flex-1">

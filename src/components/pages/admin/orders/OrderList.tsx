@@ -28,8 +28,8 @@ export default function OrderList({
       <div className="space-y-4">
         {[...Array(3)].map((_, i) => (
           <div key={i} className="p-4 border rounded-lg animate-pulse">
-            <div className="h-4 bg-gray-200 rounded w-1/4 mb-2"></div>
-            <div className="h-3 bg-gray-200 rounded w-1/3"></div>
+            <div className="h-4 bg-border rounded w-1/4 mb-2"></div>
+            <div className="h-3 bg-border rounded w-1/3"></div>
           </div>
         ))}
       </div>
@@ -38,7 +38,7 @@ export default function OrderList({
 
   if (orders.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-500">
+      <div className="text-center py-8 text-muted-foreground">
         Tidak ada pesanan.
       </div>
     );

@@ -32,7 +32,7 @@ export default function OrderCard({ order, onUpdateStatus, onDelete }: OrderCard
           <p className="font-medium">Pesanan #{order._id.slice(-6)}</p>
           {getStatusBadge(order.status)}
         </div>
-        <p className="text-sm text-gray-500 mt-1">
+        <p className="text-sm text-muted-foreground mt-1">
           ID Driver: {order.driverId.slice(-6)} • Dibuat: {new Date(order._creationTime).toLocaleDateString('id-ID')}
         </p>
       </div>

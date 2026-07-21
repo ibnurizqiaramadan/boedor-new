@@ -50,7 +50,7 @@ export default function AdminMenuPage() {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <p className="text-red-500">Akses ditolak. Khusus admin.</p>
+          <p className="text-destructive">Akses ditolak. Khusus admin.</p>
         </div>
       </Layout>
     );
@@ -131,8 +131,8 @@ export default function AdminMenuPage() {
     <Layout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Kelola Menu</h1>
-          <p className="mt-2 text-gray-600">Kelola item menu restoran</p>
+          <h1 className="font-display text-3xl text-foreground">Kelola Menu</h1>
+          <p className="mt-2 text-muted-foreground">Kelola item menu restoran</p>
         </div>
 
         {/* Menu Management */}

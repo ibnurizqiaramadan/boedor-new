@@ -117,7 +117,7 @@ export function AddMoreItemsDialog({
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium">{item.name}</p>
-                  <p className="text-sm text-gray-500">{formatCurrency(item.price)}</p>
+                  <p className="text-sm text-muted-foreground">{formatCurrency(item.price)}</p>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Button
@@ -150,8 +150,8 @@ export function AddMoreItemsDialog({
           ))}
           {(!menuItems || menuItems.length === 0) && (
             <div className="text-center py-8">
-              <ShoppingCart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500">
+              <ShoppingCart className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">
                 {menuFilter ? 'Tidak ada menu yang cocok dengan pencarian.' : 'Tidak ada item menu tersedia.'}
               </p>
             </div>
@@ -161,7 +161,7 @@ export function AddMoreItemsDialog({
         {/* Subtotal */}
         <div className="flex items-center justify-between pt-4">
           <span className="font-semibold">Subtotal</span>
-          <span className={`font-semibold ${subtotal > remaining ? 'text-red-600' : ''}`}>
+          <span className={`font-semibold ${subtotal > remaining ? 'text-destructive' : ''}`}>
             {formatCurrency(subtotal)}
           </span>
         </div>

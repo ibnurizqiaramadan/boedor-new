@@ -19,11 +19,11 @@ export const formatStatus = (status: OrderStatus) => {
 export const getStatusColor = (status: OrderStatus) => {
   switch (status) {
     case 'open':
-      return 'text-blue-600 bg-blue-100';
+      return 'text-blue-400 bg-blue-400/15';
     case 'closed':
-      return 'text-orange-600 bg-orange-100';
+      return 'text-orange-400 bg-orange-400/15';
     case 'completed':
-      return 'text-green-600 bg-green-100';
+      return 'text-green-400 bg-green-400/15';
     default:
       return 'text-gray-600 bg-gray-100';
   }
@@ -32,11 +32,11 @@ export const getStatusColor = (status: OrderStatus) => {
 export const getStatusIcon = (status: OrderStatus): React.ReactNode => {
   switch (status) {
     case 'open':
-      return React.createElement(Clock, { className: 'h-5 w-5 text-blue-500' });
+      return React.createElement(Clock, { className: 'h-5 w-5 text-blue-400' });
     case 'closed':
-      return React.createElement(XCircle, { className: 'h-5 w-5 text-orange-500' });
+      return React.createElement(XCircle, { className: 'h-5 w-5 text-orange-400' });
     case 'completed':
-      return React.createElement(CheckCircle, { className: 'h-5 w-5 text-green-500' });
+      return React.createElement(CheckCircle, { className: 'h-5 w-5 text-green-400' });
     default:
       return React.createElement(Clock, { className: 'h-5 w-5 text-gray-500' });
   }

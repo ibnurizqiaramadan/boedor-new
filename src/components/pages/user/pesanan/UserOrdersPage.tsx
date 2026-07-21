@@ -43,7 +43,7 @@ export default function UserOrdersPage() {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <p className="text-gray-500">Memuat...</p>
+          <p className="text-muted-foreground">Memuat...</p>
         </div>
       </Layout>
     );
@@ -55,7 +55,7 @@ export default function UserOrdersPage() {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <p className="text-gray-500">Mengarahkan ke halaman driver...</p>
+          <p className="text-muted-foreground">Mengarahkan ke halaman driver...</p>
         </div>
       </Layout>
     );
@@ -67,7 +67,7 @@ export default function UserOrdersPage() {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <p className="text-gray-500">Mengarahkan ke halaman admin...</p>
+          <p className="text-muted-foreground">Mengarahkan ke halaman admin...</p>
         </div>
       </Layout>
     );
@@ -77,8 +77,8 @@ export default function UserOrdersPage() {
     <Layout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Pesanan Tersedia</h1>
-          <p className="mt-2 text-gray-600">Bergabung dengan pesanan yang ada dari pengemudi</p>
+          <h1 className="font-display text-3xl text-foreground">Pesanan Tersedia</h1>
+          <p className="mt-2 text-muted-foreground">Bergabung dengan pesanan yang ada dari pengemudi</p>
         </div>
 
         <AvailableOrdersList

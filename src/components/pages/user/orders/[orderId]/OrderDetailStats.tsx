@@ -49,32 +49,32 @@ export function OrderDetailStats({
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <p className="text-sm font-medium text-gray-500">Total Peserta</p>
+              <p className="text-sm font-medium text-muted-foreground">Total Peserta</p>
               <p className="text-2xl font-bold">{participantsCount}</p>
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-500">Item Saya</p>
+              <p className="text-sm font-medium text-muted-foreground">Item Saya</p>
               <p className="text-2xl font-bold">{myItemsCount}</p>
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-500">Total Saya</p>
+              <p className="text-sm font-medium text-muted-foreground">Total Saya</p>
               <p className="text-2xl font-bold">{formatCurrency(myTotal)}</p>
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-500">
+              <p className="text-sm font-medium text-muted-foreground">
                 {existingPayment ? 'Kembalian Saya' : 'Status Pembayaran'}
               </p>
               {existingPayment ? (
                 <div>
-                  <p className="text-2xl font-bold text-green-600">
+                  <p className="text-2xl font-bold text-green-400">
                     {formatCurrency(myChange)}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-muted-foreground">
                     Dibayar: {formatCurrency(existingPayment.amount)}
                   </p>
                 </div>
               ) : (
-                <p className="text-2xl font-bold text-red-600">Belum Dibayar</p>
+                <p className="text-2xl font-bold text-destructive">Belum Dibayar</p>
               )}
             </div>
           </div>

@@ -29,8 +29,8 @@ export function AvailableOrdersList({
               <div key={order._id} className="flex items-center justify-between p-4 border rounded-lg">
                 <div>
                   <p className="font-medium">Pesanan #{order._id.slice(-6)}</p>
-                  <p className="text-sm text-gray-500">Status: {formatStatus(order.status)}</p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-muted-foreground">Status: {formatStatus(order.status)}</p>
+                  <p className="text-sm text-muted-foreground">
                     Driver: {(() => {
                       // If drivers is still loading (undefined), show loading
                       if (drivers === undefined) {
@@ -41,7 +41,7 @@ export function AvailableOrdersList({
                       return driver ? (driver.username || driver.name || 'Unknown Driver') : 'Driver tidak ditemukan';
                     })()}
                   </p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-muted-foreground">
                     Dibuat: {new Date(order.createdAt).toLocaleString('id-ID')}
                   </p>
                 </div>
@@ -61,7 +61,7 @@ export function AvailableOrdersList({
               </div>
             ))}
           {(!availableOrders || availableOrders.filter((order) => order.status === 'open').length === 0) && (
-            <p className="text-gray-500 text-center py-8">Tidak ada pesanan tersedia saat ini</p>
+            <p className="text-muted-foreground text-center py-8">Tidak ada pesanan tersedia saat ini</p>
           )}
         </div>
       </CardContent>

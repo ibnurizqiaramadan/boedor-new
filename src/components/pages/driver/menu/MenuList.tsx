@@ -24,7 +24,7 @@ export function MenuList({ items, onEdit, onDelete, totalItems = 0 }: MenuListPr
         <CardDescription>
           Kelola item menu Anda
           {totalItems > 0 && (
-            <span className="block text-sm text-gray-600 mt-1">
+            <span className="block text-sm text-muted-foreground mt-1">
               Menampilkan {items.length} dari {totalItems} item
             </span>
           )}
@@ -36,7 +36,7 @@ export function MenuList({ items, onEdit, onDelete, totalItems = 0 }: MenuListPr
             <div key={item._id} className="flex justify-between items-center p-2 border rounded">
               <div>
                 <span className="font-medium">{item.name}</span>
-                <p className="text-sm text-gray-500">{formatCurrency(item.price)}</p>
+                <p className="text-sm text-muted-foreground">{formatCurrency(item.price)}</p>
               </div>
               <div className="flex space-x-1">
                 <Button
@@ -57,7 +57,7 @@ export function MenuList({ items, onEdit, onDelete, totalItems = 0 }: MenuListPr
             </div>
           ))}
           {items.length === 0 && (
-            <p className="text-sm text-gray-500 text-center py-4">
+            <p className="text-sm text-muted-foreground text-center py-4">
               {totalItems === 0
                 ? 'Belum ada item menu. Tambahkan item pertama Anda!'
                 : 'Tidak ada item menu yang sesuai dengan filter.'

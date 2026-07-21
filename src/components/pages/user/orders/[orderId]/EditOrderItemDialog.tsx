@@ -48,7 +48,7 @@ export function EditOrderItemDialog({
             <p className="font-medium">
               {menuItem?.name}
             </p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-muted-foreground">
               Rp {menuItem?.price.toLocaleString('id-ID')} per item
             </p>
           </div>

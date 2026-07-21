@@ -178,17 +178,17 @@ export default function ExportImportSection({ menuItems, onImport }: ExportImpor
           Export
         </Button>
         {isExportDropdownOpen && (
-          <div className="absolute right-0 top-full mt-1 bg-white border rounded-md shadow-lg z-10 min-w-[120px]">
+          <div className="absolute right-0 top-full mt-1 bg-card border rounded-md shadow-lg z-10 min-w-[120px]">
             <button
               onClick={handleExportJSON}
-              className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
+              className="w-full text-left px-4 py-2 hover:bg-muted flex items-center gap-2"
             >
               <FileText className="h-4 w-4" />
               JSON
             </button>
             <button
               onClick={handleExportCSV}
-              className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2"
+              className="w-full text-left px-4 py-2 hover:bg-muted flex items-center gap-2"
             >
               <FileText className="h-4 w-4" />
               CSV
@@ -246,7 +246,7 @@ export default function ExportImportSection({ menuItems, onImport }: ExportImpor
                 accept=".json,.csv"
                 onChange={(e) => setImportFile(e.target.files?.[0] || null)}
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 Format: JSON (array objek) atau CSV (kolom: nama, harga)
               </p>
             </div>

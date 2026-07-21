@@ -89,7 +89,7 @@ export default function UserMenuPage() {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <p className="text-red-500">Memuat...</p>
+          <p className="text-destructive">Memuat...</p>
         </div>
       </Layout>
     );
@@ -99,7 +99,7 @@ export default function UserMenuPage() {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <p className="text-red-500">Akses ditolak. Khusus pengguna.</p>
+          <p className="text-destructive">Akses ditolak. Khusus pengguna.</p>
         </div>
       </Layout>
     );
@@ -109,8 +109,8 @@ export default function UserMenuPage() {
     <Layout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Menu</h1>
-          <p className="mt-2 text-gray-600">Lihat semua item menu yang tersedia</p>
+          <h1 className="font-display text-3xl text-foreground">Menu</h1>
+          <p className="mt-2 text-muted-foreground">Lihat semua item menu yang tersedia</p>
         </div>
 
         {/* Menu Items */}

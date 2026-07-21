@@ -124,7 +124,7 @@ export default function UserOrderDetailPage() {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <p className="text-gray-500">Memuat detail pesanan...</p>
+          <p className="text-muted-foreground">Memuat detail pesanan...</p>
         </div>
       </Layout>
     );
@@ -138,7 +138,7 @@ export default function UserOrderDetailPage() {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <p className="text-red-500">Akses ditolak. Khusus pengguna.</p>
+          <p className="text-destructive">Akses ditolak. Khusus pengguna.</p>
         </div>
       </Layout>
     );
@@ -148,7 +148,7 @@ export default function UserOrderDetailPage() {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <p className="text-gray-500">Memuat detail pesanan...</p>
+          <p className="text-muted-foreground">Memuat detail pesanan...</p>
         </div>
       </Layout>
     );

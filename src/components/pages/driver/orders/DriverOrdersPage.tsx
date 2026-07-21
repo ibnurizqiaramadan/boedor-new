@@ -62,7 +62,7 @@ export default function DriverOrdersPage() {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <p className="text-red-500">Akses ditolak. Khusus driver.</p>
+          <p className="text-destructive">Akses ditolak. Khusus driver.</p>
         </div>
       </Layout>
     );
@@ -128,8 +128,8 @@ export default function DriverOrdersPage() {
     <Layout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Pesanan Saya</h1>
-          <p className="mt-2 text-gray-600">Kelola pesanan antar Anda</p>
+          <h1 className="font-display text-3xl text-foreground">Pesanan Saya</h1>
+          <p className="mt-2 text-muted-foreground">Kelola pesanan antar Anda</p>
         </div>
 
         <DriverOrdersStats orders={myOrders || []} />

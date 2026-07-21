@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
-import { Geist } from 'next/font/google';
+import { Inter, Calistoga } from 'next/font/google';
 import './globals.css';
 
-const geist = Geist({ subsets: [ 'latin' ] });
+const inter = Inter({ subsets: [ 'latin' ], variable: '--font-sans' });
+const calistoga = Calistoga({ weight: '400', subsets: [ 'latin' ], variable: '--font-display' });
 
 export const metadata: Metadata = {
   title: 'Boedor - Food Delivery App',
@@ -15,8 +16,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={geist.className}>
+    <html lang="en" className="dark" style={{ colorScheme: 'dark' }}>
+      <body className={`${inter.variable} ${calistoga.variable} font-sans antialiased`}>
         {children}
       </body>
     </html>

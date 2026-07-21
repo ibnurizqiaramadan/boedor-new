@@ -43,7 +43,7 @@ export default function AdminMainPage() {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <p className="text-red-500">Akses ditolak. Khusus admin.</p>
+          <p className="text-destructive">Akses ditolak. Khusus admin.</p>
         </div>
       </Layout>
     );
@@ -74,8 +74,8 @@ export default function AdminMainPage() {
     <Layout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Dasbor Admin</h1>
-          <p className="mt-2 text-gray-600">Kelola pengguna, pesanan, dan gambaran sistem</p>
+          <h1 className="font-display text-3xl text-foreground">Dasbor Admin</h1>
+          <p className="mt-2 text-muted-foreground">Kelola pengguna, pesanan, dan gambaran sistem</p>
         </div>
 
         {/* Stats Cards */}

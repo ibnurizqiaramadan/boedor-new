@@ -73,7 +73,7 @@ export function DriverOrdersList({
             <CardDescription>
               Kelola pesanan antar Anda
               {totalOrders > 0 && (
-                <span className="block text-sm text-gray-600 mt-1">
+                <span className="block text-sm text-muted-foreground mt-1">
                   Menampilkan {orders.length} dari {totalOrders} pesanan
                 </span>
               )}
@@ -94,7 +94,7 @@ export function DriverOrdersList({
                 </DialogDescription>
               </DialogHeader>
               <div className="py-4">
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-muted-foreground">
                   Ini akan membuat pesanan baru yang ditugaskan kepada Anda sebagai driver.
                   Pesanan akan dimulai dengan status "terbuka".
                 </p>
@@ -119,7 +119,7 @@ export function DriverOrdersList({
                       {getStatusIcon(order.status)}
                       <div>
                         <div className="font-medium">#{order._id.slice(-8)}</div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-muted-foreground">
                           Dibuat: {new Date(order.createdAt).toLocaleDateString('id-ID')}
                         </div>
                       </div>
@@ -136,8 +136,8 @@ export function DriverOrdersList({
             </div>
           ) : (
             <div className="text-center py-8">
-              <Truck className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500">Belum ada pesanan. Buat pesanan pertama Anda!</p>
+              <Truck className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">Belum ada pesanan. Buat pesanan pertama Anda!</p>
             </div>
           )}
         </div>
@@ -147,17 +147,17 @@ export function DriverOrdersList({
           {orders.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="min-w-full text-sm">
-                <thead className="bg-gray-50 border-b border-gray-200">
+                <thead className="bg-muted border-b border-border">
                   <tr>
-                    <th className="text-left px-4 py-3 font-medium text-gray-700">Pesanan</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-700">Status</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-700">Dibuat</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-700">Aksi</th>
+                    <th className="text-left px-4 py-3 font-medium text-foreground">Pesanan</th>
+                    <th className="text-left px-4 py-3 font-medium text-foreground">Status</th>
+                    <th className="text-left px-4 py-3 font-medium text-foreground">Dibuat</th>
+                    <th className="text-left px-4 py-3 font-medium text-foreground">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {orders.map((order) => (
-                    <tr key={order._id} className="hover:bg-gray-50">
+                    <tr key={order._id} className="hover:bg-muted">
                       <td className="px-4 py-3">
                         <div className="flex items-center space-x-3">
                           {getStatusIcon(order.status)}
@@ -186,8 +186,8 @@ export function DriverOrdersList({
             </div>
           ) : (
             <div className="text-center py-8">
-              <Truck className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500">Belum ada pesanan. Buat pesanan pertama Anda!</p>
+              <Truck className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">Belum ada pesanan. Buat pesanan pertama Anda!</p>
             </div>
           )}
         </div>

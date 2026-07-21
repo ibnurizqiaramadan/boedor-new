@@ -36,13 +36,13 @@ export function UserOrderItems({
             return (
               <div
                 key={group.orderId}
-                className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted cursor-pointer transition-colors"
                 onClick={() => onOrderClick(group.orderId)}
               >
                 <div>
                   <p className="font-medium">Pesanan #{group.orderId.slice(-6)}</p>
-                  <p className="text-sm text-gray-500">Jumlah: {group.totalItems}</p>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-sm text-muted-foreground">Jumlah: {group.totalItems}</p>
+                  <p className="text-xs text-muted-foreground">
                     {new Date(group.latestTime || group.items[0]?._creationTime).toLocaleString('id-ID', {
                       year: 'numeric',
                       month: '2-digit',
@@ -65,7 +65,7 @@ export function UserOrderItems({
             );
           })}
           {paginatedOrders.length === 0 && (
-            <p className="text-gray-500 text-center py-8">Anda belum bergabung dengan pesanan apapun</p>
+            <p className="text-muted-foreground text-center py-8">Anda belum bergabung dengan pesanan apapun</p>
           )}
         </div>
       </CardContent>

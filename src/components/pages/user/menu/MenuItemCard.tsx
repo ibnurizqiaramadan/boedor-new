@@ -16,7 +16,7 @@ export default function MenuItemCard({ item }: MenuItemCardProps) {
   return (
     <div className="p-4 border rounded-lg">
       <h3 className="font-medium">{item.name}</h3>
-      <p className="text-lg font-bold text-green-600">{formatCurrency(item.price)}</p>
+      <p className="text-lg font-bold text-green-400">{formatCurrency(item.price)}</p>
     </div>
   );
 }

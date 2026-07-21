@@ -33,13 +33,13 @@ function HomeContent() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-muted">
         <div className="w-full max-w-md space-y-8 p-8">
           <div>
-            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            <h2 className="mt-6 text-center text-3xl font-extrabold text-foreground">
               Selamat Datang di Boedor
             </h2>
-            <p className="mt-2 text-center text-sm text-gray-600">
+            <p className="mt-2 text-center text-sm text-muted-foreground">
               Silakan masuk menggunakan akun Google Anda
             </p>
           </div>
@@ -59,10 +59,10 @@ function HomeContent() {
     <Layout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="font-display text-3xl text-foreground">
             Selamat datang di Boedor, {user.username || user.name || user.email}!
           </h1>
-          <p className="mt-2 text-gray-600">
+          <p className="mt-2 text-muted-foreground">
             Anda masuk sebagai <span className="font-medium capitalize">{user.role}</span>
           </p>
         </div>
@@ -70,47 +70,47 @@ function HomeContent() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {user.role === 'admin' && (
             <>
-              <div className="bg-white p-6 rounded-lg shadow">
-                <h3 className="text-lg font-medium text-gray-900">Kelola Pengguna</h3>
-                <p className="mt-2 text-gray-600">Lihat dan kelola semua pengguna dalam sistem</p>
+              <div className="bg-card p-6 rounded-lg shadow">
+                <h3 className="text-lg font-medium text-foreground">Kelola Pengguna</h3>
+                <p className="mt-2 text-muted-foreground">Lihat dan kelola semua pengguna dalam sistem</p>
               </div>
-              <div className="bg-white p-6 rounded-lg shadow">
-                <h3 className="text-lg font-medium text-gray-900">Kelola Menu</h3>
-                <p className="mt-2 text-gray-600">Kelola item menu dan harga</p>
+              <div className="bg-card p-6 rounded-lg shadow">
+                <h3 className="text-lg font-medium text-foreground">Kelola Menu</h3>
+                <p className="mt-2 text-muted-foreground">Kelola item menu dan harga</p>
               </div>
-              <div className="bg-white p-6 rounded-lg shadow">
-                <h3 className="text-lg font-medium text-gray-900">Kelola Pesanan</h3>
-                <p className="mt-2 text-gray-600">Lihat dan kelola semua pesanan</p>
+              <div className="bg-card p-6 rounded-lg shadow">
+                <h3 className="text-lg font-medium text-foreground">Kelola Pesanan</h3>
+                <p className="mt-2 text-muted-foreground">Lihat dan kelola semua pesanan</p>
               </div>
             </>
           )}
 
           {user.role === 'driver' && (
             <>
-              <div className="bg-white p-6 rounded-lg shadow">
-                <h3 className="text-lg font-medium text-gray-900">Item Menu</h3>
-                <p className="mt-2 text-gray-600">Lihat dan tambah item menu</p>
+              <div className="bg-card p-6 rounded-lg shadow">
+                <h3 className="text-lg font-medium text-foreground">Item Menu</h3>
+                <p className="mt-2 text-muted-foreground">Lihat dan tambah item menu</p>
               </div>
-              <div className="bg-white p-6 rounded-lg shadow">
-                <h3 className="text-lg font-medium text-gray-900">Pesanan Saya</h3>
-                <p className="mt-2 text-gray-600">Kelola pesanan pengiriman Anda</p>
+              <div className="bg-card p-6 rounded-lg shadow">
+                <h3 className="text-lg font-medium text-foreground">Pesanan Saya</h3>
+                <p className="mt-2 text-muted-foreground">Kelola pesanan pengiriman Anda</p>
               </div>
-              <div className="bg-white p-6 rounded-lg shadow">
-                <h3 className="text-lg font-medium text-gray-900">Update Lokasi</h3>
-                <p className="mt-2 text-gray-600">Perbarui posisi Anda saat ini</p>
+              <div className="bg-card p-6 rounded-lg shadow">
+                <h3 className="text-lg font-medium text-foreground">Update Lokasi</h3>
+                <p className="mt-2 text-muted-foreground">Perbarui posisi Anda saat ini</p>
               </div>
             </>
           )}
 
           {user.role === 'user' && (
             <>
-              <div className="bg-white p-6 rounded-lg shadow">
-                <h3 className="text-lg font-medium text-gray-900">Jelajahi Pesanan</h3>
-                <p className="mt-2 text-gray-600">Lihat pesanan yang tersedia untuk bergabung</p>
+              <div className="bg-card p-6 rounded-lg shadow">
+                <h3 className="text-lg font-medium text-foreground">Jelajahi Pesanan</h3>
+                <p className="mt-2 text-muted-foreground">Lihat pesanan yang tersedia untuk bergabung</p>
               </div>
-              <div className="bg-white p-6 rounded-lg shadow">
-                <h3 className="text-lg font-medium text-gray-900">Tambah Item Menu</h3>
-                <p className="mt-2 text-gray-600">Usulkan item menu baru</p>
+              <div className="bg-card p-6 rounded-lg shadow">
+                <h3 className="text-lg font-medium text-foreground">Tambah Item Menu</h3>
+                <p className="mt-2 text-muted-foreground">Usulkan item menu baru</p>
               </div>
             </>
           )}

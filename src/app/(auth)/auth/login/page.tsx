@@ -2,11 +2,17 @@
 
 import { signIn } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useEffect, Suspense } from 'react';
+import { UtensilsCrossed, Users, MapPin, ShoppingBag } from 'lucide-react';
+
+const highlights = [
+  { icon: Users, text: 'Patungan pesan bareng teman' },
+  { icon: ShoppingBag, text: 'Satu pesanan, banyak peserta' },
+  { icon: MapPin, text: 'Lacak posisi driver realtime' },
+];
 
 function LoginContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const isDriver = searchParams.get('driver') === 'true';
 
@@ -23,38 +29,49 @@ function LoginContent() {
     if (isDriver) {
       document.cookie = 'driver-registration=true; path=/; max-age=300; SameSite=Lax';
     }
-    
+
     // Redirect based on whether it's driver registration or normal login
     const callbackUrl = isDriver ? '/?driver=true' : '/';
-    
-    signIn('google', { 
+
+    signIn('google', {
       callbackUrl,
     });
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full space-y-8 p-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Masuk ke Boedor
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Gunakan akun Google Anda untuk masuk
+    <div className="min-h-dvh flex items-center justify-center bg-background px-4">
+      <div className="w-full max-w-sm py-12">
+        <div className="flex flex-col items-center text-center">
+          <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/25">
+            <UtensilsCrossed className="h-8 w-8" aria-hidden />
+          </span>
+          <h1 className="mt-5 font-display text-4xl text-foreground">Boedor</h1>
+          <p className="mt-2 text-muted-foreground">
+            Pesan makanan bareng, antar sekali jalan
           </p>
         </div>
-        <div className="mt-8 space-y-4">
-          <div className="flex justify-center">
-            <Button onClick={() => handleLogin()} className="w-full">
-              Masuk Menggunakan Google
-            </Button>
-          </div>
-          {isDriver && (
-            <p className="text-center text-sm text-blue-600">
-              Anda akan mendaftar sebagai Driver
-            </p>
-          )}
-        </div>
+
+        <ul className="mt-8 space-y-3">
+          {highlights.map(({ icon: Icon, text }) => (
+            <li
+              key={text}
+              className="flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground"
+            >
+              <Icon className="h-5 w-5 shrink-0 text-primary" aria-hidden />
+              {text}
+            </li>
+          ))}
+        </ul>
+
+        <Button onClick={handleLogin} className="mt-8 h-12 w-full text-base shadow-md shadow-primary/25">
+          Masuk Menggunakan Google
+        </Button>
+
+        {isDriver && (
+          <p className="mt-4 text-center text-sm font-medium text-primary">
+            Anda akan mendaftar sebagai Driver
+          </p>
+        )}
       </div>
     </div>
   );
@@ -63,8 +80,8 @@ function LoginContent() {
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">Loading...</div>
+      <div className="min-h-dvh flex items-center justify-center bg-background">
+        <div className="text-center text-muted-foreground">Loading...</div>
       </div>
     }>
       <LoginContent />

@@ -57,7 +57,7 @@ export function JoinOrderDialog({
             <div key={item._id} className="flex items-center justify-between p-3 border rounded">
               <div>
                 <p className="font-medium">{item.name}</p>
-                <p className="text-sm text-gray-500">Rp {item.price.toLocaleString('id-ID')}</p>
+                <p className="text-sm text-muted-foreground">Rp {item.price.toLocaleString('id-ID')}</p>
               </div>
               <div className="flex items-center space-x-2">
                 <Button
@@ -82,12 +82,12 @@ export function JoinOrderDialog({
 
         {/* Payment Information */}
         <div className="space-y-4 border-t pt-4">
-          <h3 className="font-medium text-gray-900">
-            Informasi Pembayaran {existingPayment && <span className="text-sm text-green-600">(Sudah diatur - Anda dapat memperbarui)</span>}
+          <h3 className="font-medium text-foreground">
+            Informasi Pembayaran {existingPayment && <span className="text-sm text-green-400">(Sudah diatur - Anda dapat memperbarui)</span>}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Metode Pembayaran
               </label>
               <Select value={paymentMethod} onValueChange={(value: 'cash' | 'cardless' | 'dana') => onPaymentMethodChange(value)}>
@@ -102,7 +102,7 @@ export function JoinOrderDialog({
               </Select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Jumlah
               </label>
               <Input
@@ -117,7 +117,7 @@ export function JoinOrderDialog({
         </div>
         {/* Note - moved near footer/subtotal */}
         <div className="space-y-2 pt-2">
-          <label className="block text-sm font-medium text-gray-700">
+          <label className="block text-sm font-medium text-foreground">
             Catatan (opsional)
           </label>
           <textarea

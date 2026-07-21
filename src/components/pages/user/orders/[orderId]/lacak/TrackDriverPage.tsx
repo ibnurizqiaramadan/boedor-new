@@ -71,7 +71,7 @@ export default function TrackDriverPage() {
     <Layout>
       {!canView ? (
         <div className="flex items-center justify-center h-64">
-          <p className="text-red-500">Akses ditolak. Khusus pengguna.</p>
+          <p className="text-destructive">Akses ditolak. Khusus pengguna.</p>
         </div>
       ) : (
         <div className="space-y-4">

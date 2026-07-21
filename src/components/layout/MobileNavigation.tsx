@@ -57,7 +57,7 @@ export function MobileNavigation() {
   };
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
+    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50 pb-[env(safe-area-inset-bottom)]">
       <nav className="flex">
         {userNavItems.map((item) => {
           const Icon = item.icon;
@@ -70,10 +70,10 @@ export function MobileNavigation() {
                 onClick={() => handleItemClick(item)}
                 className={cn(
                   'flex-1 flex flex-col items-center justify-center py-2 px-1 text-xs font-medium transition-colors',
-                  'text-gray-600 hover:text-red-600 hover:bg-red-50',
+                  'text-muted-foreground hover:text-destructive hover:bg-destructive/10',
                 )}
               >
-                <Icon className="h-5 w-5 mb-1 text-gray-400 hover:text-red-500" />
+                <Icon className="h-5 w-5 mb-1 text-muted-foreground hover:text-destructive" />
                 <span className="truncate">{item.name}</span>
               </button>
             );
@@ -87,13 +87,13 @@ export function MobileNavigation() {
                 'flex-1 flex flex-col items-center justify-center py-2 px-1 text-xs font-medium transition-colors',
                 isActive ?
                   'text-primary bg-primary/10' :
-                  'text-gray-600 hover:text-gray-900',
+                  'text-muted-foreground hover:text-foreground',
               )}
             >
               <Icon
                 className={cn(
                   'h-5 w-5 mb-1',
-                  isActive ? 'text-primary' : 'text-gray-400',
+                  isActive ? 'text-primary' : 'text-muted-foreground',
                 )}
               />
               <span className="truncate">{item.name}</span>

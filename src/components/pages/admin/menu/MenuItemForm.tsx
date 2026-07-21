@@ -41,7 +41,7 @@ export default function MenuItemForm({
         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
         disabled={isSubmitting}
       />
-      {errors.name && <div className="text-xs text-red-600">{errors.name}</div>}
+      {errors.name && <div className="text-xs text-destructive">{errors.name}</div>}
 
       <Input
         type="number"
@@ -50,7 +50,7 @@ export default function MenuItemForm({
         onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
         disabled={isSubmitting}
       />
-      {errors.price && <div className="text-xs text-red-600">{errors.price}</div>}
+      {errors.price && <div className="text-xs text-destructive">{errors.price}</div>}
 
       <div className="flex justify-end space-x-2">
         <Button

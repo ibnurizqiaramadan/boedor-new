@@ -62,7 +62,7 @@ export function Pagination({
               </Button>
               {visiblePages[0] > 2 && (
                 <span className="px-2 py-1">
-                  <MoreHorizontal className="h-4 w-4 text-gray-400" />
+                  <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
                 </span>
               )}
             </>
@@ -86,7 +86,7 @@ export function Pagination({
             <>
               {visiblePages[visiblePages.length - 1] < totalPages - 1 && (
                 <span className="px-2 py-1">
-                  <MoreHorizontal className="h-4 w-4 text-gray-400" />
+                  <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
                 </span>
               )}
               <Button
@@ -134,7 +134,7 @@ export function PaginationInfo({
   const endItem = Math.min(currentPage * itemsPerPage, totalItems);
 
   return (
-    <div className="text-sm text-gray-600 text-center">
+    <div className="text-sm text-muted-foreground text-center">
       Menampilkan {startItem}-{endItem} dari {totalItems} item
       {totalPages > 1 && ` (Halaman ${currentPage} dari ${totalPages})`}
     </div>

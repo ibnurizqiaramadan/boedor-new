@@ -205,7 +205,7 @@ export default function JoinOrderPage() {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <p className="text-gray-500">Memuat pesanan...</p>
+          <p className="text-muted-foreground">Memuat pesanan...</p>
         </div>
       </Layout>
     );
@@ -239,7 +239,7 @@ export default function JoinOrderPage() {
 
         <div className="flex items-center justify-between pt-4">
           <span className="font-semibold">Subtotal</span>
-          <span className={`font-semibold ${calcSubtotal() > remaining ? 'text-red-600' : ''}`}>
+          <span className={`font-semibold ${calcSubtotal() > remaining ? 'text-destructive' : ''}`}>
             {formatCurrency(calcSubtotal())}
           </span>
         </div>

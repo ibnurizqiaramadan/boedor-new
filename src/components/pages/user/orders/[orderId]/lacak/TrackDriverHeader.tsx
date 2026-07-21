@@ -25,7 +25,7 @@ export function TrackDriverHeader({
         </Button>
         <h1 className="text-2xl sm:text-3xl font-bold leading-tight">Lacak Pengemudi</h1>
       </div>
-      <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-gray-500 sm:ml-auto">
+      <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-muted-foreground sm:ml-auto">
         {driverPosition ? (
           <span className="whitespace-nowrap">
             Terakhir diperbarui: {new Date(driverPosition.updatedAt).toLocaleTimeString('id-ID')}

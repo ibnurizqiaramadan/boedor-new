@@ -21,7 +21,7 @@ export default function UserCard({ user, onDelete }: UserCardProps) {
     <div className="flex items-center justify-between p-4 border rounded-lg">
       <div>
         <p className="font-medium">{user.name || user.email || user.username || 'Unknown'}</p>
-        <p className="text-sm text-gray-500 capitalize">{user.role || 'user'}</p>
+        <p className="text-sm text-muted-foreground capitalize">{user.role || 'user'}</p>
       </div>
       <div className="flex space-x-2">
         <Button

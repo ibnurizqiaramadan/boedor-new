@@ -21,8 +21,8 @@ export function OrderDetailHeader({ orderId, onBack, onTrack }: OrderDetailHeade
           Kembali
         </Button>
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight">Detail Pesanan</h1>
-          <p className="text-sm sm:text-base text-gray-600 break-all sm:break-normal">Pesanan #{orderId.slice(-8)}</p>
+          <h1 className="text-2xl sm:font-display text-3xl text-foreground leading-tight">Detail Pesanan</h1>
+          <p className="text-sm sm:text-base text-muted-foreground break-all sm:break-normal">Pesanan #{orderId.slice(-8)}</p>
         </div>
       </div>
       <div className="flex sm:ml-auto">

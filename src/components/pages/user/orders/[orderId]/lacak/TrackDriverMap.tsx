@@ -48,8 +48,8 @@ export function TrackDriverMap({ center, driverPosition, driverUser, mapRef }: T
           >
             {driverPosition && (
               <Marker longitude={driverPosition.lng} latitude={driverPosition.lat} anchor="bottom">
-                <div className="flex items-center gap-1 bg-white/90 rounded-md px-2 py-1 shadow">
-                  <MapPin className="h-4 w-4 text-red-600" />
+                <div className="flex items-center gap-1 bg-card/90 rounded-md px-2 py-1 shadow">
+                  <MapPin className="h-4 w-4 text-destructive" />
                   <span className="text-xs font-medium">{driverUser?.username ?? 'Driver'}</span>
                 </div>
               </Marker>

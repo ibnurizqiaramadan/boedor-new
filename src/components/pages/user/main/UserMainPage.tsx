@@ -107,7 +107,7 @@ export default function UserMainPage() {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <p className="text-red-500">Akses ditolak. Khusus pengguna.</p>
+          <p className="text-destructive">Akses ditolak. Khusus pengguna.</p>
         </div>
       </Layout>
     );
@@ -260,8 +260,8 @@ export default function UserMainPage() {
     <Layout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Dasbor Pengguna</h1>
-          <p className="mt-2 text-gray-600">Jelajahi pesanan dan usulkan item menu</p>
+          <h1 className="font-display text-3xl text-foreground">Dasbor Pengguna</h1>
+          <p className="mt-2 text-muted-foreground">Jelajahi pesanan dan usulkan item menu</p>
         </div>
 
         <UserStatsCards
