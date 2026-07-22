@@ -83,7 +83,8 @@ export default function UserOrdersPage() {
 
         <AvailableOrdersList
           availableOrders={availableOrders || []}
-          drivers={(drivers || []) as User[]}
+          isLoading={availableOrders === undefined}
+          drivers={drivers as (User | null)[] | undefined}
           joinedOrderIds={joinedOrderIds}
           onJoinOrder={(order) => {
             // Redirect langsung ke halaman gabung pesanan
