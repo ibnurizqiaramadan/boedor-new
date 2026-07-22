@@ -15,6 +15,7 @@ interface OrderItem {
   qty: number;
   note?: string;
   customPrice?: number;
+  purchased?: boolean;
   _creationTime: number;
 }
 
@@ -71,7 +72,12 @@ export function MyOrderItems({
                     <ShoppingCart className="h-4 w-4" aria-hidden />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium">{menuItem?.name || 'Item Tidak Dikenal'}</p>
+                    <p className="flex items-center gap-2 truncate font-medium">
+                      <span className="truncate">{menuItem?.name || 'Item Tidak Dikenal'}</span>
+                      {item.purchased && (
+                        <span className="shrink-0 rounded-full bg-green-400/15 px-2 py-0.5 text-xs font-medium text-green-400">Sudah Dibeli</span>
+                      )}
+                    </p>
                     <p className="text-xs text-muted-foreground">
                       {item.qty} × {menuItem?.priceType === 'custom' && item.customPrice === undefined ? 'Harga Custom' : formatCurrency(item.customPrice ?? menuItem?.price ?? 0)} ·{' '}
                       {new Date(item._creationTime).toLocaleString('id-ID', {

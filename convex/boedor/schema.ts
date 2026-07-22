@@ -25,6 +25,8 @@ export const tables = {
     note: v.optional(v.string()),
     // harga satuan aktual yang diinput driver untuk item menu bertipe custom
     customPrice: v.optional(v.number()),
+    // ditandai driver saat item sudah dibeli
+    purchased: v.optional(v.boolean()),
     paymentMethod: v.optional(v.union(v.literal("cash"), v.literal("cardless"), v.literal("dana"))),
     amount: v.optional(v.number()),
   }).index("by_order", ["orderId"])

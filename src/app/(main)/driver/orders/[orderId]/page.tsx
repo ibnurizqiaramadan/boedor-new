@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useEffect, useRef, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { ArrowLeft, User, ShoppingCart, MapPin } from 'lucide-react';
+import { ArrowLeft, User, ShoppingCart, MapPin, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/utils';
 import { getStatusIcon, getStatusColor, formatStatus } from '@/lib/status';
@@ -27,6 +27,7 @@ export default function OrderDetailPage() {
   // Mutations (declare before effects to avoid TDZ)
   const updatePosition = useMutation(api.boedor.driverPositions.updateDriverPosition);
   const setCustomPrice = useMutation(api.boedor.orderItems.setCustomPrice);
+  const setPurchased = useMutation(api.boedor.orderItems.setPurchased);
 
   // Draft input harga custom per order item
   const [ priceInputs, setPriceInputs ] = useState<Record<string, string>>({});
@@ -199,6 +200,15 @@ export default function OrderDetailPage() {
     if (!payment) return 0;
     const total = getUserTotal(userId);
     return payment.amount - total;
+  };
+
+  const handleTogglePurchased = async (orderItemId: string, purchased: boolean) => {
+    try {
+      await setPurchased({ orderItemId: orderItemId as Id<'boedor_order_items'>, purchased });
+      toast.success(purchased ? 'Item ditandai sudah dibeli' : 'Tanda dibeli dibatalkan');
+    } catch (err) {
+      toast.error('Gagal menandai item: ' + (err as Error).message);
+    }
   };
 
   const handleSaveCustomPrice = async (orderItemId: string) => {
@@ -419,6 +429,19 @@ export default function OrderDetailPage() {
                               )}
                             </div>
                             <p className="shrink-0 font-semibold tabular-nums">{formatCurrency(itemTotal)}</p>
+                            {order!.status !== 'completed' ? (
+                              <Button
+                                size="icon"
+                                variant="outline"
+                                className="shrink-0"
+                                aria-label={item.purchased ? 'Batalkan tanda dibeli' : 'Tandai sudah dibeli'}
+                                onClick={() => handleTogglePurchased(item._id, !item.purchased)}
+                              >
+                                <CheckCircle className={`h-4 w-4 ${item.purchased ? 'text-green-400' : 'text-muted-foreground'}`} />
+                              </Button>
+                            ) : item.purchased ? (
+                              <CheckCircle className="h-5 w-5 shrink-0 text-green-400" aria-label="Sudah dibeli" />
+                            ) : null}
                           </div>
                         );
                       })}
