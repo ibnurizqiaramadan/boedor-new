@@ -18,20 +18,27 @@ export function TrackDriverHeader({
   onToggleFollow,
 }: TrackDriverHeaderProps) {
   return (
-    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex items-start gap-3">
-        <Button variant="outline" size="sm" onClick={onBack} className="shrink-0">
-          <ArrowLeft className="h-4 w-4 mr-2" /> Kembali
-        </Button>
-        <h1 className="text-2xl sm:text-3xl font-bold leading-tight">Lacak Pengemudi</h1>
+    <div className="flex flex-wrap items-center gap-3">
+      <Button variant="outline" size="icon" onClick={onBack} aria-label="Kembali" className="shrink-0">
+        <ArrowLeft className="h-4 w-4" />
+      </Button>
+      <div className="min-w-0 flex-1">
+        <h1 className="font-display text-2xl text-foreground sm:text-3xl">Lacak Pengemudi</h1>
+        <p className="text-sm text-muted-foreground">#{orderId.slice(-8)}</p>
       </div>
-      <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-muted-foreground sm:ml-auto">
+      <div className="flex shrink-0 items-center gap-2">
         {driverPosition ? (
-          <span className="whitespace-nowrap">
-            Terakhir diperbarui: {new Date(driverPosition.updatedAt).toLocaleTimeString('id-ID')}
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-green-400/15 px-2.5 py-1 text-xs font-medium text-green-400">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-60 motion-safe:animate-ping" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-green-400" />
+            </span>
+            Live · {new Date(driverPosition.updatedAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
           </span>
         ) : (
-          <span className="whitespace-nowrap">Menunggu posisi pengemudi...</span>
+          <span className="inline-flex items-center rounded-full bg-amber-400/15 px-2.5 py-1 text-xs font-medium text-amber-400">
+            Menunggu posisi...
+          </span>
         )}
         <Button
           size="sm"
@@ -41,8 +48,8 @@ export function TrackDriverHeader({
           className="whitespace-nowrap"
           disabled={!driverPosition}
         >
-          <LocateFixed className="h-4 w-4 mr-1" />
-          {followDriver ? 'Terkunci' : 'Kunci ke Driver'}
+          <LocateFixed className="mr-1.5 h-4 w-4" aria-hidden />
+          {followDriver ? 'Terkunci' : 'Ikuti Driver'}
         </Button>
       </div>
     </div>
