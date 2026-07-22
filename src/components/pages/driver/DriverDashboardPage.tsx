@@ -31,10 +31,10 @@ export default function DriverDashboardPage() {
   const endIndex = startIndex + ORDERS_PER_PAGE;
   const paginatedOrders = sortedOrders.slice(startIndex, endIndex);
 
-  // Reset to first page when orders change
+  // Clamp page when the list shrinks (don't yank the user to page 1 on realtime updates)
   useEffect(() => {
-    setCurrentPage(1);
-  }, [totalOrders]);
+    if (totalPages > 0 && currentPage > totalPages) setCurrentPage(totalPages);
+  }, [ currentPage, totalPages ]);
 
   // Mutations
   const updateOrderStatus = useMutation(api.boedor.orders.updateOrderStatus);

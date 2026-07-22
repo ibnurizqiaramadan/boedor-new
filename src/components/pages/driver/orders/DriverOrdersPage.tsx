@@ -38,10 +38,10 @@ export default function DriverOrdersPage() {
   const endIndex = startIndex + ORDERS_PER_PAGE;
   const paginatedOrders = sortedOrders.slice(startIndex, endIndex);
 
-  // Reset to first page when orders change
+  // Clamp page when the list shrinks (don't yank the user to page 1 on realtime updates)
   useEffect(() => {
-    setCurrentPage(1);
-  }, [totalOrders]);
+    if (totalPages > 0 && currentPage > totalPages) setCurrentPage(totalPages);
+  }, [ currentPage, totalPages ]);
 
   // Mutations
   const createOrder = useMutation(api.boedor.orders.createOrder);
@@ -103,11 +103,11 @@ export default function DriverOrdersPage() {
       await createOrder({
         driverId: user._id,
       });
-      toast.success('Order created successfully!');
+      toast.success('Pesanan berhasil dibuat!');
       setIsCreateOrderOpen(false);
     } catch (error) {
       console.error('Failed to create order:', error);
-      toast.error('Failed to create order: ' + (error as Error).message);
+      toast.error('Gagal membuat pesanan: ' + (error as Error).message);
     }
   };
 
@@ -117,10 +117,10 @@ export default function DriverOrdersPage() {
         orderId: orderId as any,
         status,
       });
-      toast.success(`Order status updated to ${status}!`);
+      toast.success(`Status pesanan diperbarui menjadi ${status}!`);
     } catch (error) {
       console.error('Failed to update order status:', error);
-      toast.error('Failed to update order status: ' + (error as Error).message);
+      toast.error('Gagal memperbarui status pesanan: ' + (error as Error).message);
     }
   };
 
