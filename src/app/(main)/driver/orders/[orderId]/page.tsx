@@ -6,10 +6,12 @@ import { api } from '@/convex/_generated/api';
 import { Id } from '@/convex/_generated/dataModel';
 import Layout from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useEffect, useRef, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { ArrowLeft, User, ShoppingCart, MapPin } from 'lucide-react';
+import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/utils';
 import { getStatusIcon, getStatusColor, formatStatus } from '@/lib/status';
 
@@ -24,6 +26,10 @@ export default function OrderDetailPage() {
 
   // Mutations (declare before effects to avoid TDZ)
   const updatePosition = useMutation(api.boedor.driverPositions.updateDriverPosition);
+  const setCustomPrice = useMutation(api.boedor.orderItems.setCustomPrice);
+
+  // Draft input harga custom per order item
+  const [ priceInputs, setPriceInputs ] = useState<Record<string, string>>({});
 
   // Local state for location tracking (driver only)
   const [ location, setLocation ] = useState<{ lat: number; lng: number }>({ lat: 0, lng: 0 });
@@ -172,7 +178,7 @@ export default function OrderDetailPage() {
     if (!orderItems || !menuItems) return 0;
     return orderItems.reduce((total, item) => {
       const menuItem = menuItems.find((m) => m._id === item.menuId);
-      return total + (menuItem ? menuItem.price * item.qty : 0);
+      return total + (menuItem ? (item.customPrice ?? menuItem.price) * item.qty : 0);
     }, 0);
   };
 
@@ -180,7 +186,7 @@ export default function OrderDetailPage() {
     const userItems = itemsByUser[userId] || [];
     return userItems.reduce((total, item) => {
       const menuItem = menuItems?.find((m) => m._id === item.menuId);
-      return total + (menuItem ? menuItem.price * item.qty : 0);
+      return total + (menuItem ? (item.customPrice ?? menuItem.price) * item.qty : 0);
     }, 0);
   };
 
@@ -193,6 +199,17 @@ export default function OrderDetailPage() {
     if (!payment) return 0;
     const total = getUserTotal(userId);
     return payment.amount - total;
+  };
+
+  const handleSaveCustomPrice = async (orderItemId: string) => {
+    const val = parseFloat(priceInputs[orderItemId] ?? '');
+    if (isNaN(val) || val < 0) return;
+    try {
+      await setCustomPrice({ orderItemId: orderItemId as Id<'boedor_order_items'>, customPrice: val });
+      toast.success('Harga disimpan');
+    } catch (err) {
+      toast.error('Gagal menyimpan harga: ' + (err as Error).message);
+    }
   };
 
   return (
@@ -340,7 +357,14 @@ export default function OrderDetailPage() {
                       <div className="shrink-0 text-right">
                         {getUserPayment(participant._id) ? (
                           <div className="space-y-1">
-                            <p className="text-sm font-medium tabular-nums text-green-400">Kembalian: {formatCurrency(getUserChange(participant._id))}</p>
+                            {(() => {
+                              const change = getUserChange(participant._id);
+                              return (
+                                <p className={`text-sm font-medium tabular-nums ${change < 0 ? 'text-destructive' : 'text-green-400'}`}>
+                                  {change < 0 ? `Kurang Bayar: ${formatCurrency(-change)}` : `Kembalian: ${formatCurrency(change)}`}
+                                </p>
+                              );
+                            })()}
                             <p className="text-xs text-muted-foreground">
                               Dibayar {formatCurrency(getUserPayment(participant._id)!.amount)} · {formatPaymentMethod(getUserPayment(participant._id)!.paymentMethod)}
                             </p>
@@ -355,7 +379,7 @@ export default function OrderDetailPage() {
                     <div className="space-y-2.5">
                       {userItems.map((item) => {
                         const menuItem = menuItems?.find((m) => m._id === item.menuId);
-                        const itemTotal = menuItem ? menuItem.price * item.qty : 0;
+                        const itemTotal = menuItem ? (item.customPrice ?? menuItem.price) * item.qty : 0;
 
                         return (
                           <div key={item._id} className="flex items-center gap-3 rounded-lg border p-3">
@@ -365,10 +389,33 @@ export default function OrderDetailPage() {
                             <div className="min-w-0 flex-1">
                               <p className="truncate font-medium">{menuItem?.name || 'Item Tidak Dikenal'}</p>
                               <p className="text-xs text-muted-foreground">
-                                {item.qty} × {formatCurrency(menuItem?.price || 0)}
+                                {item.qty} × {formatCurrency(item.customPrice ?? menuItem?.price ?? 0)}
+                                {menuItem?.priceType === 'custom' && item.customPrice === undefined && (
+                                  <span className="ml-2 rounded-full bg-amber-400/15 px-2 py-0.5 text-xs font-medium text-amber-400">Harga belum diinput</span>
+                                )}
                               </p>
                               {item.note && (
                                 <p className="truncate text-xs italic text-muted-foreground">&ldquo;{item.note}&rdquo;</p>
+                              )}
+                              {menuItem?.priceType === 'custom' && order!.status !== 'completed' && (
+                                <div className="mt-2 flex items-center gap-2">
+                                  <Input
+                                    type="number"
+                                    min="0"
+                                    placeholder="Harga satuan aktual"
+                                    className="h-8 w-40"
+                                    value={priceInputs[item._id] ?? item.customPrice?.toString() ?? ''}
+                                    onChange={(e) => setPriceInputs((p) => ({ ...p, [item._id]: e.target.value }))}
+                                  />
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    disabled={isNaN(parseFloat(priceInputs[item._id] ?? ''))}
+                                    onClick={() => handleSaveCustomPrice(item._id)}
+                                  >
+                                    Simpan
+                                  </Button>
+                                </div>
                               )}
                             </div>
                             <p className="shrink-0 font-semibold tabular-nums">{formatCurrency(itemTotal)}</p>
@@ -418,7 +465,7 @@ export default function OrderDetailPage() {
                       <div className="shrink-0 text-right">
                         <p className="font-medium tabular-nums">{formatCurrency(payment.amount)}</p>
                         <p className={`text-sm font-medium tabular-nums ${change >= 0 ? 'text-green-400' : 'text-destructive'}`}>
-                          Kembalian {formatCurrency(change)}
+                          {change < 0 ? `Kurang Bayar ${formatCurrency(-change)}` : `Kembalian ${formatCurrency(change)}`}
                         </p>
                       </div>
                     </div>
@@ -434,8 +481,15 @@ export default function OrderDetailPage() {
                       </p>
                     </div>
                     <div>
-                      <p className="text-muted-foreground">Total Kembalian:</p>
-                      <p className="font-semibold text-green-400">{formatCurrency(orderPayments.reduce((sum, p) => sum + (p.amount - getUserTotal(p.userId)), 0))}</p>
+                      {(() => {
+                        const totalChange = orderPayments.reduce((sum, p) => sum + (p.amount - getUserTotal(p.userId)), 0);
+                        return (
+                          <>
+                            <p className="text-muted-foreground">{totalChange < 0 ? 'Total Kurang Bayar:' : 'Total Kembalian:'}</p>
+                            <p className={`font-semibold ${totalChange < 0 ? 'text-destructive' : 'text-green-400'}`}>{formatCurrency(Math.abs(totalChange))}</p>
+                          </>
+                        );
+                      })()}
                     </div>
                   </div>
                 </div>
