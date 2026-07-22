@@ -33,7 +33,6 @@ jobs:
           CONVEX_SELF_HOSTED_URL: ${{ secrets.CONVEX_SELF_HOSTED_URL }}
           CONVEX_SELF_HOSTED_ADMIN_KEY: ${{ secrets.CONVEX_SELF_HOSTED_ADMIN_KEY }}
         run: |
-          npm i -g pnpm@10
           pnpm install --frozen-lockfile
           npx convex codegen
 
