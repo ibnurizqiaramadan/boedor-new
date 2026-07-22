@@ -11,7 +11,6 @@ import {
   LogOut,
   SquareMenu,
   ShoppingCart,
-  Plus,
   Gauge,
   UtensilsCrossed,
 } from 'lucide-react';
@@ -33,9 +32,9 @@ const navigationItems = {
     { name: 'Pesanan', href: '/driver/orders', icon: ShoppingCart },
   ],
   user: [
-    { name: 'Dasbor', href: '/user', icon: ShoppingCart },
+    { name: 'Dasbor', href: '/user', icon: Gauge },
     { name: 'Menu', href: '/user/menu', icon: SquareMenu },
-    { name: 'Pesanan', href: '/user/pesanan', icon: Plus },
+    { name: 'Pesanan', href: '/user/pesanan', icon: ShoppingBag },
   ],
 };
 
