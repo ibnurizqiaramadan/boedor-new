@@ -43,7 +43,7 @@ export function MyOrderItems({
   return (
     <Card>
       <CardHeader>
-        <div className="flex justify-between items-start">
+        <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <CardTitle>Item Pesanan Saya</CardTitle>
             <CardDescription>
@@ -52,7 +52,7 @@ export function MyOrderItems({
           </div>
           {order.status === 'open' && (
             <Button onClick={onAddMore}>
-              <Plus className="h-4 w-4 mr-2" /> Tambah Item Lagi
+              <Plus className="mr-2 h-4 w-4" aria-hidden /> Tambah Item
             </Button>
           )}
         </div>
@@ -64,52 +64,51 @@ export function MyOrderItems({
               const menuItem = menuItems?.find((m) => m._id === item.menuId);
               const itemTotal = menuItem ? menuItem.price * item.qty : 0;
               return (
-                <div key={item._id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="font-medium">{menuItem?.name || 'Item Tidak Dikenal'}</p>
-                      <p className="text-sm text-muted-foreground">
-                        Jumlah: {item.qty} × {formatCurrency(menuItem?.price || 0)}
-                      </p>
-                      {item.note && (
-                        <p className="text-sm text-muted-foreground italic">Catatan: {item.note}</p>
-                      )}
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(item._creationTime).toLocaleString('id-ID', {
-                          year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit',
-                        })}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <p className="font-medium">{formatCurrency(itemTotal)}</p>
-                    {order.status === 'open' && (
-                      <div className="flex space-x-1">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => onEditItem(item)}
-                        >
-                          <Edit className="h-3 w-3" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => onRemoveItem(item._id)}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
+                <div key={item._id} className="flex items-center gap-3 rounded-lg border p-3">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-400/15 text-blue-400">
+                    <ShoppingCart className="h-4 w-4" aria-hidden />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-medium">{menuItem?.name || 'Item Tidak Dikenal'}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {item.qty} × {formatCurrency(menuItem?.price || 0)} ·{' '}
+                      {new Date(item._creationTime).toLocaleString('id-ID', {
+                        day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit',
+                      })}
+                    </p>
+                    {item.note && (
+                      <p className="truncate text-xs italic text-muted-foreground">&ldquo;{item.note}&rdquo;</p>
                     )}
                   </div>
+                  <p className="shrink-0 font-semibold tabular-nums">{formatCurrency(itemTotal)}</p>
+                  {order.status === 'open' && (
+                    <div className="flex shrink-0">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label={`Edit ${menuItem?.name || 'item'}`}
+                        onClick={() => onEditItem(item)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label={`Hapus ${menuItem?.name || 'item'}`}
+                        className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                        onClick={() => onRemoveItem(item._id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
               );
             })
           ) : (
-            <div className="text-center py-8">
-              <ShoppingCart className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">Anda belum menambahkan item apapun ke pesanan ini.</p>
+            <div className="flex flex-col items-center py-10 text-center text-muted-foreground">
+              <ShoppingCart className="h-8 w-8" aria-hidden />
+              <p className="mt-3 text-sm">Anda belum menambahkan item apapun ke pesanan ini.</p>
             </div>
           )}
         </div>

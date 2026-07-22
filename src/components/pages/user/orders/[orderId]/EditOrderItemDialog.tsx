@@ -20,6 +20,7 @@ interface EditOrderItemDialogProps {
   onOpenChange: (open: boolean) => void;
   selectedOrderItem: OrderItem | null;
   menuItems: MenuItem[] | undefined;
+  isSubmitting?: boolean;
   onUpdateItem: (item: OrderItem) => void;
   onSave: () => void;
 }
@@ -29,6 +30,7 @@ export function EditOrderItemDialog({
   onOpenChange,
   selectedOrderItem,
   menuItems,
+  isSubmitting = false,
   onUpdateItem,
   onSave,
 }: EditOrderItemDialogProps) {
@@ -73,8 +75,10 @@ export function EditOrderItemDialog({
           />
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Batal</Button>
-          <Button onClick={onSave}>Perbarui Item</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>Batal</Button>
+          <Button onClick={onSave} disabled={isSubmitting}>
+            {isSubmitting ? 'Menyimpan...' : 'Perbarui Item'}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

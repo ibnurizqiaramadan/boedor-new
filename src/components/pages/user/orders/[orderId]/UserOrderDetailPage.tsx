@@ -9,6 +9,8 @@ import { useEffect, useState, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { OrderDetailHeader } from './OrderDetailHeader';
 import { OrderDetailStats } from './OrderDetailStats';
 import { PaymentSection } from './PaymentSection';
@@ -34,6 +36,8 @@ export default function UserOrderDetailPage() {
   const [ menuFilter, setMenuFilter ] = useState('');
   const [ minPrice, setMinPrice ] = useState<string>('');
   const [ maxPrice, setMaxPrice ] = useState<string>('');
+  const [ isSubmitting, setIsSubmitting ] = useState(false);
+  const [ itemToRemove, setItemToRemove ] = useState<string | null>(null);
 
   // Queries
   const order = useQuery(
@@ -177,6 +181,7 @@ export default function UserOrderDetailPage() {
   };
 
   const handleSavePayment = async () => {
+    if (isSubmitting) return;
     try {
       setPayErrors({});
       const amt = parseFloat(amount);
@@ -192,6 +197,7 @@ export default function UserOrderDetailPage() {
         return;
       }
 
+      setIsSubmitting(true);
       await upsertPayment({
         orderId: orderId as Id<'boedor_orders'>,
         paymentMethod,
@@ -201,6 +207,8 @@ export default function UserOrderDetailPage() {
     } catch (err) {
       console.error(err);
       toast.error('Gagal menyimpan pembayaran');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -226,7 +234,9 @@ export default function UserOrderDetailPage() {
   };
 
   const handleUpdateOrderItem = async () => {
+    if (isSubmitting) return;
     try {
+      setIsSubmitting(true);
       if (selectedOrderItem && selectedOrderItem.qty > 0) {
         // If payment exists, ensure the new total (with edited item qty) does not exceed payment
         if (existingPayment && menuItems) {
@@ -254,25 +264,32 @@ export default function UserOrderDetailPage() {
     } catch (error) {
       console.error('Failed to update order item:', error);
       toast.error('Gagal memperbarui item pesanan: ' + (error as Error).message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleRemoveOrderItem = async (orderItemId: string) => {
+  const handleConfirmRemoveItem = async () => {
+    if (!itemToRemove || isSubmitting) return;
     try {
-      if (confirm('Apakah Anda yakin ingin menghapus item ini dari pesanan?')) {
-        await removeOrderItem({
-          orderItemId: orderItemId as Id<'boedor_order_items'>,
-        });
-        toast.success('Item pesanan berhasil dihapus!');
-      }
+      setIsSubmitting(true);
+      await removeOrderItem({
+        orderItemId: itemToRemove as Id<'boedor_order_items'>,
+      });
+      toast.success('Item pesanan berhasil dihapus!');
+      setItemToRemove(null);
     } catch (error) {
       console.error('Failed to remove order item:', error);
       toast.error('Gagal menghapus item pesanan: ' + (error as Error).message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleAddMoreItems = async () => {
+    if (isSubmitting) return;
     try {
+      setIsSubmitting(true);
       // Validate against existing payment (if any)
       const subtotal = selectedMenuItems.reduce((sum, sel) => {
         const m = menuItems?.find((mi) => mi._id === sel.menuId);
@@ -308,6 +325,8 @@ export default function UserOrderDetailPage() {
     } catch (error) {
       console.error('Failed to add items:', error);
       toast.error('Gagal menambah item: ' + (error as Error).message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -361,6 +380,7 @@ export default function UserOrderDetailPage() {
           payErrors={payErrors}
           existingPayment={existingPayment || null}
           myTotal={getMyTotal()}
+          isSaving={isSubmitting}
           onPaymentMethodChange={setPaymentMethod}
           onAmountChange={(value) => {
             setAmount(value);
@@ -377,7 +397,7 @@ export default function UserOrderDetailPage() {
             setSelectedOrderItem({ ...item, qty: item.qty });
             setIsEditItemOpen(true);
           }}
-          onRemoveItem={handleRemoveOrderItem}
+          onRemoveItem={(orderItemId) => setItemToRemove(orderItemId)}
           onAddMore={() => setIsAddItemOpen(true)}
         />
 
@@ -402,6 +422,7 @@ export default function UserOrderDetailPage() {
           onOpenChange={setIsEditItemOpen}
           selectedOrderItem={selectedOrderItem}
           menuItems={menuItems}
+          isSubmitting={isSubmitting}
           onUpdateItem={(updatedItem) => setSelectedOrderItem(updatedItem)}
           onSave={handleUpdateOrderItem}
         />
@@ -415,6 +436,7 @@ export default function UserOrderDetailPage() {
           maxPrice={maxPrice}
           selectedMenuItems={selectedMenuItems}
           itemNotes={itemNotes}
+          isSubmitting={isSubmitting}
           existingPayment={existingPayment || null}
           getMyTotal={getMyTotal}
           getMenuItemQuantity={getMenuItemQuantity}
@@ -425,6 +447,23 @@ export default function UserOrderDetailPage() {
           onMenuItemNoteChange={setMenuItemNote}
           onAddItems={handleAddMoreItems}
         />
+
+        <Dialog open={itemToRemove !== null} onOpenChange={(open) => !open && setItemToRemove(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Hapus Item?</DialogTitle>
+              <DialogDescription>Item ini akan dihapus dari pesanan Anda.</DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setItemToRemove(null)} disabled={isSubmitting}>
+                Batal
+              </Button>
+              <Button variant="destructive" onClick={handleConfirmRemoveItem} disabled={isSubmitting}>
+                {isSubmitting ? 'Menghapus...' : 'Hapus'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </Layout>
   );

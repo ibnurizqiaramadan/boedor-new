@@ -21,6 +21,7 @@ interface AddMoreItemsDialogProps {
   maxPrice: string;
   selectedMenuItems: Array<{ menuId: string; qty: number }>;
   itemNotes: Record<string, string>;
+  isSubmitting?: boolean;
   existingPayment: Payment | null;
   getMyTotal: () => number;
   getMenuItemQuantity: (menuId: string) => number;
@@ -41,6 +42,7 @@ export function AddMoreItemsDialog({
   maxPrice,
   selectedMenuItems,
   itemNotes,
+  isSubmitting = false,
   existingPayment,
   getMyTotal,
   getMenuItemQuantity,
@@ -167,10 +169,10 @@ export function AddMoreItemsDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Batal</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>Batal</Button>
           <Button
             onClick={onAddItems}
-            disabled={(() => {
+            disabled={isSubmitting || (() => {
               const count = selectedMenuItems.filter((item) => item.qty > 0).length;
               if (count === 0) return true;
               if (!existingPayment) return false;
@@ -178,7 +180,7 @@ export function AddMoreItemsDialog({
               return getMyTotal() + newSubtotal > existingPayment.amount;
             })()}
           >
-            Tambah Item ({selectedMenuItems.filter((item) => item.qty > 0).length})
+            {isSubmitting ? 'Menyimpan...' : `Tambah Item (${selectedMenuItems.filter((item) => item.qty > 0).length})`}
           </Button>
         </DialogFooter>
       </DialogContent>

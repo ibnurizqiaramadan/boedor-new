@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { User, ShoppingCart } from 'lucide-react';
+import { Users, ShoppingCart } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 
 interface OrderItem {
@@ -41,56 +41,59 @@ export function AllParticipants({
 }: AllParticipantsProps) {
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-semibold text-foreground">Semua Peserta & Item</h2>
+      <h2 className="text-lg font-semibold text-foreground">Semua Peserta &amp; Item</h2>
 
       {participants && participants.length > 0 ? (
         participants.map((participant) => {
           if (!participant) return null;
           const userItems = itemsByUser[participant._id] || [];
           const userTotal = getUserTotal(participant._id);
+          const displayName = participant.name || participant.email || participant.username || 'Unknown';
 
           return (
             <Card key={participant._id}>
               <CardHeader>
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center space-x-3">
-                    <User className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                      <CardTitle className="text-lg">
-                        {participant.name || participant.email || participant.username || 'Unknown'}
-                        {participant._id === currentUserId && ' (Anda)'}
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-400/15 text-sm font-semibold uppercase text-blue-400">
+                      {displayName.charAt(0)}
+                    </span>
+                    <div className="min-w-0">
+                      <CardTitle className="flex items-center gap-2 text-base">
+                        <span className="truncate">{displayName}</span>
+                        {participant._id === currentUserId && (
+                          <span className="shrink-0 rounded-full bg-blue-400/15 px-2 py-0.5 text-xs font-medium text-blue-400">Anda</span>
+                        )}
                       </CardTitle>
                       <CardDescription>
-                        {userItems.length} item • Total: {formatCurrency(userTotal)}
+                        {userItems.length} item · Total {formatCurrency(userTotal)}
                       </CardDescription>
                     </div>
                   </div>
-                  <span className="text-sm text-muted-foreground capitalize">{participant.role}</span>
+                  <span className="shrink-0 text-sm capitalize text-muted-foreground">{participant.role}</span>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
+                <div className="space-y-2.5">
                   {userItems.sort((a, b) => b._creationTime - a._creationTime).map((item) => {
                     const menuItem = menuItems?.find((m) => m._id === item.menuId);
                     const itemTotal = menuItem ? menuItem.price * item.qty : 0;
 
                     return (
-                      <div key={item._id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                        <div className="flex items-center space-x-3">
-                          <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-                          <div>
-                            <p className="font-medium">{menuItem?.name || 'Item Tidak Dikenal'}</p>
-                            <p className="text-sm text-muted-foreground">
-                              Jumlah: {item.qty} × {formatCurrency(menuItem?.price || 0)}
-                            </p>
-                            {item.note && (
-                              <p className="text-sm text-muted-foreground italic">Catatan: {item.note}</p>
-                            )}
-                          </div>
+                      <div key={item._id} className="flex items-center gap-3 rounded-lg border p-3">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                          <ShoppingCart className="h-4 w-4" aria-hidden />
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate font-medium">{menuItem?.name || 'Item Tidak Dikenal'}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {item.qty} × {formatCurrency(menuItem?.price || 0)}
+                          </p>
+                          {item.note && (
+                            <p className="truncate text-xs italic text-muted-foreground">&ldquo;{item.note}&rdquo;</p>
+                          )}
                         </div>
-                        <div className="text-right">
-                          <p className="font-medium">{formatCurrency(itemTotal)}</p>
-                        </div>
+                        <p className="shrink-0 font-semibold tabular-nums">{formatCurrency(itemTotal)}</p>
                       </div>
                     );
                   })}
@@ -101,9 +104,9 @@ export function AllParticipants({
         })
       ) : (
         <Card>
-          <CardContent className="text-center py-8">
-            <User className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">Belum ada peserta yang bergabung dengan pesanan ini.</p>
+          <CardContent className="flex flex-col items-center py-10 text-center text-muted-foreground">
+            <Users className="h-8 w-8" aria-hidden />
+            <p className="mt-3 text-sm">Belum ada peserta yang bergabung dengan pesanan ini.</p>
           </CardContent>
         </Card>
       )}

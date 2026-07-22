@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, MapPin } from 'lucide-react';
 
 interface OrderDetailHeaderProps {
   orderId: string;
@@ -9,27 +9,24 @@ interface OrderDetailHeaderProps {
 
 export function OrderDetailHeader({ orderId, onBack, onTrack }: OrderDetailHeaderProps) {
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex items-start sm:items-center gap-3 sm:gap-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onBack}
-          className="shrink-0"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Kembali
-        </Button>
-        <div>
-          <h1 className="text-2xl sm:font-display text-3xl text-foreground leading-tight">Detail Pesanan</h1>
-          <p className="text-sm sm:text-base text-muted-foreground break-all sm:break-normal">Pesanan #{orderId.slice(-8)}</p>
-        </div>
+    <div className="flex items-center gap-3">
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={onBack}
+        aria-label="Kembali"
+        className="shrink-0"
+      >
+        <ArrowLeft className="h-4 w-4" />
+      </Button>
+      <div className="min-w-0 flex-1">
+        <h1 className="font-display text-2xl text-foreground sm:text-3xl">Detail Pesanan</h1>
+        <p className="text-sm text-muted-foreground">#{orderId.slice(-8)}</p>
       </div>
-      <div className="flex sm:ml-auto">
-        <Button className="w-full sm:w-auto" onClick={onTrack}>
-          Lacak
-        </Button>
-      </div>
+      <Button onClick={onTrack} className="shrink-0">
+        <MapPin className="mr-2 h-4 w-4" aria-hidden />
+        Lacak
+      </Button>
     </div>
   );
 }
