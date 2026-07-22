@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Search } from 'lucide-react';
 
 interface JoinOrderInfoProps {
   orderId: string;
@@ -13,13 +14,12 @@ interface JoinOrderInfoProps {
 }
 
 export function JoinOrderInfo({
-  orderId,
   menuFilter,
   minPrice,
   maxPrice,
   onMenuFilterChange,
   onMinPriceChange,
-  onMaxPriceChange
+  onMaxPriceChange,
 }: JoinOrderInfoProps) {
   return (
     <Card>
@@ -27,45 +27,41 @@ export function JoinOrderInfo({
         <CardTitle>Pilih Item Menu</CardTitle>
         <CardDescription>Pilih item dan jumlah yang ingin Anda tambahkan ke pesanan ini</CardDescription>
       </CardHeader>
-      <CardContent>
-        {/* Filter */}
-        <div className="space-y-4">
-          <div>
+      <CardContent className="space-y-3">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
+          <Input
+            type="search"
+            placeholder="Cari menu..."
+            aria-label="Cari menu"
+            value={menuFilter}
+            onChange={(e) => onMenuFilterChange(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <Label htmlFor="minPrice" className="text-xs text-muted-foreground">Harga Min (Rp)</Label>
             <Input
-              type="text"
-              placeholder="Cari menu..."
-              value={menuFilter}
-              onChange={(e) => onMenuFilterChange(e.target.value)}
-              className="w-full"
+              id="minPrice"
+              type="number"
+              placeholder="0"
+              value={minPrice}
+              onChange={(e) => onMinPriceChange(e.target.value)}
+              min="0"
             />
           </div>
-
-          {/* Price Range Filter */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="minPrice" className="text-sm font-medium">Harga Min (Rp)</Label>
-              <Input
-                id="minPrice"
-                type="number"
-                placeholder="0"
-                value={minPrice}
-                onChange={(e) => onMinPriceChange(e.target.value)}
-                className="mt-1"
-                min="0"
-              />
-            </div>
-            <div>
-              <Label htmlFor="maxPrice" className="text-sm font-medium">Harga Max (Rp)</Label>
-              <Input
-                id="maxPrice"
-                type="number"
-                placeholder="Tidak terbatas"
-                value={maxPrice}
-                onChange={(e) => onMaxPriceChange(e.target.value)}
-                className="mt-1"
-                min="0"
-              />
-            </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="maxPrice" className="text-xs text-muted-foreground">Harga Max (Rp)</Label>
+            <Input
+              id="maxPrice"
+              type="number"
+              placeholder="Tidak terbatas"
+              value={maxPrice}
+              onChange={(e) => onMaxPriceChange(e.target.value)}
+              min="0"
+            />
           </div>
         </div>
       </CardContent>

@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, Minus, Plus } from 'lucide-react';
+import { formatCurrency, cn } from '@/lib/utils';
 
 interface MenuItem {
   _id: string;
@@ -19,56 +20,66 @@ interface MenuSelectionProps {
 
 export function MenuSelection({
   menuItems,
-  selectedMenuItems,
   itemNotes,
   getMenuItemQuantity,
   onMenuItemQuantityChange,
   onMenuItemNoteChange,
 }: MenuSelectionProps) {
-  const formatCurrency = (amount: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
-
   return (
-    <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-      {menuItems.map((item) => (
-        <div key={item._id} className="p-3 border rounded">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium">{item.name}</p>
-              <p className="text-sm text-muted-foreground">{formatCurrency(item.price)}</p>
+    <div className="max-h-[60vh] space-y-2.5 overflow-y-auto pr-1">
+      {menuItems.map((item) => {
+        const qty = getMenuItemQuantity(item._id);
+        return (
+          <div
+            key={item._id}
+            className={cn(
+              'rounded-lg border bg-card p-3 transition-colors',
+              qty > 0 && 'border-primary/60 bg-primary/5',
+            )}
+          >
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="truncate font-medium">{item.name}</p>
+                <p className="text-sm tabular-nums text-green-400">{formatCurrency(item.price)}</p>
+              </div>
+              <div className="flex shrink-0 items-center gap-1">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-9 w-9"
+                  aria-label={`Kurangi ${item.name}`}
+                  disabled={qty === 0}
+                  onClick={() => onMenuItemQuantityChange(item._id, Math.max(0, qty - 1))}
+                >
+                  <Minus className="h-4 w-4" />
+                </Button>
+                <span className="w-8 text-center font-medium tabular-nums" aria-live="polite">{qty}</span>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-9 w-9"
+                  aria-label={`Tambah ${item.name}`}
+                  onClick={() => onMenuItemQuantityChange(item._id, qty + 1)}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onMenuItemQuantityChange(item._id, Math.max(0, getMenuItemQuantity(item._id) - 1))}
-              >
-                -
-              </Button>
-              <span className="w-8 text-center">{getMenuItemQuantity(item._id)}</span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onMenuItemQuantityChange(item._id, getMenuItemQuantity(item._id) + 1)}
-              >
-                +
-              </Button>
-            </div>
+            {qty > 0 && (
+              <Input
+                value={itemNotes[item._id] ?? ''}
+                onChange={(e) => onMenuItemNoteChange(item._id, e.target.value)}
+                placeholder="Catatan (opsional) untuk item ini"
+                className="mt-2.5"
+              />
+            )}
           </div>
-          <div className="mt-2">
-            <Input
-              value={itemNotes[item._id] ?? ''}
-              onChange={(e) => onMenuItemNoteChange(item._id, e.target.value)}
-              placeholder="Catatan (opsional) untuk item ini"
-              className="w-full"
-              disabled={getMenuItemQuantity(item._id) === 0}
-            />
-          </div>
-        </div>
-      ))}
+        );
+      })}
       {(!menuItems || menuItems.length === 0) && (
-        <div className="text-center py-8">
-          <ShoppingCart className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">Tidak ada item menu tersedia.</p>
+        <div className="flex flex-col items-center py-10 text-center text-muted-foreground">
+          <ShoppingCart className="h-8 w-8" aria-hidden />
+          <p className="mt-3 text-sm">Tidak ada item menu tersedia.</p>
         </div>
       )}
     </div>

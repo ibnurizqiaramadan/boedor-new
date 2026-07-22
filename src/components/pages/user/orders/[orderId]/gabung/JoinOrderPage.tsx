@@ -63,6 +63,7 @@ export default function JoinOrderPage() {
   const [ itemNotes, setItemNotes ] = useState<Record<string, string>>({});
   const [ paymentMethod, setPaymentMethod ] = useState<'cash' | 'cardless' | 'dana'>('cash');
   const [ amount, setAmount ] = useState('');
+  const [ isJoining, setIsJoining ] = useState(false);
 
   // Prefill payment form when existing payment is found
   useEffect(() => {
@@ -114,8 +115,6 @@ export default function JoinOrderPage() {
 
   const setMenuItemNote = (menuId: string, note: string) => setItemNotes((prev) => ({ ...prev, [menuId]: note }));
 
-  const formatCurrency = (amount: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
-
   const getMyCurrentTotal = () => {
     if (!orderItems || !menuItems || !user) return 0;
     const myItems = orderItems.filter((it: OrderItem) => it.userId === user._id);
@@ -135,6 +134,7 @@ export default function JoinOrderPage() {
   };
 
   const handleJoinOrder = async () => {
+    if (isJoining) return;
     try {
       // Ensure authenticated before proceeding
       if (isLoading || !user) {
@@ -166,6 +166,8 @@ export default function JoinOrderPage() {
         }
       }
 
+      setIsJoining(true);
+
       // Add items
       for (const item of selectedMenuItems) {
         if (item.qty > 0) {
@@ -193,6 +195,8 @@ export default function JoinOrderPage() {
     } catch (err) {
       console.error(err);
       toast.error('Gagal bergabung dengan pesanan');
+    } finally {
+      setIsJoining(false);
     }
   };
 
@@ -210,8 +214,6 @@ export default function JoinOrderPage() {
       </Layout>
     );
   }
-
-  const remaining = existingPayment ? existingPayment.amount - getMyCurrentTotal() : Number.POSITIVE_INFINITY;
 
   return (
     <Layout>
@@ -237,13 +239,6 @@ export default function JoinOrderPage() {
           onMenuItemNoteChange={setMenuItemNote}
         />
 
-        <div className="flex items-center justify-between pt-4">
-          <span className="font-semibold">Subtotal</span>
-          <span className={`font-semibold ${calcSubtotal() > remaining ? 'text-destructive' : ''}`}>
-            {formatCurrency(calcSubtotal())}
-          </span>
-        </div>
-
         {!existingPayment && (
           <PaymentForm
             paymentMethod={paymentMethod}
@@ -257,6 +252,7 @@ export default function JoinOrderPage() {
         <JoinOrderActions
           selectedMenuItems={selectedMenuItems}
           existingPayment={existingPayment || null}
+          isSubmitting={isJoining}
           getMyCurrentTotal={getMyCurrentTotal}
           calcSubtotal={calcSubtotal}
           onJoinOrder={handleJoinOrder}

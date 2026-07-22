@@ -8,13 +8,13 @@ interface JoinOrderHeaderProps {
 
 export function JoinOrderHeader({ orderId, onBack }: JoinOrderHeaderProps) {
   return (
-    <div className="flex items-start gap-3 sm:items-center">
-      <Button variant="outline" size="sm" onClick={onBack} className="shrink-0">
-        <ArrowLeft className="h-4 w-4 mr-2" /> Kembali
+    <div className="flex items-center gap-3">
+      <Button variant="outline" size="icon" onClick={onBack} aria-label="Kembali" className="shrink-0">
+        <ArrowLeft className="h-4 w-4" />
       </Button>
-      <div>
-        <h1 className="text-2xl sm:font-display text-3xl text-foreground leading-tight">Gabung Pesanan</h1>
-        <p className="text-sm sm:text-base text-muted-foreground break-all">Pesanan #{orderId.slice(-8)}</p>
+      <div className="min-w-0">
+        <h1 className="font-display text-2xl text-foreground sm:text-3xl">Gabung Pesanan</h1>
+        <p className="text-sm text-muted-foreground">#{orderId.slice(-8)}</p>
       </div>
     </div>
   );
