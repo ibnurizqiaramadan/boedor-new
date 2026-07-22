@@ -1,33 +1,25 @@
 'use client';
 
 import { useAuth } from '@/contexts/AuthContext';
-import { useQuery, useMutation } from 'convex/react';
+import { useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
-import { Id } from '@/convex/_generated/dataModel';
+
 import Layout from '@/components/layout/Layout';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
-import { formatCurrency } from '@/lib/utils';
-import { getStatusIcon, getStatusColor, formatStatus } from '@/lib/status';
+
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Bike } from 'lucide-react';
 import { UserStatsCards } from './UserStatsCards';
 import { UserReportsSection } from './UserReportsSection';
 import { UserOrderItems } from './UserOrderItems';
 import type { OrderItem } from '@/lib/types';
-import { JoinOrderDialog } from './JoinOrderDialog';
 import { Pagination, PaginationInfo } from '@/components/ui/pagination';
 
 export default function UserMainPage() {
   const { user } = useAuth();
   const router = useRouter();
-  const [ isAddMenuOpen, setIsAddMenuOpen ] = useState(false);
-  const [ isJoinOrderOpen, setIsJoinOrderOpen ] = useState(false);
-  const [ selectedOrder, setSelectedOrder ] = useState<any>(null);
-  const [ selectedMenuItems, setSelectedMenuItems ] = useState<{ menuId: string; qty: number }[]>([]);
-  const [ newMenuItem, setNewMenuItem ] = useState({ name: '', price: 0 });
-  const [ paymentMethod, setPaymentMethod ] = useState<string>('cash');
-  const [ amount, setAmount ] = useState<string>('');
-  const [ note, setNote ] = useState<string>('');
   const [ currentPage, setCurrentPage ] = useState(1);
 
   const ORDERS_PER_PAGE = 5; // Show 5 orders per page
@@ -37,15 +29,6 @@ export default function UserMainPage() {
   const menuItems = useQuery(api.boedor.menu.getAllMenuItems, user ? {} : 'skip');
   const myOrderItems = useQuery(api.boedor.orderItems.getOrderItemsByUser, user ? { userId: user._id } : 'skip');
   const myPayments = useQuery(api.boedor.payment.getPaymentsByUser, user ? { userId: user._id } : 'skip');
-
-  // Query existing payment for selected order
-  const existingPayment = useQuery(
-    api.boedor.payment.getPaymentByOrderUser,
-    selectedOrder && user ? {
-      orderId: selectedOrder._id,
-      userId: user._id,
-    } : 'skip',
-  );
 
   // Group and paginate order items
   const groupedOrders = myOrderItems?.reduce((acc, item) => {
@@ -71,26 +54,21 @@ export default function UserMainPage() {
   const endIndex = startIndex + ORDERS_PER_PAGE;
   const paginatedOrders = sortedOrders.slice(startIndex, endIndex);
 
-  // Reset to first page when orders change
+  // Clamp page when the list shrinks (don't yank the user to page 1 on realtime updates)
   React.useEffect(() => {
-    setCurrentPage(1);
-  }, [totalOrders]);
+    if (totalPages > 0 && currentPage > totalPages) setCurrentPage(totalPages);
+  }, [ currentPage, totalPages ]);
 
-  // Mutations
-  const addMenuItem = useMutation(api.boedor.menu.createMenuItem);
-  const addOrderItem = useMutation(api.boedor.orderItems.addOrderItem);
-  const upsertPayment = useMutation(api.boedor.payment.upsertPayment);
-
-  // Pre-populate payment form when existing payment is found
-  useEffect(() => {
-    if (existingPayment) {
-      setPaymentMethod(existingPayment.paymentMethod);
-      setAmount(existingPayment.amount.toString());
-    } else {
-      setPaymentMethod('cash');
-      setAmount('');
-    }
-  }, [ existingPayment ]);
+  // Open orders + their driver names
+  const openOrders = (availableOrders ?? []).filter((order) => order.status === 'open');
+  const driverNames = useQuery(
+    api.boedor.users.getUsernamesByIds,
+    user && openOrders.length > 0 ? { userIds: openOrders.map((order) => order.driverId) } : 'skip',
+  );
+  const driverOf = (driverId: string) => {
+    const driver = driverNames?.find((d) => d?._id === driverId);
+    return driver?.name || driver?.username || 'Driver';
+  };
 
   // Redirect to home page if user is not logged in
   useEffect(() => {
@@ -112,71 +90,6 @@ export default function UserMainPage() {
       </Layout>
     );
   }
-
-  const handleAddMenuItem = async () => {
-    if (newMenuItem.name && newMenuItem.price > 0) {
-      await addMenuItem({
-        name: newMenuItem.name,
-        price: newMenuItem.price,
-      });
-      setIsAddMenuOpen(false);
-      setNewMenuItem({ name: '', price: 0 });
-    }
-  };
-
-  const handleJoinOrder = async () => {
-    if (selectedOrder && selectedMenuItems.length > 0 && (parseFloat(amount) > 0 || existingPayment)) {
-      try {
-        // Add all selected items to the order
-        for (const item of selectedMenuItems) {
-          if (item.qty > 0) {
-            await addOrderItem({
-              orderId: selectedOrder._id,
-              menuId: item.menuId as Id<'boedor_menu'>,
-              qty: item.qty,
-              note: note?.trim() ? note.trim() : undefined,
-            });
-          }
-        }
-
-        // Save payment info separately (only if amount is provided or updating existing)
-        if (parseFloat(amount) > 0) {
-          await upsertPayment({
-            orderId: selectedOrder._id,
-            paymentMethod: paymentMethod as 'cash' | 'cardless' | 'dana',
-            amount: parseFloat(amount),
-          });
-        }
-
-        toast.success('Berhasil bergabung dengan pesanan!');
-        setIsJoinOrderOpen(false);
-        setSelectedOrder(null);
-        setSelectedMenuItems([]);
-        setAmount('');
-        setPaymentMethod('cash');
-        setNote('');
-      } catch (error) {
-        toast.error('Gagal bergabung dengan pesanan');
-      }
-    }
-  };
-
-  const updateMenuItemQuantity = (menuId: string, qty: number) => {
-    setSelectedMenuItems((prev) => {
-      const existing = prev.find((item) => item.menuId === menuId);
-      if (existing) {
-        return prev.map((item) =>
-          item.menuId === menuId ? { ...item, qty } : item,
-        );
-      } else {
-        return [ ...prev, { menuId, qty } ];
-      }
-    });
-  };
-
-  const getMenuItemQuantity = (menuId: string) => {
-    return selectedMenuItems.find((item) => item.menuId === menuId)?.qty || 0;
-  };
 
   // Report calculations
   const calculateReports = () => {
@@ -260,26 +173,70 @@ export default function UserMainPage() {
     <Layout>
       <div className="space-y-6">
         <div>
-          <h1 className="font-display text-3xl text-foreground">Dasbor Pengguna</h1>
-          <p className="mt-2 text-muted-foreground">Jelajahi pesanan dan usulkan item menu</p>
+          <h1 className="font-display text-3xl text-foreground">
+            Halo, {(user.name || user.username || 'Pengguna').split(' ')[0]}!
+          </h1>
+          <p className="mt-2 text-muted-foreground">Gabung pesanan terbuka atau cek riwayat pesananmu</p>
         </div>
 
         <UserStatsCards
-          availableOrdersCount={availableOrders?.filter((order) => order.status === 'open').length || 0}
+          availableOrdersCount={openOrders.length}
           myOrderItemsCount={myOrderItems?.length || 0}
           menuItemsCount={menuItems?.length || 0}
         />
 
-        <UserReportsSection reports={reports} />
+        {/* Open orders: primary action on this page */}
+        <section>
+          <div className="flex items-baseline justify-between">
+            <h2 className="text-lg font-semibold">Pesanan Terbuka</h2>
+            <span className="text-sm text-muted-foreground">{openOrders.length} tersedia</span>
+          </div>
+          {openOrders.length > 0 ? (
+            <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {openOrders.map((order) => (
+                <Card key={order._id}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3">
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-400/15 text-blue-400">
+                        <Bike className="h-5 w-5" aria-hidden />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="truncate font-medium">{driverOf(order.driverId)}</p>
+                        <p className="text-xs text-muted-foreground">
+                          #{order._id.slice(-6)} ·{' '}
+                          {new Date(order.createdAt).toLocaleString('id-ID', {
+                            day: '2-digit',
+                            month: 'short',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      size="sm"
+                      className="mt-3 w-full"
+                      onClick={() => router.push(`/user/orders/${order._id}/gabung`)}
+                    >
+                      Gabung Pesanan
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <Card className="mt-3">
+              <CardContent className="p-6 text-center text-sm text-muted-foreground">
+                Belum ada pesanan terbuka saat ini
+              </CardContent>
+            </Card>
+          )}
+        </section>
 
         <UserOrderItems
           paginatedOrders={paginatedOrders}
           availableOrders={availableOrders || []}
           onOrderClick={(orderId) => router.push(`/user/orders/${orderId}`)}
-          onJoinOrder={(order) => {
-            setSelectedOrder(order);
-            setIsJoinOrderOpen(true);
-          }}
         />
 
         {/* Pagination for User Order Items */}
@@ -299,23 +256,7 @@ export default function UserMainPage() {
           </div>
         )}
 
-        <JoinOrderDialog
-          open={isJoinOrderOpen}
-          onOpenChange={setIsJoinOrderOpen}
-          selectedOrder={selectedOrder}
-          menuItems={menuItems || []}
-          selectedMenuItems={selectedMenuItems}
-          paymentMethod={paymentMethod}
-          amount={amount}
-          note={note}
-          existingPayment={existingPayment || null}
-          onPaymentMethodChange={setPaymentMethod}
-          onAmountChange={setAmount}
-          onNoteChange={setNote}
-          onMenuItemQuantityChange={updateMenuItemQuantity}
-          onJoinOrder={handleJoinOrder}
-          getMenuItemQuantity={getMenuItemQuantity}
-        />
+        <UserReportsSection reports={reports} />
       </div>
     </Layout>
   );
