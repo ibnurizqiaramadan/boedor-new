@@ -13,6 +13,7 @@ interface MenuItem {
   _id: string;
   name: string;
   price: number;
+  priceType?: 'fixed' | 'custom';
 }
 
 interface EditOrderItemDialogProps {
@@ -51,7 +52,7 @@ export function EditOrderItemDialog({
               {menuItem?.name}
             </p>
             <p className="text-sm text-muted-foreground">
-              Rp {menuItem?.price.toLocaleString('id-ID')} per item
+              {menuItem?.priceType === 'custom' ? 'Harga Custom' : `Rp ${menuItem?.price.toLocaleString('id-ID')} per item`}
             </p>
           </div>
           <Input

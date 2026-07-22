@@ -1,12 +1,13 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ShoppingCart, Minus, Plus } from 'lucide-react';
-import { formatCurrency, cn } from '@/lib/utils';
+import { menuPriceLabel, cn } from '@/lib/utils';
 
 interface MenuItem {
   _id: string;
   name: string;
   price: number;
+  priceType?: 'fixed' | 'custom';
 }
 
 interface MenuSelectionProps {
@@ -40,7 +41,7 @@ export function MenuSelection({
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
                 <p className="truncate font-medium">{item.name}</p>
-                <p className="text-sm tabular-nums text-green-400">{formatCurrency(item.price)}</p>
+                <p className="text-sm tabular-nums text-green-400">{menuPriceLabel(item)}</p>
               </div>
               <div className="flex shrink-0 items-center gap-1">
                 <Button

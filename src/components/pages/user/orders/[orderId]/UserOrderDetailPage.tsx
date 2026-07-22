@@ -176,7 +176,7 @@ export default function UserOrderDetailPage() {
     if (!orderItems || !menuItems) return 0;
     return orderItems.reduce((total, item) => {
       const menuItem = menuItems.find((m) => m._id === item.menuId);
-      return total + (menuItem ? menuItem.price * item.qty : 0);
+      return total + (menuItem ? (item.customPrice ?? menuItem.price) * item.qty : 0);
     }, 0);
   };
 
@@ -216,14 +216,14 @@ export default function UserOrderDetailPage() {
     const userItems = itemsByUser[userId] || [];
     return userItems.reduce((total, item) => {
       const menuItem = menuItems?.find((m) => m._id === item.menuId);
-      return total + (menuItem ? menuItem.price * item.qty : 0);
+      return total + (menuItem ? (item.customPrice ?? menuItem.price) * item.qty : 0);
     }, 0);
   };
 
   const getMyTotal = () => {
     return myItems.reduce((total, item) => {
       const menuItem = menuItems?.find((m) => m._id === item.menuId);
-      return total + (menuItem ? menuItem.price * item.qty : 0);
+      return total + (menuItem ? (item.customPrice ?? menuItem.price) * item.qty : 0);
     }, 0);
   };
 
@@ -244,7 +244,7 @@ export default function UserOrderDetailPage() {
           const currentTotalExcluding = myItems.reduce((sum, it) => {
             if (it._id === selectedOrderItem._id) return sum;
             const m = menuItems.find((mm) => mm._id === it.menuId);
-            return sum + (m ? m.price * it.qty : 0);
+            return sum + (m ? (it.customPrice ?? m.price) * it.qty : 0);
           }, 0);
           const projected = currentTotalExcluding + (price * selectedOrderItem.qty);
           if (projected > existingPayment.amount) {

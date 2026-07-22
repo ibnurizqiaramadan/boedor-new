@@ -3,13 +3,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ShoppingCart, Search } from 'lucide-react';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, menuPriceLabel } from '@/lib/utils';
 import type { Payment } from '@/lib/types';
 
 interface MenuItem {
   _id: string;
   name: string;
   price: number;
+  priceType?: 'fixed' | 'custom';
 }
 
 interface AddMoreItemsDialogProps {
@@ -119,7 +120,7 @@ export function AddMoreItemsDialog({
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium">{item.name}</p>
-                  <p className="text-sm text-muted-foreground">{formatCurrency(item.price)}</p>
+                  <p className="text-sm text-muted-foreground">{menuPriceLabel(item)}</p>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Button

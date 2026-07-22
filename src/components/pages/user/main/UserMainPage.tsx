@@ -107,7 +107,7 @@ export default function UserMainPage() {
     const orderSpending = myOrderItems.reduce((sum, orderItem) => {
       const menuItem = menuItems.find((item) => item._id === orderItem.menuId);
       if (menuItem) {
-        return sum + (menuItem.price * orderItem.qty);
+        return sum + ((orderItem.customPrice ?? menuItem.price) * orderItem.qty);
       }
       return sum;
     }, 0);
@@ -119,7 +119,7 @@ export default function UserMainPage() {
         if (!acc[orderItem.orderId]) {
           acc[orderItem.orderId] = 0;
         }
-        acc[orderItem.orderId] += menuItem.price * orderItem.qty;
+        acc[orderItem.orderId] += (orderItem.customPrice ?? menuItem.price) * orderItem.qty;
       }
       return acc;
     }, {} as Record<string, number>);

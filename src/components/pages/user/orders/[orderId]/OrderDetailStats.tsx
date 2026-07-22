@@ -64,12 +64,12 @@ export function OrderDetailStats({
           </div>
           <div>
             <p className="text-sm font-medium text-muted-foreground">
-              {existingPayment ? 'Kembalian Saya' : 'Status Pembayaran'}
+              {existingPayment ? (myChange < 0 ? 'Kurang Bayar' : 'Kembalian Saya') : 'Status Pembayaran'}
             </p>
             {existingPayment ? (
               <div>
-                <p className="mt-1 text-xl font-bold tabular-nums text-green-400">
-                  {formatCurrency(myChange)}
+                <p className={`mt-1 text-xl font-bold tabular-nums ${myChange < 0 ? 'text-destructive' : 'text-green-400'}`}>
+                  {formatCurrency(Math.abs(myChange))}
                 </p>
                 <p className="text-xs text-muted-foreground">
                   Dibayar {formatCurrency(existingPayment.amount)}

@@ -7,6 +7,7 @@ interface OrderItem {
   menuId: string;
   qty: number;
   note?: string;
+  customPrice?: number;
   _creationTime: number;
 }
 
@@ -14,6 +15,7 @@ interface MenuItem {
   _id: string;
   name: string;
   price: number;
+  priceType?: 'fixed' | 'custom';
 }
 
 interface Participant {
@@ -77,7 +79,7 @@ export function AllParticipants({
                 <div className="space-y-2.5">
                   {userItems.sort((a, b) => b._creationTime - a._creationTime).map((item) => {
                     const menuItem = menuItems?.find((m) => m._id === item.menuId);
-                    const itemTotal = menuItem ? menuItem.price * item.qty : 0;
+                    const itemTotal = menuItem ? (item.customPrice ?? menuItem.price) * item.qty : 0;
 
                     return (
                       <div key={item._id} className="flex items-center gap-3 rounded-lg border p-3">
@@ -87,13 +89,17 @@ export function AllParticipants({
                         <div className="min-w-0 flex-1">
                           <p className="truncate font-medium">{menuItem?.name || 'Item Tidak Dikenal'}</p>
                           <p className="text-xs text-muted-foreground">
-                            {item.qty} × {formatCurrency(menuItem?.price || 0)}
+                            {item.qty} × {menuItem?.priceType === 'custom' && item.customPrice === undefined ? 'Harga Custom' : formatCurrency(item.customPrice ?? menuItem?.price ?? 0)}
                           </p>
                           {item.note && (
                             <p className="truncate text-xs italic text-muted-foreground">&ldquo;{item.note}&rdquo;</p>
                           )}
                         </div>
-                        <p className="shrink-0 font-semibold tabular-nums">{formatCurrency(itemTotal)}</p>
+                        {menuItem?.priceType === 'custom' && item.customPrice === undefined ? (
+                          <span className="shrink-0 rounded-full bg-amber-400/15 px-2 py-0.5 text-xs font-medium text-amber-400">Custom</span>
+                        ) : (
+                          <p className="shrink-0 font-semibold tabular-nums">{formatCurrency(itemTotal)}</p>
+                        )}
                       </div>
                     );
                   })}
