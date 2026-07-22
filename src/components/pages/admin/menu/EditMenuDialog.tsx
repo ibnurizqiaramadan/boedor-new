@@ -8,6 +8,7 @@ interface MenuItem {
   _id: string;
   name: string;
   price: number;
+  priceType?: 'fixed' | 'custom';
 }
 
 interface EditMenuDialogProps {
@@ -27,13 +28,14 @@ export default function EditMenuDialog({
   isSubmitting = false,
   errors = {}
 }: EditMenuDialogProps) {
-  const handleSubmit = async (formData: { name: string; price: number }) => {
+  const handleSubmit = async (formData: { name: string; price: number; priceType?: 'fixed' | 'custom' }) => {
     if (!item) return;
 
     await onSubmit({
       _id: item._id,
       name: formData.name,
       price: formData.price,
+      priceType: formData.priceType,
     });
   };
 

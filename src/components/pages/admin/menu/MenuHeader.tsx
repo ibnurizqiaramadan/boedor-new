@@ -12,12 +12,14 @@ import ExportImportSection from './ExportImportSection';
 interface MenuItem {
   name: string;
   price: number;
+  priceType?: 'fixed' | 'custom';
 }
 
 interface MenuItemData {
   _id: string;
   name: string;
   price: number;
+  priceType?: 'fixed' | 'custom';
 }
 
 interface MenuHeaderProps {
@@ -28,27 +30,25 @@ interface MenuHeaderProps {
 
 export default function MenuHeader({ onAddMenuItem, onImport, menuItems }: MenuHeaderProps) {
   const [isAddMenuOpen, setIsAddMenuOpen] = React.useState(false);
-  const [newMenuItem, setNewMenuItem] = React.useState<MenuItem>({ name: '', price: 0 });
   const [addErrors, setAddErrors] = React.useState<{ name?: string; price?: string }>({});
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  const handleAddMenuItem = async () => {
+  const handleAddMenuItem = async (item: MenuItem) => {
     setAddErrors({});
     try {
       // Simple validation
-      if (!newMenuItem.name.trim()) {
+      if (!item.name.trim()) {
         setAddErrors({ name: 'Nama item wajib diisi' });
         return;
       }
-      if (newMenuItem.price <= 0) {
+      if (item.priceType !== 'custom' && item.price <= 0) {
         setAddErrors({ price: 'Harga harus lebih dari 0' });
         return;
       }
 
       setIsSubmitting(true);
-      await onAddMenuItem(newMenuItem);
+      await onAddMenuItem(item);
       setIsAddMenuOpen(false);
-      setNewMenuItem({ name: '', price: 0 });
     } catch (error) {
       console.error('Failed to add menu item:', error);
       toast.error('Gagal menambah item menu: ' + (error as Error).message);

@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 interface MenuItem {
   name: string;
   price: number;
+  priceType?: 'fixed' | 'custom';
 }
 
 interface MenuItemFormProps {
@@ -48,19 +49,33 @@ export default function MenuItemForm({
         {errors.name && <div className="text-xs text-destructive">{errors.name}</div>}
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="menu-item-price">Harga (Rp)</Label>
-        <Input
-          id="menu-item-price"
-          type="number"
-          min="0"
-          placeholder="cth: 15000"
-          value={formData.price || ''}
-          onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
+      <div className="flex items-center gap-2">
+        <input
+          id="menu-item-custom"
+          type="checkbox"
+          className="h-4 w-4 accent-primary"
+          checked={formData.priceType === 'custom'}
+          onChange={(e) => setFormData({ ...formData, priceType: e.target.checked ? 'custom' : 'fixed', price: e.target.checked ? 0 : formData.price })}
           disabled={isSubmitting}
         />
-        {errors.price && <div className="text-xs text-destructive">{errors.price}</div>}
+        <Label htmlFor="menu-item-custom">Harga custom (diinput driver saat membeli)</Label>
       </div>
+
+      {formData.priceType !== 'custom' && (
+        <div className="space-y-2">
+          <Label htmlFor="menu-item-price">Harga (Rp)</Label>
+          <Input
+            id="menu-item-price"
+            type="number"
+            min="0"
+            placeholder="cth: 15000"
+            value={formData.price || ''}
+            onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
+            disabled={isSubmitting}
+          />
+          {errors.price && <div className="text-xs text-destructive">{errors.price}</div>}
+        </div>
+      )}
 
       <div className="flex justify-end space-x-2">
         <Button

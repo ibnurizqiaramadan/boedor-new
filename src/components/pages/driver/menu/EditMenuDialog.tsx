@@ -7,6 +7,7 @@ interface MenuItem {
   _id: string;
   name: string;
   price: number;
+  priceType?: 'fixed' | 'custom';
 }
 
 interface EditMenuDialogProps {
@@ -37,16 +38,28 @@ export function EditMenuDialog({ isOpen, onClose, menuItem, onMenuItemChange, on
               onChange={(e) => onMenuItemChange({ ...menuItem, name: e.target.value })}
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="edit-menu-price">Harga (Rp)</Label>
-            <Input
-              id="edit-menu-price"
-              type="number"
-              min="0"
-              value={menuItem.price || ''}
-              onChange={(e) => onMenuItemChange({ ...menuItem, price: parseFloat(e.target.value) || 0 })}
+          <div className="flex items-center gap-2">
+            <input
+              id="edit-menu-custom"
+              type="checkbox"
+              className="h-4 w-4 accent-primary"
+              checked={menuItem.priceType === 'custom'}
+              onChange={(e) => onMenuItemChange({ ...menuItem, priceType: e.target.checked ? 'custom' : 'fixed', price: e.target.checked ? 0 : menuItem.price })}
             />
+            <Label htmlFor="edit-menu-custom">Harga custom (diinput saat membeli)</Label>
           </div>
+          {menuItem.priceType !== 'custom' && (
+            <div className="space-y-2">
+              <Label htmlFor="edit-menu-price">Harga (Rp)</Label>
+              <Input
+                id="edit-menu-price"
+                type="number"
+                min="0"
+                value={menuItem.price || ''}
+                onChange={(e) => onMenuItemChange({ ...menuItem, price: parseFloat(e.target.value) || 0 })}
+              />
+            </div>
+          )}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Batal</Button>

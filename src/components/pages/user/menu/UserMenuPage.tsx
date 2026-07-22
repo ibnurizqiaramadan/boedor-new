@@ -24,7 +24,7 @@ export default function UserMenuPage() {
   const addMenuItem = useMutation(api.boedor.menu.createMenuItem);
 
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
-  const [newMenuItem, setNewMenuItem] = useState<{ name: string; price: number }>({ name: '', price: 0 });
+  const [newMenuItem, setNewMenuItem] = useState<{ name: string; price: number; priceType?: 'fixed' | 'custom' }>({ name: '', price: 0 });
   const [errors, setErrors] = useState<{ name?: string; price?: string }>({});
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -54,7 +54,7 @@ export default function UserMenuPage() {
 
   const schema = z.object({
     name: z.string().trim().min(1, 'Nama item wajib diisi'),
-    price: z.number().positive('Harga harus lebih dari 0'),
+    price: newMenuItem.priceType === 'custom' ? z.number() : z.number().positive('Harga harus lebih dari 0'),
   });
 
   const handleAddMenuItem = async () => {
@@ -74,6 +74,7 @@ export default function UserMenuPage() {
       await addMenuItem({
         name: newMenuItem.name,
         price: newMenuItem.price,
+        priceType: newMenuItem.priceType,
       });
       toast.success('Item menu berhasil diusulkan!');
       setIsAddMenuOpen(false);

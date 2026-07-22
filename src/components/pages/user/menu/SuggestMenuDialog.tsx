@@ -9,6 +9,7 @@ import { Plus } from 'lucide-react';
 interface MenuItem {
   name: string;
   price: number;
+  priceType?: 'fixed' | 'custom';
 }
 
 interface SuggestMenuDialogProps {
@@ -55,19 +56,32 @@ export default function SuggestMenuDialog({
             />
             {errors.name && <div className="text-xs text-destructive">{errors.name}</div>}
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="suggest-price">Harga (Rp)</Label>
-            <Input
-              id="suggest-price"
-              type="number"
-              min="0"
-              placeholder="cth: 15000"
-              value={item.price || ''}
-              onChange={(e) => onItemChange({ ...item, price: parseFloat(e.target.value) || 0 })}
+          <div className="flex items-center gap-2">
+            <input
+              id="suggest-custom"
+              type="checkbox"
+              className="h-4 w-4 accent-primary"
+              checked={item.priceType === 'custom'}
+              onChange={(e) => onItemChange({ ...item, priceType: e.target.checked ? 'custom' : 'fixed', price: e.target.checked ? 0 : item.price })}
               disabled={isSubmitting}
             />
-            {errors.price && <div className="text-xs text-destructive">{errors.price}</div>}
+            <Label htmlFor="suggest-custom">Harga custom (diinput driver saat membeli)</Label>
           </div>
+          {item.priceType !== 'custom' && (
+            <div className="space-y-2">
+              <Label htmlFor="suggest-price">Harga (Rp)</Label>
+              <Input
+                id="suggest-price"
+                type="number"
+                min="0"
+                placeholder="cth: 15000"
+                value={item.price || ''}
+                onChange={(e) => onItemChange({ ...item, price: parseFloat(e.target.value) || 0 })}
+                disabled={isSubmitting}
+              />
+              {errors.price && <div className="text-xs text-destructive">{errors.price}</div>}
+            </div>
+          )}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>

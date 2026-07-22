@@ -16,6 +16,7 @@ interface MenuItem {
   _id: string;
   name: string;
   price: number;
+  priceType?: 'fixed' | 'custom';
 }
 
 export default function AdminMenuPage() {
@@ -61,10 +62,11 @@ export default function AdminMenuPage() {
   }
 
   // Menu handlers
-  const handleAddMenuItem = async (item: { name: string; price: number }) => {
+  const handleAddMenuItem = async (item: { name: string; price: number; priceType?: 'fixed' | 'custom' }) => {
     await createMenuItem({
       name: item.name,
       price: item.price,
+      priceType: item.priceType,
     });
     toast.success('Item menu berhasil ditambahkan!');
   };
@@ -79,7 +81,7 @@ export default function AdminMenuPage() {
         setEditErrors({ name: 'Nama item wajib diisi' });
         return;
       }
-      if (item.price <= 0) {
+      if (item.priceType !== 'custom' && item.price <= 0) {
         setEditErrors({ price: 'Harga harus lebih dari 0' });
         return;
       }
@@ -88,6 +90,7 @@ export default function AdminMenuPage() {
         menuId: selectedMenuItem._id as any,
         name: item.name,
         price: item.price,
+        priceType: item.priceType ?? 'fixed',
       });
       toast.success('Item menu berhasil diperbarui!');
       setIsEditMenuOpen(false);
@@ -113,7 +116,7 @@ export default function AdminMenuPage() {
     }
   };
 
-  const handleImport = async (items: { name: string; price: number }[], mode: 'append' | 'replace') => {
+  const handleImport = async (items: { name: string; price: number; priceType?: 'fixed' | 'custom' }[], mode: 'append' | 'replace') => {
     try {
       if (mode === 'replace') {
         await deleteAllMenuItems({});

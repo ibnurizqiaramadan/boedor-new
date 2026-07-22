@@ -2,12 +2,13 @@
 
 import { Button } from '@/components/ui/button';
 import { Edit, Trash2, UtensilsCrossed } from 'lucide-react';
-import { formatCurrency } from '@/lib/utils';
+import { menuPriceLabel } from '@/lib/utils';
 
 interface MenuItem {
   _id: string;
   name: string;
   price: number;
+  priceType?: 'fixed' | 'custom';
 }
 
 interface MenuItemCardProps {
@@ -24,7 +25,7 @@ export default function MenuItemCard({ item, onEdit, onDelete }: MenuItemCardPro
       </span>
       <div className="min-w-0 flex-1">
         <p className="truncate font-medium">{item.name}</p>
-        <p className="text-sm tabular-nums text-muted-foreground">{formatCurrency(item.price)}</p>
+        <p className="text-sm tabular-nums text-muted-foreground">{menuPriceLabel(item)}</p>
       </div>
       <div className="flex shrink-0">
         <Button

@@ -11,11 +11,12 @@ interface MenuItem {
   _id: string;
   name: string;
   price: number;
+  priceType?: 'fixed' | 'custom';
 }
 
 interface ExportImportSectionProps {
   menuItems: MenuItem[];
-  onImport: (items: { name: string; price: number }[], mode: 'append' | 'replace') => Promise<void>;
+  onImport: (items: { name: string; price: number; priceType?: 'fixed' | 'custom' }[], mode: 'append' | 'replace') => Promise<void>;
 }
 
 export default function ExportImportSection({ menuItems, onImport }: ExportImportSectionProps) {
@@ -36,6 +37,7 @@ export default function ExportImportSection({ menuItems, onImport }: ExportImpor
     const exportData = menuItems.map(item => ({
       name: item.name,
       price: item.price,
+      ...(item.priceType ? { priceType: item.priceType } : {}),
     }));
 
     const dataStr = JSON.stringify(exportData, null, 2);
@@ -113,7 +115,7 @@ export default function ExportImportSection({ menuItems, onImport }: ExportImpor
     setIsImporting(true);
     try {
       const fileContent = await importFile.text();
-      let menuItems: { name: string; price: number }[] = [];
+      let menuItems: { name: string; price: number; priceType?: 'fixed' | 'custom' }[] = [];
 
       if (importFile.name.toLowerCase().endsWith('.json')) {
         menuItems = JSON.parse(fileContent);
@@ -136,7 +138,7 @@ export default function ExportImportSection({ menuItems, onImport }: ExportImpor
         if (!item.name || typeof item.name !== 'string' || item.name.trim().length === 0) {
           throw new Error(`Item ${i + 1}: Nama tidak valid`);
         }
-        if (!item.price || typeof item.price !== 'number' || item.price <= 0) {
+        if (item.priceType !== 'custom' && (!item.price || typeof item.price !== 'number' || item.price <= 0)) {
           throw new Error(`Item ${i + 1}: Harga harus berupa angka positif`);
         }
       }

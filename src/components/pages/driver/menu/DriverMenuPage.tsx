@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { MenuHeader, MenuList, AddMenuDialog, EditMenuDialog } from './index';
 
 // Local type to avoid explicit any
-type MenuItemLite = { _id: string; name: string; price: number };
+type MenuItemLite = { _id: string; name: string; price: number; priceType?: 'fixed' | 'custom' };
 
 export default function DriverMenuPage() {
   const { user } = useAuth();
@@ -21,7 +21,7 @@ export default function DriverMenuPage() {
 
   const [ isAddMenuOpen, setIsAddMenuOpen ] = useState(false);
   const [ isEditMenuOpen, setIsEditMenuOpen ] = useState(false);
-  const [ newMenuItem, setNewMenuItem ] = useState({ name: '', price: 0 });
+  const [ newMenuItem, setNewMenuItem ] = useState<{ name: string; price: number; priceType?: 'fixed' | 'custom' }>({ name: '', price: 0 });
   const [ selectedMenuItem, setSelectedMenuItem ] = useState<MenuItemLite | null>(null);
 
   // Filter and pagination state
@@ -95,10 +95,11 @@ export default function DriverMenuPage() {
 
   const handleAddMenuItem = async () => {
     try {
-      if (newMenuItem.name && newMenuItem.price > 0) {
+      if (newMenuItem.name && (newMenuItem.price > 0 || newMenuItem.priceType === 'custom')) {
         await addMenuItem({
           name: newMenuItem.name,
           price: newMenuItem.price,
+          priceType: newMenuItem.priceType,
         });
         toast.success('Item menu berhasil ditambahkan!');
         setIsAddMenuOpen(false);
@@ -117,6 +118,7 @@ export default function DriverMenuPage() {
           menuId: selectedMenuItem._id as any,
           name: selectedMenuItem.name,
           price: selectedMenuItem.price,
+          priceType: selectedMenuItem.priceType ?? 'fixed',
         });
         toast.success('Item menu berhasil diperbarui!');
         setIsEditMenuOpen(false);
@@ -162,7 +164,7 @@ export default function DriverMenuPage() {
           items={paginatedItems}
           totalItems={totalItems}
           onEdit={(item) => {
-            setSelectedMenuItem({ _id: item._id as any, name: item.name, price: item.price });
+            setSelectedMenuItem({ _id: item._id as any, name: item.name, price: item.price, priceType: (item as MenuItemLite).priceType });
             setIsEditMenuOpen(true);
           }}
           onDelete={(menuId) => setMenuToDelete(menuId)}
