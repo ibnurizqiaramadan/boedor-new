@@ -4,6 +4,7 @@ metadata:
   name: boedor
 spec:
   replicas: 1
+  revisionHistoryLimit: 5
   selector:
     matchLabels:
       app: boedor
