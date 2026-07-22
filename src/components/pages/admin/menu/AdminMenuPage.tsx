@@ -5,6 +5,8 @@ import { useQuery, useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import Layout from '@/components/layout/Layout';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -24,6 +26,8 @@ export default function AdminMenuPage() {
   const [selectedMenuItem, setSelectedMenuItem] = useState<MenuItem | null>(null);
   const [isEditMenuOpen, setIsEditMenuOpen] = useState(false);
   const [editErrors, setEditErrors] = useState<{ name?: string; price?: string }>({});
+  const [menuToDelete, setMenuToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Queries
   const menuItems = useQuery(api.boedor.menu.getAllMenuItems, user ? {} : 'skip');
@@ -94,15 +98,18 @@ export default function AdminMenuPage() {
     }
   };
 
-  const handleDeleteMenuItem = async (menuId: string) => {
-    if (confirm('Apakah Anda yakin ingin menghapus item menu ini?')) {
-      try {
-        await deleteMenuItem({ menuId: menuId as any });
-        toast.success('Item menu berhasil dihapus!');
-      } catch (error) {
-        console.error('Failed to delete menu item:', error);
-        toast.error('Gagal menghapus item menu: ' + (error as Error).message);
-      }
+  const handleConfirmDeleteMenuItem = async () => {
+    if (!menuToDelete || isDeleting) return;
+    try {
+      setIsDeleting(true);
+      await deleteMenuItem({ menuId: menuToDelete as any });
+      toast.success('Item menu berhasil dihapus!');
+      setMenuToDelete(null);
+    } catch (error) {
+      console.error('Failed to delete menu item:', error);
+      toast.error('Gagal menghapus item menu: ' + (error as Error).message);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -149,11 +156,28 @@ export default function AdminMenuPage() {
                 setSelectedMenuItem(item);
                 setIsEditMenuOpen(true);
               }}
-              onDelete={handleDeleteMenuItem}
+              onDelete={(menuId) => setMenuToDelete(menuId)}
               isLoading={!menuItems}
             />
           </CardContent>
         </Card>
+
+        <Dialog open={menuToDelete !== null} onOpenChange={(open) => !open && setMenuToDelete(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Hapus Item Menu?</DialogTitle>
+              <DialogDescription>Item menu akan dihapus permanen.</DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setMenuToDelete(null)} disabled={isDeleting}>
+                Batal
+              </Button>
+              <Button variant="destructive" onClick={handleConfirmDeleteMenuItem} disabled={isDeleting}>
+                {isDeleting ? 'Menghapus...' : 'Hapus'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Edit Menu Item Dialog */}
         <EditMenuDialog

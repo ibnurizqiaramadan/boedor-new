@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface MenuItem {
   name: string;
@@ -35,22 +36,31 @@ export default function MenuItemForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <Input
-        placeholder="Nama Item"
-        value={formData.name}
-        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-        disabled={isSubmitting}
-      />
-      {errors.name && <div className="text-xs text-destructive">{errors.name}</div>}
+      <div className="space-y-2">
+        <Label htmlFor="menu-item-name">Nama Item</Label>
+        <Input
+          id="menu-item-name"
+          placeholder="cth: Nasi Goreng"
+          value={formData.name}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          disabled={isSubmitting}
+        />
+        {errors.name && <div className="text-xs text-destructive">{errors.name}</div>}
+      </div>
 
-      <Input
-        type="number"
-        placeholder="Harga"
-        value={formData.price || ''}
-        onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
-        disabled={isSubmitting}
-      />
-      {errors.price && <div className="text-xs text-destructive">{errors.price}</div>}
+      <div className="space-y-2">
+        <Label htmlFor="menu-item-price">Harga (Rp)</Label>
+        <Input
+          id="menu-item-price"
+          type="number"
+          min="0"
+          placeholder="cth: 15000"
+          value={formData.price || ''}
+          onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
+          disabled={isSubmitting}
+        />
+        {errors.price && <div className="text-xs text-destructive">{errors.price}</div>}
+      </div>
 
       <div className="flex justify-end space-x-2">
         <Button

@@ -1,6 +1,7 @@
 'use client';
 
 import MenuItemCard from './MenuItemCard';
+import { UtensilsCrossed } from 'lucide-react';
 
 interface MenuItem {
   _id: string;
@@ -36,14 +37,15 @@ export default function MenuList({
 
   if (items.length === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
-        Tidak ada item menu ditemukan. Tambahkan item menu pertama Anda!
+      <div className="flex flex-col items-center py-10 text-center text-muted-foreground">
+        <UtensilsCrossed className="h-8 w-8" aria-hidden />
+        <p className="mt-3 text-sm">Tidak ada item menu ditemukan. Tambahkan item menu pertama Anda!</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {items.map((item) => (
         <MenuItemCard
           key={item._id}

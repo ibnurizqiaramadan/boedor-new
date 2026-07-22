@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Download, Upload, FileText } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface MenuItem {
   _id: string;
@@ -28,7 +29,7 @@ export default function ExportImportSection({ menuItems, onImport }: ExportImpor
   // Export handlers
   const handleExportJSON = () => {
     if (!menuItems || menuItems.length === 0) {
-      alert('Tidak ada item menu untuk diekspor');
+      toast.error('Tidak ada item menu untuk diekspor');
       return;
     }
 
@@ -52,7 +53,7 @@ export default function ExportImportSection({ menuItems, onImport }: ExportImpor
 
   const handleExportCSV = () => {
     if (!menuItems || menuItems.length === 0) {
-      alert('Tidak ada item menu untuk diekspor');
+      toast.error('Tidak ada item menu untuk diekspor');
       return;
     }
 
@@ -105,7 +106,7 @@ export default function ExportImportSection({ menuItems, onImport }: ExportImpor
 
   const handleImport = async () => {
     if (!importFile) {
-      alert('Pilih file untuk diimpor');
+      toast.error('Pilih file untuk diimpor');
       return;
     }
 
@@ -148,7 +149,7 @@ export default function ExportImportSection({ menuItems, onImport }: ExportImpor
         fileInputRef.current.value = '';
       }
     } catch (error) {
-      alert('Gagal mengimpor: ' + (error as Error).message);
+      toast.error('Gagal mengimpor: ' + (error as Error).message);
     } finally {
       setIsImporting(false);
     }
