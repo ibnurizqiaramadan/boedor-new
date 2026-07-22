@@ -1,0 +1,56 @@
+# ponytail: no registry — runner builds on-LAN, streams the image straight into
+# the kube node's containerd. Add a registry + versioned tags when rollback or
+# multi-node matters.
+#
+# Prereqs (once):
+#   - self-hosted runner (192.168.2.31) with docker; kube ops go over SSH,
+#     kubectl is NOT needed on the runner
+#   - SSH key runner -> KUBE_HOST (authorized_keys)
+#   - Secrets: KUBE_HOST (e.g. ubuntu@192.168.2.54),
+#              CONVEX_SELF_HOSTED_URL, CONVEX_SELF_HOSTED_ADMIN_KEY,
+#              APP_ENV (full production .env for the pod, masked)
+#   - Variable: NEXT_PUBLIC_CONVEX_URL (public, baked into the client bundle)
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+
+      # Pushes Convex functions/schema to the live deployment AND generates
+      # convex/_generated (gitignored) that the Docker build needs.
+      - name: Push Convex + codegen
+        env:
+          CONVEX_SELF_HOSTED_URL: ${{ secrets.CONVEX_SELF_HOSTED_URL }}
+          CONVEX_SELF_HOSTED_ADMIN_KEY: ${{ secrets.CONVEX_SELF_HOSTED_ADMIN_KEY }}
+        run: |
+          npm i -g pnpm@10
+          pnpm install --frozen-lockfile
+          npx convex codegen
+
+      - name: Build image
+        run: docker build --build-arg NEXT_PUBLIC_CONVEX_URL="${{ vars.NEXT_PUBLIC_CONVEX_URL }}" -t boedor/web:dev .
+
+      - name: Import image into k3s
+        run: docker save boedor/web:dev | ssh -o StrictHostKeyChecking=accept-new ${{ secrets.KUBE_HOST }} "sudo k3s ctr images import -"
+
+      # Piped through stdin, not passed as an argument: command-line args are
+      # visible in `ps` to every other user on the node.
+      - name: App secret
+        env:
+          APP_ENV: ${{ secrets.APP_ENV }}
+        run: printf '%s\n' "$APP_ENV" | ssh ${{ secrets.KUBE_HOST }} "sudo kubectl create secret generic boedor-env --from-env-file=/dev/stdin --dry-run=client -o yaml | sudo kubectl apply -f -"
+
+      - name: Deploy
+        run: |
+          ssh ${{ secrets.KUBE_HOST }} "sudo kubectl apply -f -" < deploy/k8s.yaml
+          ssh ${{ secrets.KUBE_HOST }} "sudo kubectl rollout restart deployment boedor && sudo kubectl rollout status deployment boedor --timeout=180s"
