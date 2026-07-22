@@ -1,6 +1,7 @@
 'use client';
 
 import OrderCard from './OrderCard';
+import { ShoppingBag } from 'lucide-react';
 
 interface Order {
   _id: string;
@@ -38,8 +39,9 @@ export default function OrderList({
 
   if (orders.length === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
-        Tidak ada pesanan.
+      <div className="flex flex-col items-center py-10 text-center text-muted-foreground">
+        <ShoppingBag className="h-8 w-8" aria-hidden />
+        <p className="mt-3 text-sm">Tidak ada pesanan.</p>
       </div>
     );
   }

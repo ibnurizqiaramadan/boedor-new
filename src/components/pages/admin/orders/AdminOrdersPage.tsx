@@ -5,7 +5,9 @@ import { useQuery, useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import Layout from '@/components/layout/Layout';
 import { Card, CardContent } from '@/components/ui/card';
-import { useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { OrdersHeader, OrderList } from './index';
@@ -21,6 +23,8 @@ interface Order {
 export default function AdminOrdersPage() {
   const { user } = useAuth();
   const router = useRouter();
+  const [ orderToDelete, setOrderToDelete ] = useState<string | null>(null);
+  const [ isDeleting, setIsDeleting ] = useState(false);
 
   // Queries
   const orders = useQuery(api.boedor.orders.getAllOrders, user ? {} : 'skip');
@@ -64,15 +68,18 @@ export default function AdminOrdersPage() {
     }
   };
 
-  const handleDeleteOrder = async (orderId: string) => {
-    if (confirm('Apakah Anda yakin ingin menghapus pesanan ini?')) {
-      try {
-        await deleteOrder({ orderId: orderId as any });
-        toast.success('Pesanan berhasil dihapus!');
-      } catch (error) {
-        console.error('Failed to delete order:', error);
-        toast.error('Gagal menghapus pesanan: ' + (error as Error).message);
-      }
+  const handleConfirmDeleteOrder = async () => {
+    if (!orderToDelete || isDeleting) return;
+    try {
+      setIsDeleting(true);
+      await deleteOrder({ orderId: orderToDelete as any });
+      toast.success('Pesanan berhasil dihapus!');
+      setOrderToDelete(null);
+    } catch (error) {
+      console.error('Failed to delete order:', error);
+      toast.error('Gagal menghapus pesanan: ' + (error as Error).message);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -91,11 +98,28 @@ export default function AdminOrdersPage() {
             <OrderList
               orders={orders || []}
               onUpdateStatus={handleUpdateOrderStatus}
-              onDelete={handleDeleteOrder}
+              onDelete={(orderId) => setOrderToDelete(orderId)}
               isLoading={!orders}
             />
           </CardContent>
         </Card>
+
+        <Dialog open={orderToDelete !== null} onOpenChange={(open) => !open && setOrderToDelete(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Hapus Pesanan?</DialogTitle>
+              <DialogDescription>Pesanan beserta datanya akan dihapus permanen.</DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setOrderToDelete(null)} disabled={isDeleting}>
+                Batal
+              </Button>
+              <Button variant="destructive" onClick={handleConfirmDeleteOrder} disabled={isDeleting}>
+                {isDeleting ? 'Menghapus...' : 'Hapus'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </Layout>
   );
