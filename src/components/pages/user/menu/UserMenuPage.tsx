@@ -4,12 +4,11 @@ import { useQuery, useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { useAuth } from '@/contexts/AuthContext';
 import Layout from '@/components/layout/Layout';
-import { Card, CardContent } from '@/components/ui/card';
 import { Pagination, PaginationInfo } from '@/components/ui/pagination';
 import React, { useState } from 'react';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { MenuHeader, MenuSearch, MenuGrid } from './index';
+import { MenuSearch, MenuGrid, SuggestMenuDialog } from './index';
 
 interface MenuItem {
   _id: string;
@@ -48,10 +47,10 @@ export default function UserMenuPage() {
     setCurrentPage(1); // Reset to first page when searching
   };
 
-  // Reset to first page when items change
+  // Clamp page when the list shrinks (don't yank the user to page 1 on realtime updates)
   React.useEffect(() => {
-    setCurrentPage(1);
-  }, [filteredMenuItems.length]);
+    if (totalPages > 0 && currentPage > totalPages) setCurrentPage(totalPages);
+  }, [ currentPage, totalPages ]);
 
   const schema = z.object({
     name: z.string().trim().min(1, 'Nama item wajib diisi'),
@@ -108,53 +107,52 @@ export default function UserMenuPage() {
   return (
     <Layout>
       <div className="space-y-6">
-        <div>
-          <h1 className="font-display text-3xl text-foreground">Menu</h1>
-          <p className="mt-2 text-muted-foreground">Lihat semua item menu yang tersedia</p>
-        </div>
-
-        {/* Menu Items */}
-        <Card>
-          <MenuHeader
-            isDialogOpen={isAddMenuOpen}
-            onDialogOpenChange={setIsAddMenuOpen}
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h1 className="font-display text-3xl text-foreground">Menu</h1>
+            <p className="mt-2 text-muted-foreground">Lihat semua item menu yang tersedia</p>
+          </div>
+          <SuggestMenuDialog
+            isOpen={isAddMenuOpen}
+            onOpenChange={setIsAddMenuOpen}
             item={newMenuItem}
             onItemChange={setNewMenuItem}
             onSubmit={handleAddMenuItem}
             errors={errors}
           />
+        </div>
 
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <MenuSearch
             searchTerm={searchTerm}
             onSearchChange={handleSearchChange}
           />
+          <span className="text-sm text-muted-foreground">{totalItems} item</span>
+        </div>
 
-          <CardContent>
-            <MenuGrid
-              items={paginatedItems}
-              searchTerm={searchTerm}
-              isLoading={!menuItems}
+        <MenuGrid
+          items={paginatedItems}
+          searchTerm={searchTerm}
+          isLoading={!menuItems}
+          totalItems={totalItems}
+        />
+
+        {/* Pagination */}
+        {totalItems > 0 && (
+          <div className="space-y-4">
+            <PaginationInfo
+              currentPage={currentPage}
+              totalPages={totalPages}
               totalItems={totalItems}
+              itemsPerPage={ITEMS_PER_PAGE}
             />
-
-            {/* Pagination */}
-            {totalItems > 0 && (
-              <div className="mt-6 space-y-4">
-                <PaginationInfo
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  totalItems={totalItems}
-                  itemsPerPage={ITEMS_PER_PAGE}
-                />
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={setCurrentPage}
-                />
-              </div>
-            )}
-          </CardContent>
-        </Card>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+          </div>
+        )}
       </div>
     </Layout>
   );
