@@ -4,9 +4,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useAction } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import Layout from '@/components/layout/Layout';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { StatsCards, UserManagement } from './index';
 
 interface User {
@@ -18,6 +20,8 @@ interface User {
 export default function AdminMainPage() {
   const { user } = useAuth();
   const router = useRouter();
+  const [ userToDelete, setUserToDelete ] = useState<string | null>(null);
+  const [ isDeleting, setIsDeleting ] = useState(false);
 
   // Queries
   const users = useQuery(api.boedor.users.getAllUsers, user ? {} : 'skip');
@@ -50,15 +54,18 @@ export default function AdminMainPage() {
   }
 
   // Handlers
-  const handleDeleteUser = async (userId: string) => {
-    if (confirm('Apakah Anda yakin ingin menghapus pengguna ini?')) {
-      try {
-        await deleteUser({ userId: userId as any });
-        toast.success('Pengguna berhasil dihapus!');
-      } catch (error) {
-        console.error('Failed to delete user:', error);
-        toast.error('Gagal menghapus pengguna: ' + (error as Error).message);
-      }
+  const handleConfirmDeleteUser = async () => {
+    if (!userToDelete || isDeleting) return;
+    try {
+      setIsDeleting(true);
+      await deleteUser({ userId: userToDelete as any });
+      toast.success('Pengguna berhasil dihapus!');
+      setUserToDelete(null);
+    } catch (error) {
+      console.error('Failed to delete user:', error);
+      toast.error('Gagal menghapus pengguna: ' + (error as Error).message);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -88,9 +95,26 @@ export default function AdminMainPage() {
         {/* User Management */}
         <UserManagement
           users={users || []}
-          onDeleteUser={handleDeleteUser}
+          onDeleteUser={(userId) => setUserToDelete(userId)}
           onAddUser={handleAddUser}
         />
+
+        <Dialog open={userToDelete !== null} onOpenChange={(open) => !open && setUserToDelete(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Hapus Pengguna?</DialogTitle>
+              <DialogDescription>Akun beserta aksesnya akan dihapus permanen.</DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setUserToDelete(null)} disabled={isDeleting}>
+                Batal
+              </Button>
+              <Button variant="destructive" onClick={handleConfirmDeleteUser} disabled={isDeleting}>
+                {isDeleting ? 'Menghapus...' : 'Hapus'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </Layout>
   );

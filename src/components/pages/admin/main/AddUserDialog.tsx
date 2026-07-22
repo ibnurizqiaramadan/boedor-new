@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
@@ -51,32 +52,45 @@ export default function AddUserDialog({ onAddUser }: AddUserDialogProps) {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Tambah Pengguna Baru</DialogTitle>
-          <DialogDescription>Buat akun pengguna baru</DialogDescription>
+          <DialogDescription>Buat akun pengguna baru (login username/password)</DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
-          {/* <Input
-            placeholder="Nama Pengguna"
-            value={newUser.username}
-            onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
-            disabled={isSubmitting}
-          />
-          <Input
-            type="password"
-            placeholder="Kata Sandi"
-            value={newUser.password}
-            onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
-            disabled={isSubmitting}
-          /> */}
-          <select
-            className="w-full p-2 border rounded"
-            value={newUser.role}
-            onChange={(e) => setNewUser({ ...newUser, role: e.target.value as 'super_admin' | 'admin' | 'driver' | 'user' })}
-            disabled={isSubmitting}
-          >
-            <option value="user">Pengguna</option>
-            <option value="driver">Pengemudi</option>
-            <option value="admin">Admin</option>
-          </select>
+          <div className="space-y-2">
+            <Label htmlFor="new-username">Nama Pengguna</Label>
+            <Input
+              id="new-username"
+              placeholder="tanpa spasi"
+              autoComplete="off"
+              value={newUser.username}
+              onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
+              disabled={isSubmitting}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="new-password">Kata Sandi</Label>
+            <Input
+              id="new-password"
+              type="password"
+              autoComplete="new-password"
+              value={newUser.password}
+              onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+              disabled={isSubmitting}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="new-role">Peran</Label>
+            <select
+              id="new-role"
+              className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              value={newUser.role}
+              onChange={(e) => setNewUser({ ...newUser, role: e.target.value as 'super_admin' | 'admin' | 'driver' | 'user' })}
+              disabled={isSubmitting}
+            >
+              <option value="user">Pengguna</option>
+              <option value="driver">Pengemudi</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => setIsOpen(false)} disabled={isSubmitting}>

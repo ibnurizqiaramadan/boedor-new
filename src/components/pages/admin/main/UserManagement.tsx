@@ -22,7 +22,7 @@ export default function UserManagement({ users, onDeleteUser, onAddUser }: UserM
   return (
     <Card>
       <CardHeader>
-        <div className="flex justify-between items-center">
+        <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <CardTitle>Kelola Pengguna</CardTitle>
             <CardDescription>Kelola semua pengguna dalam sistem</CardDescription>
@@ -31,7 +31,7 @@ export default function UserManagement({ users, onDeleteUser, onAddUser }: UserM
         </div>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
+        <div className="space-y-3">
           {users?.map((user) => (
             <UserCard
               key={user._id}
@@ -39,6 +39,9 @@ export default function UserManagement({ users, onDeleteUser, onAddUser }: UserM
               onDelete={onDeleteUser}
             />
           ))}
+          {users?.length === 0 && (
+            <p className="py-8 text-center text-sm text-muted-foreground">Belum ada pengguna.</p>
+          )}
         </div>
       </CardContent>
     </Card>
