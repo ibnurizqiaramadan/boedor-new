@@ -1,5 +1,6 @@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 
 interface MenuItem {
@@ -24,17 +25,26 @@ export function AddMenuDialog({ isOpen, onClose, menuItem, onMenuItemChange, onS
           <DialogDescription>Buat item menu baru</DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
-          <Input
-            placeholder="Nama item"
-            value={menuItem.name}
-            onChange={(e) => onMenuItemChange({ ...menuItem, name: e.target.value })}
-          />
-          <Input
-            type="number"
-            placeholder="Harga"
-            value={menuItem.price}
-            onChange={(e) => onMenuItemChange({ ...menuItem, price: parseFloat(e.target.value) })}
-          />
+          <div className="space-y-2">
+            <Label htmlFor="add-menu-name">Nama Item</Label>
+            <Input
+              id="add-menu-name"
+              placeholder="cth: Nasi Goreng"
+              value={menuItem.name}
+              onChange={(e) => onMenuItemChange({ ...menuItem, name: e.target.value })}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="add-menu-price">Harga (Rp)</Label>
+            <Input
+              id="add-menu-price"
+              type="number"
+              min="0"
+              placeholder="cth: 15000"
+              value={menuItem.price || ''}
+              onChange={(e) => onMenuItemChange({ ...menuItem, price: parseFloat(e.target.value) || 0 })}
+            />
+          </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Batal</Button>
