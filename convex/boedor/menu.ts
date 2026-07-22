@@ -32,6 +32,7 @@ export const createMenuItem = mutation({
   args: {
     name: v.string(),
     price: v.number(),
+    priceType: v.optional(v.union(v.literal("fixed"), v.literal("custom"))),
   },
   handler: async (ctx, args) => {
     const user = await getAuthUser(ctx);
@@ -39,6 +40,7 @@ export const createMenuItem = mutation({
     const menuId = await ctx.db.insert("boedor_menu", {
       name: args.name,
       price: args.price,
+      priceType: args.priceType,
       createdBy: user._id,
     });
 
@@ -52,6 +54,7 @@ export const updateMenuItem = mutation({
     menuId: v.id("boedor_menu"),
     name: v.optional(v.string()),
     price: v.optional(v.number()),
+    priceType: v.optional(v.union(v.literal("fixed"), v.literal("custom"))),
   },
   handler: async (ctx, args) => {
     const user = await getAuthUser(ctx);
@@ -64,9 +67,10 @@ export const updateMenuItem = mutation({
       throw new Error("Unauthorized");
     }
 
-    const updateData: Partial<{ name: string; price: number }> = {};
+    const updateData: Partial<{ name: string; price: number; priceType: "fixed" | "custom" }> = {};
     if (args.name !== undefined) updateData.name = args.name;
     if (args.price !== undefined) updateData.price = args.price;
+    if (args.priceType !== undefined) updateData.priceType = args.priceType;
 
     await ctx.db.patch(args.menuId, updateData);
     return await ctx.db.get(args.menuId);
@@ -100,6 +104,7 @@ export const bulkImportMenuItems = mutation({
     menuItems: v.array(v.object({
       name: v.string(),
       price: v.number(),
+      priceType: v.optional(v.union(v.literal("fixed"), v.literal("custom"))),
     })),
   },
   handler: async (ctx, args) => {
@@ -116,7 +121,7 @@ export const bulkImportMenuItems = mutation({
           errors.push({ index: i, error: "Nama item tidak boleh kosong" });
           continue;
         }
-        if (item.price <= 0) {
+        if (item.priceType !== "custom" && item.price <= 0) {
           errors.push({ index: i, error: "Harga harus lebih dari 0" });
           continue;
         }
@@ -124,6 +129,7 @@ export const bulkImportMenuItems = mutation({
         const menuId = await ctx.db.insert("boedor_menu", {
           name: item.name.trim(),
           price: item.price,
+          priceType: item.priceType,
           createdBy: user._id,
         });
 

@@ -125,6 +125,33 @@ export const updateOrderItem = mutation({
   },
 });
 
+// Set actual unit price for a custom-priced item (driver of the order or admin)
+export const setCustomPrice = mutation({
+  args: {
+    orderItemId: v.id("boedor_order_items"),
+    customPrice: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const user = await getAuthUser(ctx);
+
+    const orderItem = await ctx.db.get(args.orderItemId);
+    if (!orderItem) throw new Error("Order item not found");
+
+    const order = await ctx.db.get(orderItem.orderId);
+    if (!order) throw new Error("Order not found");
+    if (order.status === "completed") throw new Error("Order is already completed");
+
+    if (!isAdmin(user) && order.driverId !== user._id) {
+      throw new Error("Unauthorized");
+    }
+
+    if (args.customPrice < 0) throw new Error("Harga tidak boleh negatif");
+
+    await ctx.db.patch(args.orderItemId, { customPrice: args.customPrice });
+    return await ctx.db.get(args.orderItemId);
+  },
+});
+
 // Remove order item
 export const removeOrderItem = mutation({
   args: {

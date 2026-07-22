@@ -5,6 +5,8 @@ export const tables = {
   boedor_menu: defineTable({
     name: v.string(),
     price: v.number(),
+    // "custom": harga diinput driver saat membeli; field opsional agar data lama tetap valid (= fixed)
+    priceType: v.optional(v.union(v.literal("fixed"), v.literal("custom"))),
     createdBy: v.id("users"),
   }),
 
@@ -21,6 +23,8 @@ export const tables = {
     userId: v.id("users"),
     qty: v.number(),
     note: v.optional(v.string()),
+    // harga satuan aktual yang diinput driver untuk item menu bertipe custom
+    customPrice: v.optional(v.number()),
     paymentMethod: v.optional(v.union(v.literal("cash"), v.literal("cardless"), v.literal("dana"))),
     amount: v.optional(v.number()),
   }).index("by_order", ["orderId"])
