@@ -13,6 +13,9 @@ import { ArrowLeft, User, ShoppingCart, MapPin } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { getStatusIcon, getStatusColor, formatStatus } from '@/lib/status';
 
+const formatPaymentMethod = (method: string) =>
+  ({ cash: 'Tunai', cardless: 'Tanpa Kartu', dana: 'DANA' })[method] ?? method;
+
 export default function OrderDetailPage() {
   const { user } = useAuth();
   const router = useRouter();
@@ -205,52 +208,57 @@ export default function OrderDetailPage() {
       ) : (
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center gap-3">
           <Button
             variant="outline"
-            size="sm"
+            size="icon"
+            aria-label="Kembali"
+            className="shrink-0"
             onClick={() => router.back()}
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Kembali
+            <ArrowLeft className="h-4 w-4" />
           </Button>
-          <div>
-            <h1 className="font-display text-3xl text-foreground">Detail Pesanan</h1>
-            <p className="mt-2 text-muted-foreground">Pesanan #{orderId.slice(-8)}</p>
+          <div className="min-w-0">
+            <h1 className="font-display text-2xl text-foreground sm:text-3xl">Detail Pesanan</h1>
+            <p className="text-sm text-muted-foreground">#{orderId.slice(-8)}</p>
           </div>
         </div>
 
         {/* Order Info */}
         <Card>
           <CardHeader>
-            <div className="flex justify-between items-start">
-              <div>
-                <CardTitle className="flex items-center space-x-2">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted">
                   {getStatusIcon(order!.status)}
-                  <span>Pesanan #{orderId.slice(-8)}</span>
-                </CardTitle>
-                <CardDescription>
-                  Dibuat: {new Date(order!.createdAt).toLocaleString('id-ID')}
-                </CardDescription>
+                </span>
+                <div>
+                  <CardTitle>Pesanan #{orderId.slice(-8)}</CardTitle>
+                  <CardDescription>
+                    Dibuat {new Date(order!.createdAt).toLocaleString('id-ID', {
+                      day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+                    })}
+                  </CardDescription>
+                </div>
               </div>
-              <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order!.status)}`}>
+              <span className={`shrink-0 rounded-full px-3 py-1 text-sm font-medium ${getStatusColor(order!.status)}`}>
                 {formatStatus(order!.status)}
               </span>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Total Peserta</p>
-                <p className="text-2xl font-bold">{participants?.length || 0}</p>
+                <p className="mt-1 text-2xl font-bold tabular-nums">{participants?.length || 0}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Total Item</p>
-                <p className="text-2xl font-bold">{orderItems?.length || 0}</p>
+                <p className="mt-1 text-2xl font-bold tabular-nums">{orderItems?.length || 0}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Total Nilai</p>
-                <p className="text-2xl font-bold">{formatCurrency(getTotalOrderValue())}</p>
+                <p className="mt-1 text-xl font-bold tabular-nums">{formatCurrency(getTotalOrderValue())}</p>
               </div>
             </div>
           </CardContent>
@@ -260,9 +268,20 @@ export default function OrderDetailPage() {
         {canView && (
           <Card>
             <CardHeader>
-              <div className="flex justify-between items-center">
+              <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <CardTitle>Status Lokasi</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    Status Lokasi
+                    {isTracking && (
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-green-400/15 px-2.5 py-0.5 text-xs font-medium text-green-400">
+                        <span className="relative flex h-2 w-2">
+                          <span className="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-60 motion-safe:animate-ping" />
+                          <span className="relative inline-flex h-2 w-2 rounded-full bg-green-400" />
+                        </span>
+                        Live
+                      </span>
+                    )}
+                  </CardTitle>
                   <CardDescription>Perbarui lokasi Anda saat ini untuk pelanggan</CardDescription>
                 </div>
                 <Button onClick={() => setIsTracking((v) => !v)} variant={isTracking ? 'default' : 'outline'}>
@@ -274,7 +293,7 @@ export default function OrderDetailPage() {
             <CardContent>
               {myPosition ? (
                 <p className="text-sm text-muted-foreground">
-                  Posisi saat ini: {(location.lat || myPosition.lat).toFixed(6)}, {(location.lng || myPosition.lng).toFixed(6)}
+                  Posisi saat ini: <span className="tabular-nums">{(location.lat || myPosition.lat).toFixed(6)}, {(location.lng || myPosition.lng).toFixed(6)}</span>
                   <br />
                   {(() => {
                     const ts = lastUpdatedAt ?? myPosition.updatedAt;
@@ -301,53 +320,58 @@ export default function OrderDetailPage() {
               return (
                 <Card key={participant._id}>
                   <CardHeader>
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center space-x-3">
-                        <User className="h-5 w-5 text-muted-foreground" />
-                        <div>
-                          <CardTitle className="text-lg">{participantName}{String(participant._id) === String(user._id) && ' (Anda)'}</CardTitle>
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div className="flex min-w-0 items-center gap-3">
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-400/15 text-sm font-semibold uppercase text-blue-400">
+                          {participantName.charAt(0)}
+                        </span>
+                        <div className="min-w-0">
+                          <CardTitle className="flex items-center gap-2 text-base">
+                            <span className="truncate">{participantName}</span>
+                            {String(participant._id) === String(user._id) && (
+                              <span className="shrink-0 rounded-full bg-blue-400/15 px-2 py-0.5 text-xs font-medium text-blue-400">Anda</span>
+                            )}
+                          </CardTitle>
                           <CardDescription>
-                            {userItems.length} item • Total: {formatCurrency(userTotal)}
+                            {userItems.length} item · Total {formatCurrency(userTotal)}
                           </CardDescription>
                         </div>
                       </div>
-                      <div className="text-right">
+                      <div className="shrink-0 text-right">
                         {getUserPayment(participant._id) ? (
                           <div className="space-y-1">
-                            <p className="text-sm font-medium text-green-400">Kembalian: {formatCurrency(getUserChange(participant._id))}</p>
+                            <p className="text-sm font-medium tabular-nums text-green-400">Kembalian: {formatCurrency(getUserChange(participant._id))}</p>
                             <p className="text-xs text-muted-foreground">
-                              Dibayar: {formatCurrency(getUserPayment(participant._id)!.amount)} • Metode: {getUserPayment(participant._id)!.paymentMethod}
+                              Dibayar {formatCurrency(getUserPayment(participant._id)!.amount)} · {formatPaymentMethod(getUserPayment(participant._id)!.paymentMethod)}
                             </p>
                           </div>
                         ) : (
-                          <p className="text-sm font-medium text-destructive">Belum Dibayar</p>
+                          <span className="inline-flex rounded-full bg-amber-400/15 px-2.5 py-1 text-xs font-medium text-amber-400">Belum Dibayar</span>
                         )}
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-3">
+                    <div className="space-y-2.5">
                       {userItems.map((item) => {
                         const menuItem = menuItems?.find((m) => m._id === item.menuId);
                         const itemTotal = menuItem ? menuItem.price * item.qty : 0;
 
                         return (
-                          <div key={item._id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                            <div className="flex items-center space-x-3">
-                              <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-                              <div>
-                                <p className="font-medium">{menuItem?.name || 'Item Tidak Dikenal'}</p>
-                                <p className="text-sm text-muted-foreground">
-                                  Jumlah: {item.qty} × {formatCurrency(menuItem?.price || 0)}
-                                </p>
-                                {item.note && (
-                                  <p className="text-sm text-muted-foreground italic">Catatan: {item.note}</p>
-                                )}
-                              </div>
+                          <div key={item._id} className="flex items-center gap-3 rounded-lg border p-3">
+                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                              <ShoppingCart className="h-4 w-4" aria-hidden />
+                            </span>
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate font-medium">{menuItem?.name || 'Item Tidak Dikenal'}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {item.qty} × {formatCurrency(menuItem?.price || 0)}
+                              </p>
+                              {item.note && (
+                                <p className="truncate text-xs italic text-muted-foreground">&ldquo;{item.note}&rdquo;</p>
+                              )}
                             </div>
-                            <div className="text-right">
-                              <p className="font-medium">{formatCurrency(itemTotal)}</p>
-                            </div>
+                            <p className="shrink-0 font-semibold tabular-nums">{formatCurrency(itemTotal)}</p>
                           </div>
                         );
                       })}
@@ -381,20 +405,20 @@ export default function OrderDetailPage() {
                   const change = payment.amount - userTotal;
 
                   return (
-                    <div key={payment._id} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <User className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <p className="font-medium">{participant ? (participant.username || participant.name || 'Pengguna Tidak Dikenal') : 'Pengguna Tidak Dikenal'}</p>
-                          <p className="text-sm text-muted-foreground">
-                            Metode: {payment.paymentMethod} • Total Item: {formatCurrency(userTotal)}
-                          </p>
-                        </div>
+                    <div key={payment._id} className="flex items-center gap-3 rounded-lg border p-3">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                        <User className="h-4 w-4" aria-hidden />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-medium">{participant ? (participant.username || participant.name || 'Pengguna Tidak Dikenal') : 'Pengguna Tidak Dikenal'}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {formatPaymentMethod(payment.paymentMethod)} · Total item {formatCurrency(userTotal)}
+                        </p>
                       </div>
-                      <div className="text-right">
-                        <p className="font-medium">Dibayar: {formatCurrency(payment.amount)}</p>
-                        <p className={`text-sm font-medium ${change >= 0 ? 'text-green-400' : 'text-destructive'}`}>
-                          Kembalian: {formatCurrency(change)}
+                      <div className="shrink-0 text-right">
+                        <p className="font-medium tabular-nums">{formatCurrency(payment.amount)}</p>
+                        <p className={`text-sm font-medium tabular-nums ${change >= 0 ? 'text-green-400' : 'text-destructive'}`}>
+                          Kembalian {formatCurrency(change)}
                         </p>
                       </div>
                     </div>
@@ -427,23 +451,19 @@ export default function OrderDetailPage() {
               <CardTitle>Ringkasan Pesanan</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span>Total Item:</span>
-                  <span>{orderItems.length}</span>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between text-muted-foreground">
+                  <span>Total Item</span>
+                  <span className="tabular-nums text-foreground">{orderItems.length}</span>
                 </div>
-                <div className="border-t pt-2 flex justify-between font-semibold">
-                  <span>Total Peserta:</span>
-                  <span>{participants?.length || 0}</span>
+                <div className="flex justify-between text-muted-foreground">
+                  <span>Total Peserta</span>
+                  <span className="tabular-nums text-foreground">{participants?.length || 0}</span>
                 </div>
-                <div className="border-t pt-2 flex justify-between font-semibold">
-                  <span>Total Nilai Pesanan:</span>
-                  <span>{formatCurrency(getTotalOrderValue())}</span>
+                <div className="flex justify-between border-t pt-2.5 text-base font-semibold">
+                  <span>Total Nilai Pesanan</span>
+                  <span className="tabular-nums text-green-400">{formatCurrency(getTotalOrderValue())}</span>
                 </div>
-                {/* <div className="border-t pt-2 flex justify-between font-semibold">
-                  <span>Peserta yang Sudah Bayar:</span>
-                  <span>{orderPayments?.length || 0} / {participants?.length || 0}</span>
-                </div> */}
               </div>
             </CardContent>
           </Card>
