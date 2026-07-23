@@ -397,7 +397,7 @@ export default function OrderDetailPage() {
                               <ShoppingCart className="h-4 w-4" aria-hidden />
                             </span>
                             <div className="min-w-0 flex-1">
-                              <p className="truncate font-medium">{menuItem?.name || 'Item Tidak Dikenal'}</p>
+                              <p className="break-words font-medium">{menuItem?.name || 'Item Tidak Dikenal'}</p>
                               <p className="text-xs text-muted-foreground">
                                 {item.qty} × {formatCurrency(item.customPrice ?? menuItem?.price ?? 0)}
                                 {menuItem?.priceType === 'custom' && item.customPrice === undefined && (
@@ -405,7 +405,7 @@ export default function OrderDetailPage() {
                                 )}
                               </p>
                               {item.note && (
-                                <p className="truncate text-xs italic text-muted-foreground">&ldquo;{item.note}&rdquo;</p>
+                                <p className="break-words text-xs italic text-muted-foreground">&ldquo;{item.note}&rdquo;</p>
                               )}
                               {menuItem?.priceType === 'custom' && order!.status !== 'completed' && (
                                 <div className="mt-2 flex items-center gap-2">
